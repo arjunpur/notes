@@ -489,6 +489,12 @@ C(\tau) := \left\langle \frac{1}{n}\sum_{i=1}^{n} s(t_i-\tau)\right\rangle .
 \]
 Here $\langle \cdot \rangle$ denotes an average over repeated trials or repetitions of the same stimulus condition.
 
+In the lecture, this definition was paired with a useful simplifying assumption:
+\[
+\int_0^T s(t)\,dt = 0.
+\]
+The motivation is physiological as well as mathematical. Sensory systems often adapt to the \emph{average} stimulus intensity, so the interesting part of the drive is the fluctuation around baseline rather than the baseline itself. If one did not remove the mean, then the STA would inherit a trivial constant offset that says little about which \emph{time-dependent feature} actually drives spikes.
+
 The sign convention matters. The argument $t_i-\tau$ means that positive $\tau$ corresponds to looking \emph{backward in time} from the spike. Thus, $C(\tau)$ answers the question:
 \begin{quote}
 What did the stimulus typically look like $\tau$ milliseconds before a spike occurred?
@@ -553,6 +559,33 @@ Using the same small-bin argument from Dayan and Abbott that appeared in the sli
 \[
 C(\tau) \approx \frac{1}{\langle n \rangle}\int_0^T \langle r(t)\rangle s(t-\tau)\,dt.
 \]
+
+\subsubsection{Detour: why $\langle \rho(t)\rangle$ becomes $\langle r(t)\rangle$ inside the integral}
+
+This replacement is easy to accept formally and easy to forget conceptually, so it is worth unpacking. Divide the observation window into $M\gg 1$ small bins of width $\Delta t$ with grid points $t_m=m\Delta t$. Assuming the stimulus is smooth enough on that scale and identical across trials, one may approximate
+\[
+\int_0^T \langle \rho(t)\rangle s(t-\tau)\,dt
+\approx
+\sum_{m=1}^{M} s(t_m-\tau)
+\int_{t_{m-1}}^{t_m} \langle \rho(t)\rangle\,dt.
+\]
+But by the same definition used earlier for time- and trial-averaged firing rates,
+\[
+\langle r(t_m)\rangle\,\Delta t
+:=
+\int_{t_{m-1}}^{t_m} \langle \rho(t)\rangle\,dt.
+\]
+Therefore
+\[
+\int_0^T \langle \rho(t)\rangle s(t-\tau)\,dt
+\approx
+\sum_{m=1}^{M} \Delta t\,\langle r(t_m)\rangle s(t_m-\tau),
+\]
+and this Riemann sum converges back to
+\[
+\int_0^T \langle r(t)\rangle s(t-\tau)\,dt.
+\]
+So the lecture's replacement is not mysterious: inside an integral over time, the averaged spike train and the averaged firing rate represent the same spike mass once one coarse-grains at sufficiently fine temporal resolution.
 
 \subsubsection{Cross-correlation and the meaning of the minus sign}
 
@@ -699,6 +732,18 @@ This observation is conceptually important because it reveals a central ambiguit
 
 The lecture deliberately did not claim that one can solve this problem in full generality. On the contrary, it treated the identification of the ``right'' spike patterns as an open-ended scientific modeling choice.
 
+\subsection{What the STA depends on besides the neuron}
+
+By this point, the lecture's caution can be stated explicitly. An STA is never a property of the neuron alone. It depends at least on
+\begin{itemize}
+    \item the spike pattern chosen as the trigger, such as isolated spikes, pairs, or bursts,
+    \item the mean of the stimulus ensemble,
+    \item the overall intensity or variance of the stimulus fluctuations,
+    \item and the stimulus autocorrelation structure.
+\end{itemize}
+
+This is why reverse correlation is powerful but not magic. It reveals which stimulus features are associated with a chosen kind of event under a chosen stimulus ensemble. Change the event definition or the ensemble and the estimated STA can change as well. The lecture treated this as an honest modeling limitation rather than something to be hidden: there is no universal rule that tells us in advance which neuronal patterns are the ``important'' ones for every system.
+
 \subsection{Why spike-train statistics become necessary}
 
 Lecture 1 already made clear that firing rates alone do not capture all spike-train structure. Lecture 2 sharpened that point by asking for the probability of observing a full spike sequence
@@ -731,6 +776,18 @@ If this factorization held exactly, then the full spike-train statistics would b
 
 The lecture presented this not as an unquestionable truth, but as a very strong approximation that can nevertheless be analytically useful.
 
+\subsubsection{Intuition: a Poisson process as rare independent opportunities to spike}
+
+The cleanest mental picture is to chop time into very small bins of width $\Delta t$. In each bin, the neuron either emits one spike or does not. For a homogeneous Poisson process,
+\begin{itemize}
+    \item the probability of a spike in one small bin is approximately $r\Delta t$,
+    \item the probability of no spike is approximately $1-r\Delta t$,
+    \item and different bins are treated as independent.
+\end{itemize}
+So one may think of the process as an extremely long sequence of independent, highly biased coin flips. Most bins contain nothing; occasionally one contains a spike. The continuum limit $\Delta t\to 0$ keeps the rate $r$ fixed while making each individual opportunity to spike rarer and rarer.
+
+This viewpoint explains why the Poisson model is often described as a model of \emph{complete temporal randomness} at fixed mean rate. There is no preferred rhythm, no refractory memory, and no tendency to burst. Spikes are simply sprinkled through time at a uniform average density $r$.
+
 \subsubsection{Constant-rate Poisson spiking}
 
 The simplest case is the \emph{homogeneous Poisson process}, in which the firing rate is constant:
@@ -753,6 +810,31 @@ which gives the probability of observing $n$ spikes in an interval of duration $
 
 The quantity $rT$ is the expected number of spikes in the interval. For large $rT$, the Poisson distribution becomes increasingly similar to a Gaussian, which is why the slides compared the two in the case $rT=10$.
 
+\subsubsection{Why the Poisson count law has this form}
+
+It is useful to rename
+\[
+\lambda := rT,
+\]
+the expected number of spikes in the interval. Then the count law becomes
+\[
+P_T[n] = \frac{\lambda^n}{n!}e^{-\lambda}.
+\]
+Each factor has a simple interpretation:
+\begin{itemize}
+    \item $\lambda^n$ says that seeing $n$ spikes becomes more likely when the interval is longer or the rate is higher;
+    \item $1/n!$ corrects for overcounting because the order in which those $n$ rare spike opportunities occur should not matter;
+    \item $e^{-\lambda}$ is the survival factor saying that all the remaining infinitesimal opportunities to spike were unused.
+\end{itemize}
+
+One way to derive this intuitively is from a binomial model. If $M=T/\Delta t$ bins each contain a spike with probability $r\Delta t$, then the spike count is binomial:
+\[
+\binom{M}{n}(r\Delta t)^n(1-r\Delta t)^{M-n}.
+\]
+Taking the limit $\Delta t\to 0$ with $M\Delta t=T$ converts this binomial law into the Poisson law above. So the Poisson distribution is the natural count distribution for many independent rare-event opportunities.
+
+Another useful intuition is geometric: $\lambda$ controls the overall density of random spike ``drops'' in time. If $\lambda\ll 1$, most trials contain zero or one spike. If $\lambda\gg 1$, many spikes occur and the count distribution broadens, eventually looking approximately Gaussian by the central-limit effect.
+
 \subsubsection{Probability of a specific spike train}
 
 The lecture then used the count distribution to write the probability of an \emph{ordered} spike train $\{t_1,\dots,t_n\}$ with temporal resolution $\Delta t$:
@@ -769,6 +851,12 @@ p(t_1,\dots,t_n)=r^n e^{-rT}.
 \]
 
 This formula is striking because it is independent of the individual spike times once the spike count $n$ is fixed. In a homogeneous Poisson process, only the total number of spikes matters, not their detailed arrangement inside the interval. That is precisely what makes the model simple, and also what makes it inadequate whenever temporal structure matters.
+
+There is also a clean conditional interpretation. First draw the total spike count $n$ from the Poisson distribution. Then, conditioned on that count, place the $n$ spikes uniformly and independently across the interval. The factor
+\[
+n!\left(\frac{\Delta t}{T}\right)^n
+\]
+is exactly the small-bin probability associated with that ``uniform random sprinkling'' picture. This is why the final density is independent of the detailed spike locations: in a homogeneous Poisson process, all ordered spike configurations with the same spike count are equally likely.
 
 \subsection{Useful summary statistics for spike trains}
 
@@ -800,6 +888,8 @@ and the corresponding interval density $p_{\mathrm{ISI}}(\tau)$. From this one o
 \]
 
 The CV provides a scale-free measure of spike-time irregularity. In textbook Poisson spiking, interspike intervals are exponentially distributed and the CV equals $1$. Again, deviations from this value signal temporal structure beyond the independent-spike approximation.
+
+The exponential law is itself informative. It means the waiting time to the next spike is \emph{memoryless}: after waiting for $20\,\mathrm{ms}$ without a spike, the distribution of the remaining waiting time is the same as it was at the start. That property is another way of saying the homogeneous Poisson process has no hidden clock, refractory structure, or rhythmic buildup.
 
 \subsection{Conceptual takeaways from Lecture 2}
 
