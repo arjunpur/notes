@@ -38,6 +38,19 @@
         "Lecture 3: Slides",
         "Spikes (Part 1) - Lecture 3"
       ]
+    },
+    {
+      "lecture_slug": "lecture-4",
+      "title": "Spikes (Part 1) - Lecture 4",
+      "slide_filename": "Spikes (Part 1) - Lecture 4 - Slides.pdf",
+      "chapter_paths": [
+        "main.tex"
+      ],
+      "aliases": [
+        "Lecture 4",
+        "Lecture 4: Slides",
+        "Spikes (Part 1) - Lecture 4"
+      ]
     }
   ]
 }
