@@ -1,8 +1,9 @@
-\chapter*{Preface}
-\addcontentsline{toc}{chapter}{Preface}
+\section*{Preface}
+\addcontentsline{toc}{section}{Preface}
 
-This directory contains the canonical repository-backed lecture notes for \emph{Machine Intelligence II}. The scaffold uses the same durable notes structure as the richer \emph{Acquisition and Analysis of Neural Data} course repository: frontmatter, chapter files, backmatter, and a stable chapter map that the Bodhi lecture-notes service can target directly.
-The opening chapter now focuses on the principal-component-analysis lecture. Future lectures can expand this repository chapter-by-chapter without reverting to ad hoc PDFs or one-off runtime overlays.
+These notes cover the second Machine Intelligence sequence, beginning with unsupervised representation learning. The first lectures use principal component analysis and Hebbian learning as a controlled setting where geometry, optimization, and online adaptation can be studied without labels.
+
+The organizing question is how structure in data becomes structure in a representation. PCA gives the batch spectral answer: diagonalize covariance and keep the directions that explain variance. Hebbian and anti-Hebbian rules give the online dynamical answer: update weights from local activity so the network tracks useful directions as samples arrive.
 
 \bigskip
 \noindent\textit{Berlin, April 2026}

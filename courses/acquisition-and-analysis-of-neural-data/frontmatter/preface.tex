@@ -1,9 +1,11 @@
 \chapter*{Preface}
 \addcontentsline{toc}{chapter}{Preface}
 
-This directory contains the lecture notes for \emph{Acquisition and Analysis of Neural Data}. The LaTeX structure was extracted from the Models of Neural Systems project and generalized into a reusable course-notes stack so the notes can grow independently of any homework or coding workspace.
-The intent is to keep mathematical exposition, literature references, and course structure in one place. Lecture notes can expand chapter-by-chapter without coupling them to homework-specific code or submission artifacts.
-The initial scaffold focuses on spike-train thinking: how neural signals are acquired, represented, cleaned, and transformed into interpretable statistical objects. The structure is deliberately minimal so future lectures can slot in without re-organizing the repository.
+These notes collect the mathematical and practical ideas needed to turn neural recordings into interpretable data objects. The emphasis is on spike trains, trial structure, summary statistics, and the assumptions that connect raw measurements to models of neural coding.
+
+The notes are organized so that conceptual exposition, derivations, and reproducible analysis decisions stay in the same place. Code can reproduce figures and explore examples, but the notes state the definitions, conventions, and interpretation rules that make those analyses scientifically meaningful.
+
+The first chapter sets the workflow: start from a recording, choose a response representation, quantify structure with simple statistics, and only then fit richer encoding or decoding models. This order is intentional. In neural data analysis, a poorly defined response variable cannot be rescued by a sophisticated downstream model.
 
 \bigskip
 \noindent\textit{Berlin, April 2026}

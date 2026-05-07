@@ -2,17 +2,40 @@
 
 Acquiring neural data is only the first step. Once an experiment has produced spike trains, local field potentials, calcium traces, or behavior-aligned recordings, the real work begins: organizing the data, defining the response variables, choosing sensible summary statistics, and building analyses that survive contact with noise and biological variability.
 
-This repository is structured to support that full workflow. The LaTeX side is optimized for durable notes, derivations, and literature synthesis. The Python side is optimized for reusable analysis code, figure generation, and quick experiments that can later graduate into polished notebooks or scripts.
+The central workflow is not ``collect data, then run a model.'' It is a sequence of modeling decisions: what counts as a response, which time origin matters, which variability is signal rather than nuisance, and which assumptions justify the statistics being reported.
 
-\section{Repository philosophy}
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[
+  node distance=1.1cm,
+  workflowstep/.style={draw, rounded corners, align=center, minimum width=2.8cm, minimum height=1cm},
+  arrow/.style={-{Latex[length=2mm]}, thick}
+]
+\node[workflowstep] (raw) {Raw recording\\spikes, LFP, behavior};
+\node[workflowstep, right=of raw] (align) {Alignment\\events and trials};
+\node[workflowstep, right=of align] (repr) {Response\\representation};
+\node[workflowstep, below=of repr] (stats) {Statistics\\rates, variability, correlations};
+\node[workflowstep, left=of stats] (model) {Model\\encoding or decoding};
+\node[workflowstep, left=of model] (check) {Validation\\residuals and controls};
+\draw[arrow] (raw) -- (align);
+\draw[arrow] (align) -- (repr);
+\draw[arrow] (repr) -- (stats);
+\draw[arrow] (stats) -- (model);
+\draw[arrow] (model) -- (check);
+\draw[arrow] (check) -- (raw);
+\end{tikzpicture}
+\caption{A disciplined neural-data workflow is cyclic. Validation often sends the analysis back to earlier choices about alignment, representation, or summary statistics.}
+\end{figure}
 
-The guiding principle is that prose and computation should reinforce each other. When you derive a point-process estimator in the notes, the corresponding Python module should be able to simulate or visualize it. When you explore a new preprocessing pipeline in code, the main conceptual takeaways should migrate back into the notes.
+\section{Analysis philosophy}
+
+The guiding principle is that prose and computation should reinforce each other. A derivation should make clear what an estimator means, and code should make the estimator's behavior visible on simulated or real data. When a preprocessing choice changes the scientific interpretation, the notes should say so explicitly rather than hiding the choice inside a script.
 
 \begin{aside}[Core workflow]
 Start from raw measurements, define the neural response representation, build summary statistics, and only then fit heavier models. Clean abstractions early make later inference much easier.
 \end{aside}
 
-\section{Minimal analysis loop}
+\section{Canonical analysis loop}
 
 A useful first-pass workflow for many neural datasets is:
 \begin{enumerate}
@@ -33,10 +56,10 @@ r(t) = \sum_{i=1}^{n} w(t-t_i)
 Here $w$ is a smoothing kernel and $t_i$ are spike times. This simple construction turns a point process into a continuous signal that can be visualized, compared across conditions, and passed into downstream models.
 \end{keyequation}
 
-\section{Code organization}
+\section{Reusable computation}
 
-The Python package in \texttt{src/} is intentionally small at the outset. It exposes a few path helpers and a demo analysis function so that the repository is immediately runnable. From here, the natural expansion points are dataset-specific loaders, feature extraction utilities, plotting helpers, and reproducible studies in \texttt{notebooks/}.
+Reusable code should live at the level of concepts, not one-off figures. Natural expansion points are dataset loaders, event-alignment helpers, spike-train feature extraction, plotting utilities for rasters and correlograms, and reproducible studies that document each analysis decision. The goal is not to automate interpretation away; it is to make the mechanical parts reliable enough that the scientific assumptions are exposed.
 
 \section{Next steps}
 
-As the repository grows, add one chapter per lecture block, keep citations in \texttt{backmatter/references.bib}, and let code mature from quick scripts into tested utilities. That way the repository remains both a notes archive and a computational lab notebook.
+As the notes grow, each lecture block should end with three things: the mathematical object introduced, the empirical diagnostic that estimates it, and the failure mode to check before trusting it. That convention keeps the course focused on analysis rather than notation alone.

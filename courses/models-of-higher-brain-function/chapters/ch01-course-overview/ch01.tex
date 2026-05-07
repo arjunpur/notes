@@ -1,8 +1,8 @@
 \section{Course Overview and Modeling Strategy}
 
-Higher brain function is a modeling problem before it is a tooling problem. Memory, planning, inference, abstraction, and decision making are all latent processes: we rarely observe them directly, but instead infer them from behavior, neural activity, and task structure. A useful course repository therefore needs space for both careful conceptual writing and executable model-building.
+Higher brain function is a modeling problem before it is a tooling problem. Memory, planning, inference, abstraction, and decision making are all latent processes: we rarely observe them directly, but instead infer them from behavior, neural activity, and task structure. The course therefore asks how to build models whose hidden variables are meaningful, constrained, and experimentally testable.
 
-This scaffold is designed for exactly that. The LaTeX notes can hold the conceptual arc of the course, while the Python package can accumulate simulations, optimization experiments, and quick probes of candidate mechanisms.
+The working standard is that every model should answer four questions. What is the observable behavior? Which latent variables explain it? What update rule moves those variables through time? What would count as evidence against the model? Keeping these questions explicit prevents the notes from becoming a catalog of architectures without interpretation.
 
 \subsection{What makes a model useful?}
 
@@ -47,10 +47,10 @@ This form is broad enough to include recurrent neural networks, drift-diffusion 
 \caption{State-space intuition. The hidden state carries forward what the system currently ``knows,'' inputs perturb that state, and the update rule determines the next internal configuration.}
 \end{figure}
 
-\subsection{Code organization}
+\subsection{Reusable model code}
 
-The Python scaffold is deliberately simple. It gives the repository a real package layout immediately, so simulation code and reusable utilities do not end up trapped in ad hoc notebooks. Recommended directions for growth include simulation modules for canonical cognitive tasks, optimization utilities for fitting simple models, plotting helpers for trajectories and phase portraits, and notebook-based reading replications.
+Executable examples should make modeling assumptions visible. Useful code modules include simulation utilities for canonical cognitive tasks, fitting routines for simple latent-state models, plotting helpers for trajectories and phase portraits, and small reading replications that test whether a model reproduces the qualitative phenomenon it claims to explain.
 
 \subsection{Next steps}
 
-Add one chapter per conceptual block, keep derivations in the notes, and let the source package accumulate the minimal reusable code needed to reproduce course figures and experiments. Over time, the repository can become both a reading guide and a computational playground.
+Each conceptual block should end with a compact model checklist: the state variables, the objective or update rule, the measurable predictions, and the most likely confound. This makes later comparisons between attention, memory, decision, and control models precise rather than purely verbal.

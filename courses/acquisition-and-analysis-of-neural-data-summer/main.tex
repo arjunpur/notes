@@ -5,6 +5,7 @@
 \usepackage{lmodern}
 \usepackage{microtype}
 \usepackage{amsmath,amssymb,mathtools}
+\usepackage{booktabs}
 \usepackage{graphicx}
 \usepackage{hyperref}
 \hypersetup{hidelinks}
@@ -15,15 +16,13 @@
 \pgfplotsset{compat=1.18}
 \setcounter{tocdepth}{3}
 
-\title{Acquisition and Analysis of Neural Data\\Lecture Notes}
-\author{}
-\date{}
+\title{Acquisition and Analysis of Neural Data -- Summer\\Lecture Notes}
+\author{Arjun Puri}
+\date{Summer 2026}
 
 \begin{document}
 \maketitle
 \tableofcontents
-
-\input{backmatter/mathematical-synthesis}
 
 \section{Lecture 1: Spikes (Part 1)}
 
@@ -281,7 +280,7 @@ A further special case is the average firing rate over the whole trial:
 \]
 This scalar summarizes how strongly the neuron responds on average under a fixed stimulus condition.
 
-\subsubsection{Interpreting $\langle r(t) \rangle$}
+\subsubsection{Interpreting the trial-averaged rate}
 
 The lecture gave two especially important interpretations.
 
@@ -338,16 +337,16 @@ The lecture used the term ``firing rate'' in several related but non-identical s
 
 \begin{center}
 \begin{tabular}{ll}
-\hline
+\toprule
 Quantity & Interpretation \\
-\hline
+\midrule
 $\rho(t)$ & exact spike train as a sum of deltas \\
 $r(t)$ & temporally smoothed single-trial rate estimate \\
 $r$ & spike count rate $n/T$ on one trial \\
 $\langle r(t) \rangle$ & trial-averaged, time-dependent firing rate \\
 $\langle r \rangle$ & mean firing rate across the whole trial \\
 $\langle r(t) \rangle_{\mathrm{neuron}}$ & neuron-averaged rate estimate \\
-\hline
+\bottomrule
 \end{tabular}
 \end{center}
 
@@ -562,7 +561,7 @@ Using the same small-bin argument from Dayan and Abbott that appeared in the sli
 C(\tau) \approx \frac{1}{\langle n \rangle}\int_0^T \langle r(t)\rangle s(t-\tau)\,dt.
 \]
 
-\subsubsection{Detour: why $\langle \rho(t)\rangle$ becomes $\langle r(t)\rangle$ inside the integral}
+\subsubsection{Detour: why the averaged spike train becomes the averaged rate inside the integral}
 
 This replacement is easy to accept formally and easy to forget conceptually, so it is worth unpacking. Divide the observation window into $M\gg 1$ small bins of width $\Delta t$ with grid points $t_m=m\Delta t$. Assuming the stimulus is smooth enough on that scale and identical across trials, one may approximate
 \[
@@ -1384,6 +1383,9 @@ The lecture's examples from visual cortex and entorhinal microcircuits should be
 
 \clearpage
 \input{lectures/spikes-part-1-lecture-4}
+
+\clearpage
+\input{backmatter/mathematical-synthesis}
 
 \appendix
 
