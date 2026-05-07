@@ -1,4 +1,300 @@
-\section{Lecture 4: Neural Codes and Correlations}
+\section{Lecture 4: Neural Codes and Reverse Correlation}
 \label{sec:aand-spikes-lecture-4}
 
-These notes will be expanded by the lecture-notes workflow.
+Lecture 4 makes two moves. First, it sharpens the question ``what in a spike train carries information?'' beyond a plain rate code. Second, it turns from descriptive spike statistics to an explicit encoding model that predicts a time-dependent firing rate from a time-dependent stimulus.
+
+The unifying theme is that spikes are point events, but the quantities we often want to compare them to---stimuli, positions, sound waves, or image velocity---are continuous in time. A useful model therefore has to decide which aspects of timing are worth keeping and which can be averaged away.
+
+\subsection{Which features of spikes carry information?}
+
+A good mental model is this: a spike train has several layers of structure. One can keep only a slowly varying firing rate, keep precise spike times relative to other spikes, or keep correlations across neurons. Different experiments ask which layer is sufficient for the variable of interest.
+
+\subsubsection{Four coding hypotheses}
+
+The lecture organized neural codes along two axes: single neuron versus population, and rate versus correlation.
+
+\begin{figure}[h]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tikzpicture}[
+    x=1cm,
+    y=1cm,
+    box/.style={draw, rounded corners, align=left, inner sep=5pt, minimum width=5.4cm, minimum height=2.6cm},
+    title/.style={font=\bfseries},
+    >=Latex
+]
+    \node[title] at (1.8,5.0) {Single neuron};
+    \node[title] at (8.2,5.0) {Population};
+
+    \node[box] (a) at (1.8,3.25) {\textbf{Independent-spike code}\\[2pt]
+    $\langle r(t)\rangle$ across trials is sufficient.\\
+    Trial-to-trial spike timing is treated as conditionally independent.};
+
+    \node[box] (b) at (8.2,3.25) {\textbf{Independent-neuron code}\\[2pt]
+    Ensemble-averaged activity is sufficient.\\
+    Fine coordination across neurons is ignored.};
+
+    \node[box] (c) at (1.8,0.75) {\textbf{Spike-correlation code}\\[2pt]
+    Temporal relations between spikes of the same neuron carry additional information.};
+
+    \node[box] (d) at (8.2,0.75) {\textbf{Neuron-correlation code}\\[2pt]
+    Joint timing across different neurons carries additional information.};
+\end{tikzpicture}%
+}
+\caption{The coding taxonomy emphasized in the lecture. The question is not whether correlations exist, but whether they add stimulus information beyond what a mean rate already provides.}
+\end{figure}
+
+The word ``sufficient'' matters. In an independent-spike code, knowing the trial-averaged firing rate $\langle r(t)\rangle$ is enough to describe what the stimulus did to the neuron. In a correlation code, one needs additional structure such as relative timing, phase, synchrony, or conditional dependence.
+
+\paragraph{Single-neuron rate code.}
+If repeated presentations of the same stimulus produce spikes that are conditionally independent once the time-varying rate is specified, then the classical inhomogeneous Poisson picture is appropriate. The rate trajectory $\langle r(t)\rangle$ is then the main response variable, and precise within-trial timing is treated as noise around that mean.
+
+\paragraph{Single-neuron correlation code.}
+If the timing relation between spikes of the \emph{same} neuron matters, then the mean rate is no longer enough. A burst, a refractory gap, or a preferred phase relation can matter even when the average rate is unchanged.
+
+\paragraph{Population rate code.}
+At the population level, the analogue is an independent-neuron code. One asks whether the mean activity across neurons already captures the relevant information, as in coarse population measurements such as EEG or fMRI, where individual spikes are not resolved.
+
+\paragraph{Population correlation code.}
+A neuron-correlation code is present when joint activity across neurons adds information beyond single-neuron averages. In that case, synchrony, lagged coactivation, or ordered firing sequences become part of the code.
+
+\paragraph{Practical implication.}
+Given data, do not ask first whether spikes ``look correlated.'' Ask instead which summary of the response would be sufficient for the variable you are trying to predict or infer.
+
+\subsubsection{Why visible correlations are not yet evidence for a code}
+
+The lecture was careful about a common logical mistake: observing structure in auto- or cross-correlation histograms is \emph{not} by itself proof that the nervous system uses a correlation code.
+
+\paragraph{Autocorrelation.}
+A neuron's spike train is rarely independent across time. Refractoriness suppresses very short interspike intervals, bursting can enhance nearby intervals, and slower internal dynamics can modulate excitability over longer windows. These mechanisms shape the autocorrelation even if the stimulus information is still fully summarized by the rate.
+
+So an autocorrelogram can reveal intrinsic spike-generation constraints without revealing additional stimulus information. Correlation is necessary for a correlation code, but it is not sufficient.
+
+\paragraph{Cross-correlation.}
+The same warning holds across neurons. A cross-correlogram may reflect direct connections, common input, oscillatory locking, or shared behavioral state. Those effects show dependence, but they do not yet show what extra variable is encoded.
+
+The lecture connected this to earlier material on putative monosynaptic interactions: a short-latency peak in a cross-correlogram is evidence about network connectivity, not automatically about stimulus coding.
+
+\paragraph{Practical implication.}
+When you see an auto- or cross-correlation peak, separate two questions: \emph{what mechanism produced the dependence?} and \emph{does conditioning on the stimulus or task variable remove it?}
+
+\subsection{Temporal coding examples}
+
+The lecture then used two examples to clarify what ``precise timing'' can mean.
+
+\subsubsection{Phase precession in hippocampus}
+
+In hippocampal place cells, spike timing can drift systematically relative to the ongoing theta rhythm as the animal moves through a place field. The important variable is then not just how many spikes occurred in the field, but \emph{when within the theta cycle} they occurred.
+
+This is a clean example of why timing must always be interpreted relative to a reference variable. Phase alone is not meaningful unless the relevant oscillation or behavioral coordinate is specified. In place coding, the useful pair is often position and phase together.
+
+\subsubsection{Auditory temporal precision}
+
+The auditory example showed that extremely precise spike timing does not automatically imply a non-rate code. Barn owls can discriminate interaural time differences on the order of tens of microseconds, and auditory-nerve spikes can phase-lock to a periodic sound with precision around $40\,\mu\mathrm{s}$.
+
+However, the lecture's key point was subtle: the single-neuron response can still be modeled well by an inhomogeneous Poisson process with a \emph{periodic rate}. In other words, a very precise temporal structure can still be described by a rate code if the rate itself is rapidly modulated and phase-locked to the stimulus.
+
+This resolves an apparent paradox. ``Temporal precision'' refers to the timescale on which the rate varies or spikes lock to the stimulus. ``Correlation code'' asks whether one needs additional dependencies beyond that time-varying rate.
+
+\paragraph{Practical implication.}
+High precision by itself does not decide the coding class. Always ask whether a sufficiently resolved rate model already explains the data.
+
+\subsection{From static encoding to dynamic encoding}
+
+Earlier lectures treated static mappings such as tuning curves,
+\[
+\langle r \rangle = f(s),
+\]
+and reverse-correlation summaries such as the spike-triggered average. Lecture 4 generalizes this to time-dependent stimuli.
+
+If the stimulus changes in time, then the neuron's mean response should also change in time. The first question is therefore not only ``which stimulus value matters?'' but also ``how far into the past does the neuron integrate stimulus history?''
+
+\subsubsection{A linear filter ansatz}
+
+The lecture introduced the descriptive model
+\[
+\langle r_{\mathrm{est}}(t)\rangle = r_0 + \int_0^{\infty} D(\tau)\,s(t-\tau)\,d\tau + \text{h.o.t.}
+\]
+for the time-dependent firing rate.
+
+Each term has a clear role:
+\begin{itemize}
+    \item $r_0$ is the baseline firing rate when the stimulus is zero,
+    \item $s(t-\tau)$ is the stimulus value $\tau$ time units in the past,
+    \item $D(\tau)$ is the first Wiener kernel, also called the linear filter,
+    \item and ``h.o.t.'' stands for higher-order terms that are neglected in the linear approximation.
+\end{itemize}
+
+The filter $D(\tau)$ measures how strongly a past stimulus value influences the response at the present time. If $D$ is concentrated near small $\tau$, the neuron is dominated by recent input. If $D$ has a broader support, the neuron integrates over a longer history. If $D$ changes sign, then some lags excite while others suppress.
+
+Mathematically, this is a causal convolution. Conceptually, it is a memory kernel.
+
+\begin{figure}[h]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tikzpicture}[
+    x=1cm,
+    y=1cm,
+    block/.style={draw, rounded corners, minimum width=2.6cm, minimum height=1cm, align=center},
+    >=Latex
+]
+    \node[block] (stim) at (0,0) {stimulus\\$s(t)$};
+    \node[block] (filter) at (4,0) {linear filter\\$D(\tau)$};
+    \node[block] (lin) at (8,0) {linear drive\\$L(t)=\int_0^{\infty} D(\tau)s(t-\tau)\,d\tau$};
+    \node[block] (nonlin) at (12.8,0) {optional static\\nonlinearity $F$};
+    \node[block] (rate) at (16.8,0) {predicted rate\\$r_0+F(L(t))$};
+
+    \draw[->, thick] (stim) -- (filter);
+    \draw[->, thick] (filter) -- (lin);
+    \draw[->, thick] (lin) -- (nonlin);
+    \draw[->, thick] (nonlin) -- (rate);
+    \draw[->, thick] (lin.south) .. controls +(0,-1.2) and +(0,-1.2) .. node[midway, below] {linear model if $F(L)=L$} (rate.south);
+\end{tikzpicture}%
+}
+\caption{The linear-nonlinear viewpoint of Lecture 4. The filter keeps stimulus history, and the optional static nonlinearity repairs the most obvious failures of a purely linear rate model.}
+\end{figure}
+
+\paragraph{Relation to Lecture 1 filtering.}
+The formula resembles the kernel smoothing used earlier for spike trains,
+\[
+r(t)=\sum_i w(t-t_i),
+\]
+but the objects are different. In Lecture 1, one filtered a spike train to estimate a rate from data. Here one filters the stimulus to predict a neuron's mean response. The same convolution mathematics appears in both places, but the interpretation is different.
+
+\paragraph{Practical implication.}
+To build a dynamic encoding model, estimate not just how strongly a stimulus matters but also over what lag structure it matters.
+
+\subsection{Estimating the optimal linear filter}
+
+The unknown object in the model is $D(\tau)$. The lecture chose it by minimizing the mean squared prediction error,
+\[
+E = \frac{1}{T}\int_0^T \bigl[\langle r_{\mathrm{est}}(t)\rangle - \langle r(t)\rangle\bigr]^2\,dt,
+\]
+where $\langle r(t)\rangle$ denotes the true trial-averaged firing rate for the stimulus under study.
+
+This objective has a geometric interpretation. We are projecting the true rate onto the subspace of responses that can be written as a baseline plus a linear filter applied to the stimulus. The optimal filter is the orthogonal projection in mean-square error.
+
+Using variational calculus, one obtains the Wiener--Hopf integral equation
+\[
+\int_0^{\infty} Q_{ss}(\tau-\tau')D(\tau')\,d\tau' = Q_{rs}(-\tau).
+\]
+
+The two correlation functions have different jobs:
+\begin{itemize}
+    \item $Q_{ss}$ is the stimulus autocorrelation, so it measures which stimulus lags are statistically confounded with each other;
+    \item $Q_{rs}$ is the cross-correlation between response and stimulus, so it measures which past stimulus values co-vary with firing.
+\end{itemize}
+
+This equation says that the best filter is not obtained by looking only at the response-stimulus correlation. One must also ``divide out'' the temporal structure already present in the stimulus itself. If the stimulus has strong autocorrelation, nearby lags contain redundant information and the raw cross-correlation is not yet the receptive field.
+
+\paragraph{Practical implication.}
+When reverse-correlation estimates look broad, ask whether the neuron is broad or the stimulus is broad. The Wiener equation separates those two effects.
+
+\subsubsection{White-noise simplification and the spike-triggered average}
+
+The integral equation becomes especially simple for white noise. If
+\[
+Q_{ss}(\tau)=\sigma_s^2\delta(\tau),
+\]
+then stimulus values at different lags are uncorrelated, and the left-hand side collapses:
+\[
+\int_0^{\infty} \sigma_s^2\delta(\tau-\tau')D(\tau')\,d\tau' = \sigma_s^2 D(\tau).
+\]
+
+Using the earlier relation between the response-stimulus cross-correlation and the spike-triggered average $C(\tau)$,
+\[
+Q_{rs}(-\tau)=\langle r\rangle C(\tau),
+\]
+one obtains
+\[
+D(\tau)=\frac{\langle r\rangle}{\sigma_s^2}C(\tau).
+\]
+
+This is the central bridge of the lecture: under white-noise stimulation, the optimal linear encoding filter is proportional to the spike-triggered average.
+
+The proportionality is informative. The STA is not just a descriptive average of preceding stimuli; under the white-noise assumption it is the filter that minimizes squared prediction error for the firing rate.
+
+\paragraph{Practical implication.}
+For white-noise inputs, computing the STA is already computing the optimal linear kernel up to a scale factor.
+
+\subsection{What exactly is the firing rate being predicted?}
+
+The lecture paused to distinguish several rates that are easy to confuse.
+
+\begin{enumerate}
+    \item $\langle r_{\mathrm{est}}(t)\rangle$ is the model prediction from the stimulus in a single trial.
+    \item $\langle r(t)\rangle$ is the true trial-averaged firing rate for that stimulus, obtainable only in the infinite-trial limit.
+    \item $\langle r_{\mathrm{approx}}(t)\rangle$ is the empirical approximation to the true rate from finitely many repetitions of the same stimulus.
+\end{enumerate}
+
+This distinction is conceptually important. The model is deterministic once the stimulus is given, but the quantity it tries to match is an expectation over repeated responses to that same stimulus. In practice, one estimates that target rate from many trials and then checks how closely the model prediction follows it.
+
+\paragraph{Practical implication.}
+A single-trial spike train is not the target of the linear filter model. The target is the repeatable, trial-averaged response that the single trial only samples noisily.
+
+\subsection{Why pure linearity is not enough}
+
+The lecture then listed the main failures of the linear model
+\[
+\langle r_{\mathrm{est}}(t)\rangle = r_0 + \int_0^{\infty} D(\tau)s(t-\tau)\,d\tau.
+\]
+
+A purely linear rate model can predict negative firing rates, it cannot saturate at high drive, and it does not naturally account for adaptation or other state dependence. These are not small technical flaws; they are structural mismatches between linear algebra and spike generation.
+
+\subsubsection{Adding a static nonlinearity}
+
+Define the linear drive
+\[
+L(t)=\int_0^{\infty} D(\tau)s(t-\tau)\,d\tau.
+\]
+Then replace the linear output by
+\[
+\langle r_{F,\mathrm{est}}(t)\rangle = r_0 + F(L(t)).
+\]
+
+Here $F$ is a \emph{static} nonlinearity: it transforms the instantaneous linear drive without adding new temporal memory. Several examples from the lecture illustrate different modeling choices:
+\begin{itemize}
+    \item a threshold-linear function clips negative values and introduces rectification,
+    \item a sigmoid saturates at a maximum firing rate,
+    \item a hyperbolic tangent gives a smooth bounded transformation.
+\end{itemize}
+
+The distinction between dynamic and static parts is worth remembering. The filter $D$ determines \emph{which stimulus history is retained}. The nonlinearity $F$ determines \emph{how that retained scalar is converted into firing rate}. Memory sits in $D$, not in $F$.
+
+\subsubsection{How to estimate the static nonlinearity}
+
+The lecture described a graphical procedure:
+\begin{enumerate}
+    \item estimate the linear kernel $D$,
+    \item compute the linear projection $L(t)$,
+    \item plot empirical rate $\langle r_{\mathrm{approx}}(t)\rangle$ against $L(t)$ over many time points,
+    \item fit a curve $F(L)$ through this cloud.
+\end{enumerate}
+
+This is a useful diagnostic because it tells you whether the main model failure is dynamic or static. If the scatter collapses onto a clear one-dimensional curve, then the filter has captured the relevant temporal feature and only the output transformation needs correction.
+
+\paragraph{Practical implication.}
+After fitting a linear kernel, always inspect the relation between linear drive and observed rate. A simple static nonlinearity often fixes the worst pathologies while preserving interpretability.
+
+\subsubsection{Bussgang's theorem}
+
+One might worry that once a nonlinearity is introduced, the linearly optimized filter $D(\tau)$ is no longer appropriate. The lecture cited Bussgang's theorem to justify the standard procedure: if the stimulus is Gaussian white noise and the static nonlinearity is sufficiently well behaved, then the \emph{shape} of the linear kernel remains optimal up to scale.
+
+This is why the linear-nonlinear construction is so useful experimentally. One can estimate the temporal filter from reverse correlation and then add the static nonlinearity without having to refit the entire temporal structure from scratch.
+
+\paragraph{Practical implication.}
+For Gaussian white-noise stimulation, the LN workflow is not just heuristic. The same kernel shape remains the right temporal feature extractor.
+
+\subsection{Encoding summary}
+
+Lecture 4 organizes encoding models into a hierarchy:
+\begin{align*}
+\text{static:} \qquad & r = f(s),\\
+\text{dynamic linear:} \qquad & r_{\mathrm{est}}(t)=r_0+\int_0^{\infty} D(\tau)s(t-\tau)\,d\tau,\\
+\text{dynamic LN:} \qquad & r_{\mathrm{est}}(t)=r_0+F\!\left(\int_0^{\infty} D(\tau)s(t-\tau)\,d\tau\right).
+\end{align*}
+
+The step from left to right is a step from no memory, to memory, to memory plus output nonlinearity. The key mathematical bridge is reverse correlation: under white-noise stimulation, the same spike-triggered average introduced earlier becomes the optimal linear filter for predicting the trial-averaged response.
+
+\paragraph{What to compute next.}
+For a new dataset, the lecture suggests a concrete workflow: estimate a firing rate from repeated trials, compute the STA or Wiener kernel, compare the predicted and empirical rate, inspect the linear-drive versus rate scatter, and then decide whether the remaining discrepancy is due to missing nonlinearity, missing state variables, or genuinely correlation-based coding beyond a rate model.
