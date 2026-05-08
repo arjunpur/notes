@@ -19,16 +19,31 @@
     {
       "lecture_slug": "models-of-attention",
       "title": "Lecture 2: Models of Attention",
-      "slide_filename": "Lecture 2 - Models of Attention.pdf",
+      "slide_filename": "Vision 2 - Models of Attention.pdf",
       "chapter_paths": [
         "chapters/ch03-models-of-attention/ch03.tex"
       ],
       "aliases": [
         "Lecture 2",
         "Lecture 02",
+        "Lecture 2 - Models of Attention",
         "Models of Attention",
         "Visual Attention",
         "Attention"
+      ]
+    },
+    {
+      "lecture_slug": "multisensory-integration",
+      "title": "Lecture 3: Multisensory Integration",
+      "slide_filename": "Lecture 3 - Multisensory integration.pdf",
+      "chapter_paths": [
+        "chapters/ch04-multisensory-integration/ch04.tex"
+      ],
+      "aliases": [
+        "Lecture 3",
+        "Lecture 03",
+        "Multisensory Integration",
+        "Multisensory integration"
       ]
     }
   ]
