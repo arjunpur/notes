@@ -30,6 +30,22 @@
         "Visual Attention",
         "Attention"
       ]
+    },
+    {
+      "lecture_slug": "perceptual-bistability-and-multisensory-integration",
+      "title": "Lecture 3: Perceptual Bistability and Multisensory Integration",
+      "slide_filename": "Lecture 3 - Multisensory integration.pdf",
+      "chapter_paths": [
+        "chapters/ch04-perceptual-bistability-multisensory-integration/ch04.tex"
+      ],
+      "aliases": [
+        "Lecture 3",
+        "Lecture 03",
+        "Multisensory integration",
+        "Perceptual bistability",
+        "Bistable perception",
+        "Cue integration"
+      ]
     }
   ]
 }

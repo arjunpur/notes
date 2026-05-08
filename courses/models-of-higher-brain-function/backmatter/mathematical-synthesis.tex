@@ -59,3 +59,23 @@ Higher-brain models often end with a decision rule. A common normative form is
   \mathbb{E}\!\left[U(a,Z)\mid x_{1:t}\right].
 \]
 The action is chosen under a posterior belief about the latent state \(Z\). This is the bridge from perception to behavior: the system does not act on the raw stimulus, but on an uncertainty-weighted internal estimate of what the stimulus means for the task.
+
+\subsection{Ambiguity Has Two Common Shapes}
+
+Lecture 3 adds two useful posterior geometries to the course. In bistable perception, the posterior over interpretations is often multimodal:
+\[
+  p(h\mid s)
+  \approx
+  \sum_m \pi_m \mathcal N(h;\mu_m,\Sigma_m).
+\]
+The perceptual problem is then not only to estimate a mean, but to explain why experience occupies one mode at a time and sometimes switches between modes. Attractor dynamics, adaptation, and noise give a mechanistic account of those switches.
+
+In multisensory integration, the cues usually support one shared hidden state. For independent Gaussian cues, evidence combines by adding precision:
+\[
+  p_{\mathrm{combined}} = p_1+p_2,
+  \qquad
+  \hat h =
+  \frac{p_1}{p_1+p_2}s_1+
+  \frac{p_2}{p_1+p_2}s_2.
+\]
+So the same inference framework covers both alternation between incompatible interpretations and fusion of compatible measurements.
