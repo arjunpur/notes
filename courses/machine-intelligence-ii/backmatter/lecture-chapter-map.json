@@ -43,6 +43,23 @@
         "Anti-Hebbian"
       ],
       "lecture_date": "2026-04-24"
+    },
+    {
+      "lecture_slug": "hidden-markov-models",
+      "title": "Hidden Markov Models",
+      "slide_filename": "Lecture 61 - Hidden Markov Models.pdf",
+      "chapter_paths": [
+        "chapters/ch03-hidden-markov-models/ch03.tex"
+      ],
+      "aliases": [
+        "Lecture 6.1 Hidden Markov Models",
+        "61_hidden-markov-models.pdf",
+        "Hidden Markov Models",
+        "HMM",
+        "Baum-Welch algorithm",
+        "Viterbi algorithm"
+      ],
+      "lecture_date": "2026-05-08"
     }
   ]
 }

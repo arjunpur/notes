@@ -2,17 +2,51 @@
 
 Attention is the first lecture topic in which the course moves from representation to selection. Vision already gave us the problem of constructing useful internal variables from high-dimensional input. Attention asks a different question: when many representations are simultaneously possible, which ones should receive processing priority, stronger gain, memory access, or control over action?
 
-The lecture treats attention as a family of mechanisms rather than as a single faculty. There is overt attention, where the eyes or sensors are oriented toward an object, and covert attention, where a location or feature is prioritized without moving the eyes. There is exogenous attention, which is captured by the stimulus, and endogenous attention, which is guided by task goals. There is also spatial, feature-based, object-based, local, and global attention. The common computational problem is selection under limited processing capacity.
+A useful mental model is that attention is a routing policy for limited computation. The visual system cannot treat every location, feature, and object as equally urgent at every moment. It therefore needs mechanisms that amplify some signals, suppress others, and move processing resources from one candidate to the next.
 
-Two model families organize the lecture:
+This is why William James's classical description still feels right at the phenomenological level: attention is selective possession by the mind. But the lecture immediately sharpens that intuition. Attention is not one single faculty. It appears in several forms, and different experiments probe different mechanisms.
+
+The lecture is organized around three levels of description:
 \begin{itemize}
-    \item saliency-map models, which explain early bottom-up attentional capture and the first few fixation points;
-    \item biased-competition models, which explain how attention changes neural population responses when multiple stimuli compete.
+    \item behavioral signatures, especially pop-out and serial search;
+    \item algorithmic models, especially dynamic routing and saliency maps;
+    \item neural circuit models, especially biased competition.
 \end{itemize}
+
+The common problem across all three levels is the same: selection under limited processing capacity.
+
+\subsection{What kinds of attention are being discussed?}
+
+The slides distinguish several contrasts that are easy to state but important not to collapse.
+
+\subsubsection{Overt and covert attention}
+
+In overt attention, the sensor itself is moved toward the target. In vision this usually means an eye movement. In covert attention, the eyes remain fixed while processing priority shifts elsewhere in the visual field.
+
+This distinction matters because it separates selection from movement. A subject can keep fixation at one location and still process another location more strongly. The lecture uses this point to motivate attention as a genuine internal control variable rather than just a by-product of gaze.
+
+\subsubsection{Endogenous and exogenous attention}
+
+The lecture also separates two antagonistic sources of control:
+\begin{itemize}
+    \item \emph{endogenous} or top-down attention, which is voluntary and task-guided;
+    \item \emph{exogenous} or bottom-up attention, which is captured by salient stimuli.
+\end{itemize}
+
+Bottom-up attention answers the question ``what stands out in the input right now?'' Top-down attention answers the question ``what is relevant for the current goal?'' Much of the lecture is really about how these two influences are combined or made to compete.
+
+\subsubsection{Spatial, feature-based, object-based, local, and global attention}
+
+Spatial attention prioritizes a location. Feature-based attention prioritizes a property such as redness or a specific orientation. Object-based attention prioritizes all parts that belong to the same object. Local and global attention change the scale of processing, shifting emphasis either to fine structure or to large-scale form.
+
+These are not different buzzwords for the same process. They correspond to different coordinates in which selection can be expressed. A location-based spotlight is the simplest case, but the lecture keeps returning to the fact that useful attention often has to be defined in terms of features, objects, or task templates rather than raw retinal position.
+
+\paragraph{Practical implication.}
+When you read an experiment on attention, first ask what is being selected: a place, a feature, an object, or a task-defined template. That choice determines what kind of model is even plausible.
 
 \subsection{The behavioral anchor: pop-out and serial search}
 
-The simplest behavioral distinction is between pop-out and serial visual search. Let \(n\) denote the number of items in a display, and let \(T(n)\) be the reaction time required to find the target.
+The cleanest behavioral contrast in the lecture is between pop-out and serial visual search. Let \(n\) denote the number of items in a display, and let \(T(n)\) be the reaction time required to find the target.
 
 In a pop-out display, the target differs from distractors by a simple low-level feature such as color or orientation. The search-time slope is close to zero:
 \[
@@ -20,7 +54,7 @@ T_{\mathrm{pop}}(n) \approx T_0 + \epsilon n,
 \qquad
 \epsilon \approx 0.
 \]
-The target is found almost as quickly among many distractors as among few distractors.
+The constant \(T_0\) is the baseline sensory and motor time, while \(\epsilon\) is the additional cost per distractor. In pop-out, \(\epsilon\) is near zero because the target produces an immediate priority peak.
 
 In serial search, the target is defined by a conjunction or by a relation that does not create a unique low-level feature peak. Search time increases with display size:
 \[
@@ -28,12 +62,15 @@ T_{\mathrm{serial}}(n) \approx T_0 + \alpha n,
 \qquad
 \alpha > 0.
 \]
+Now \(\alpha\) measures the extra inspection cost per item. The larger \(\alpha\), the more the system behaves as if it must evaluate objects one by one.
+
 If search is self-terminating and the target is present, the expected number of inspected items is roughly \(n/2\). If the target is absent, all \(n\) items must be checked:
 \[
 T_{\mathrm{present}}(n) \approx T_0 + \alpha \frac{n}{2},
 \qquad
 T_{\mathrm{absent}}(n) \approx T_0 + \alpha n.
 \]
+The formulas are simple, but they make the logic of the experiment explicit. Flat slopes suggest that the display itself creates a dominant selection signal. Positive slopes suggest that the display does not uniquely determine the target, so attention must be deployed sequentially.
 
 \begin{figure}[!htbp]
 \centering
@@ -60,35 +97,155 @@ T_{\mathrm{absent}}(n) \approx T_0 + \alpha n.
 \caption{The behavioral signature of attention in search tasks. Pop-out has an almost flat reaction-time slope because one item creates a distinctive priority peak. Serial search has a positive slope because many items must be inspected in sequence.}
 \end{figure}
 
-This distinction is the bridge to saliency maps. Pop-out occurs when the visual field contains one strong priority peak. Serial search occurs when many items have similar priority or when the target is defined by a rule that the low-level image alone does not isolate.
+This distinction is the bridge to all later models. Pop-out means that one candidate already dominates the priority landscape. Serial search means that many candidates remain too similar, so the system needs a policy for shifting selection over time.
 
-\subsection{The spotlight as a minimal gain model}
+\subsubsection{Why saliency is about contrast, not raw features}
 
-The spotlight metaphor says that attention selects a restricted spatial region. A compact mathematical version is a spatial gain field \(A(x)\) applied to a visual representation \(R(x)\):
+The slides emphasize that saliency is not the same as feature magnitude. A red item is not automatically salient. It is salient when it is red among non-red items. Likewise, an oblique bar pops out when its orientation differs from its neighbors, not simply because it has high orientation energy.
+
+That point is easy to miss, but it is central. Saliency is a contextual quantity. It measures local distinctiveness, not absolute feature value.
+
+\paragraph{Practical implication.}
+To understand whether a display should pop out, compare the target to its surround, not to zero. What matters is feature contrast relative to nearby competitors.
+
+\subsection{The spotlight model as a first approximation}
+
+The classical spotlight metaphor says that attention selects a restricted spatial region. A compact mathematical version is a spatial gain field \(A(x)\) applied to a visual representation \(R(x)\):
 \[
 R_{\mathrm{att}}(x) = A(x)R(x).
 \]
-If the attended location is \(x_0\), a narrow focus can be written as
+The field \(A(x)\) tells us how strongly position \(x\) is weighted. If the attended location is \(x_0\), a narrow focus can be written as
 \[
 A(x)
 =
 1 + g\exp\left(-\frac{\|x-x_0\|^2}{2\sigma_A^2}\right).
 \]
-Here \(g\) is the strength of attentional gain, and \(\sigma_A\) is the size of the attended region.
+Here \(g\) is the strength of attentional gain, and \(\sigma_A\) is the width of the focus. Increasing \(g\) makes the selected region more influential; increasing \(\sigma_A\) broadens the attended area.
 
-This captures the basic idea of covert spatial attention: a location can receive more effective processing even if the eyes remain fixed elsewhere. But it is incomplete as a general theory. Attention can select features, objects, task rules, or global structure, not only regions of visual space. The spotlight is therefore useful as a first gain model, not as a complete account.
+This model is useful because it formalizes covert spatial attention: the eyes can remain fixed while a specific retinal region receives enhanced processing. But the lecture also makes clear that the spotlight is incomplete. It only selects in a spatial coordinate system. Feature-based and object-based attention require more flexible selection rules.
+
+\subsubsection{Early versus late selection}
+
+The spotlight metaphor also frames the old early-versus-late filtering debate. In an early-filter view, unattended information is blocked before deep processing. In a late-filter view, unattended information is processed further but given less weight in report, memory, or action.
+
+The lecture does not resolve that historical debate in an all-or-none way. Instead, the later models suggest a softer conclusion: attention often acts like a graded competition or gain modulation rather than a perfect gate that is either closed or open.
+
+\paragraph{Practical implication.}
+Use the spotlight model as a baseline gain model, not as a full theory. It is best for spatial cueing tasks and weakest when selection follows features, objects, or task templates.
+
+\subsection{Beyond space: feature-based and object-based selection}
+
+The lecture briefly points to two ways attention escapes a purely spatial description.
+
+In feature-based attention, the system preselects signals that share a relevant low-level feature. If the task is to find a green oblique bar, then green and oblique channels can be upweighted before any final target is chosen. This reduces the candidate set before object-level identification.
+
+In object-based attention, selection spreads within an object. If one part of an object is cued, other parts of the same object may inherit priority. The key variable is now object membership rather than Euclidean position.
+
+A compact way to write the difference is to let the attentional gain depend on a selection variable \(z\):
+\[
+R_{\mathrm{att}}(i) = A(z_i)R(i).
+\]
+If \(z_i\) is the location of item \(i\), this reduces to spatial attention. If \(z_i\) is a feature label or an object identity, the same gain idea applies in a different reference frame.
+
+This is why the lecture includes both retinal and object-centered coordinates. Useful selection often means transforming information into the coordinate system where the task is simple.
+
+\paragraph{Practical implication.}
+When a task is invariant to retinal position but tied to object identity, expect attention to be expressed in object-centered or feature-centered coordinates rather than as a fixed retinal spotlight.
+
+\subsection{Dynamic routing of information}
+
+The first explicit model family in the lecture is dynamic routing, following Olshausen and colleagues. Its aim is broader than simple saliency. It tries to explain how attention can dynamically rewire processing so that the same sensory input can be interpreted in different reference frames or routed toward different templates.
+
+A good mental model is a switchboard built from basis connections. The anatomy does not literally rewire on each trial. Instead, a control system changes which pre-existing connection pattern is currently active.
+
+\subsubsection{Basis connections and control variables}
+
+Let \(x_j\) denote input activity and \(y_i\) output activity. The effective connection from input unit \(j\) to output unit \(i\) is written as
+\[
+w_{ij} = \sum_k c_k\, w^{(k)}_{ij}.
+\]
+The matrices \(w^{(k)}_{ij}\) are fixed basis connections, and the control variables \(c_k\) choose how much each basis contributes.
+
+This equation says what is being varied. The synaptic basis \(w^{(k)}\) is stable; the control coefficients \(c_k\) are dynamic. Changing \(c_k\) changes the effective routing without changing the underlying hardware.
+
+The output is then
+\[
+y_i = \sum_j w_{ij}x_j = \sum_j \sum_k c_k w^{(k)}_{ij}x_j.
+\]
+So the control variables shape which aspects of the input are transmitted to the output and in what coordinate frame.
+
+\begin{figure}[!htbp]
+\centering
+\begin{tikzpicture}[>=Latex, thick, node distance=0.95cm and 1.2cm]
+    \tikzstyle{box}=[draw, rounded corners, align=center, minimum height=0.9cm, inner sep=5pt]
+    \node[box, minimum width=2.2cm] (input) {input\\retinal code};
+    \node[box, minimum width=3.0cm, right=of input] (basis) {basis connections\\\(w^{(1)},\dots,w^{(K)}\)};
+    \node[box, minimum width=2.5cm, above=of basis] (control) {control units\\\(c_1,\dots,c_K\)};
+    \node[box, minimum width=2.4cm, right=of basis] (output) {output\\task frame};
+
+    \draw[->] (input) -- (basis);
+    \draw[->] (basis) -- node[above] {effective routing} (output);
+    \draw[->] (control) -- node[right] {select mixture} (basis);
+\end{tikzpicture}
+\caption{Dynamic routing as a controlled mixture of basis connections. The basis weights are fixed, but the control variables \(c_k\) change which routing pattern is active, allowing the same retinal input to be expressed in a task-relevant output frame.}
+\end{figure}
+
+\subsubsection{Why the control must be consistent}
+
+If all control units were allowed to vary freely, the model could mix incompatible transformations at once. The lecture therefore imposes a consistency constraint: at a given time, the control state should correspond to one coherent routing hypothesis.
+
+In the strongest version, exactly one control unit is active at a time. A simple energy that penalizes simultaneous activation is
+\[
+E_{\mathrm{cons}} = \sum_{i,j} c_i T_{ij} c_j,
+\qquad
+T_{ij}=
+\begin{cases}
+1, & i\neq j,\\
+0, & i=j.
+\end{cases}
+\]
+The matrix \(T\) encodes mutual incompatibility. If several control units are active together, the energy increases. The minimum is obtained when the control state is sparse and consistent.
+
+Geometrically, this term pushes the control vector toward a corner of the simplex rather than a diffuse average of several contradictory transformations.
+
+\subsubsection{Matching the output to a template}
+
+The routing is chosen so that the output matches a target pattern \(P_i\). The lecture writes the matching term as
+\[
+E_{\mathrm{match}} = \sum_i y_i P_i.
+\]
+The qualitative role of this term is what matters: it scores how well the routed output aligns with the current template. In practice, one may think of the control system as minimizing a total objective
+\[
+E = E_{\mathrm{match}} + \eta E_{\mathrm{cons}},
+\]
+where \(\eta\) sets how strongly the system insists on a coherent routing state.
+
+The control variables evolve by gradient descent,
+\[
+\tau \dot c_k + c_k = -\frac{\partial E}{\partial c_k}.
+\]
+The time constant \(\tau\) sets how quickly control changes. The gradient term says that control flows downhill in the objective landscape. Different templates produce different downhill directions, so the same input can be routed differently depending on the current goal.
+
+\subsubsection{Bottom-up and top-down phases}
+
+The lecture describes two phases. In a bottom-up phase, the template is generic, for example a simple brightness blob. The system first finds a plausible candidate based on the sensory input. In a later top-down phase, the template is chosen from memory or task knowledge, and routing shifts toward the most behaviorally likely interpretation.
+
+This is the main conceptual gain of dynamic routing. It offers one framework in which bottom-up and top-down attention are not separate modules but different template choices within the same control dynamics.
+
+\paragraph{Practical implication.}
+For dynamic-routing models, always ask what the control variables are optimizing and in which coordinate frame the template is defined. Those two choices determine whether the model behaves like stimulus-driven capture or goal-driven selection.
 
 \subsection{Saliency maps}
 
-Saliency-map models ask which image location is locally distinctive. The key point is that saliency is not raw feature value; it is feature contrast. A red object is not automatically salient. It becomes salient when it is red among non-red objects.
+Saliency-map models answer a narrower question: given an image, which location is most locally distinctive? They do not try to explain all forms of attention. Their main target is early attentional capture and the first few fixation points.
+
+\subsubsection{Center-surround feature contrast}
 
 Let \(I(x,y)\) denote the image. A feature channel \(k\), such as intensity, color opponency, or orientation, is extracted by a multiscale filter:
 \[
 F_k(\cdot,\cdot,s) = h_{k,s} * I,
 \]
 where \(s\) is scale, \(h_{k,s}\) is a feature-selective filter, and \(*\) denotes convolution.
-
-\subsubsection{Center-surround contrast}
 
 For a center scale \(c\) and a larger surround scale \(s\), a feature-contrast map can be written as
 \[
@@ -100,7 +257,9 @@ F_k(x,y,c)
 \operatorname{resize}\!\left(F_k(\cdot,\cdot,s)\right)(x,y)
 \right|.
 \]
-This is the multiscale version of a center-surround operation. It compares a local measurement with the surrounding context. A continuous approximation is a difference-of-Gaussians contrast:
+This is the multiscale version of a center-surround comparison. The center measures what is present here; the surround measures what is present nearby. The absolute difference is large when the location is locally unusual.
+
+A continuous approximation is a difference-of-Gaussians contrast:
 \[
 D_k(x,y)
 \approx
@@ -112,12 +271,11 @@ D_k(x,y)
 \qquad
 \sigma_s > \sigma_c .
 \]
+The two scales determine what counts as local context. Increasing \(\sigma_s\) compares the center to a broader neighborhood and changes which structures count as salient.
 
-The intuition is direct. A single vertical bar among horizontal bars creates large orientation contrast. A uniformly vertical field has high vertical-feature activity but low contrast, so it does not pop out.
+\subsubsection{Normalization favors maps with a clear winner}
 
-\subsubsection{Normalization}
-
-The Itti--Koch model normalizes feature maps so that maps with one strong winner are emphasized over maps with many equivalent peaks. If \(M\) is a contrast map, first scale it to \([0,1]\):
+The Itti--Koch model normalizes feature maps so that maps with one strong peak are emphasized over maps with many equivalent peaks. If \(M\) is a contrast map, first scale it to \([0,1]\):
 \[
 \widetilde M = \frac{M-\min M}{\max M-\min M}.
 \]
@@ -128,9 +286,9 @@ Let \(m_{\max}\) be the global maximum of \(\widetilde M\), and let \(\bar m_{\m
 \widetilde M
 \left(m_{\max}-\bar m_{\mathrm{local}}\right)^2.
 \]
-The multiplicative factor is large when one peak dominates and small when many peaks are similar. This is why pop-out displays produce a strong saliency signal while serial-search displays often do not.
+The multiplicative factor is large when one location clearly dominates and small when many locations are equally strong. That is why the same raw feature energy can lead either to pop-out or to ambiguous serial search depending on the competition structure.
 
-\subsubsection{From feature maps to a master map}
+\subsubsection{From feature maps to a master saliency map}
 
 Feature maps are combined into conspicuity maps, and conspicuity maps are combined into a single master saliency map. For channel \(k\),
 \[
@@ -144,14 +302,14 @@ S(x,y)
 =
 \sum_k w_k\,\mathcal N(C_k)(x,y).
 \]
-In a purely bottom-up model, the weights \(w_k\) are fixed or uniform. Limited top-down influence can be added by increasing \(w_k\) for task-relevant feature channels. For example, a search for a green oblique bar can increase the weights for green and oblique features. This helps, but it is still weak compared with the semantic and goal-directed structure of real behavior.
+Each weight \(w_k\) tells us how much a channel contributes. In a purely bottom-up model, these weights are fixed. Limited top-down influence can be introduced by increasing \(w_k\) for task-relevant channels, for example if the subject is explicitly searching for a green oblique item.
 
 \begin{figure}[!htbp]
 \centering
 \begin{tikzpicture}[>=Latex, thick, node distance=0.8cm and 0.9cm]
     \tikzstyle{box}=[draw, rounded corners, align=center, minimum height=0.8cm, inner sep=5pt]
     \node[box] (image) {input image};
-    \node[box, below=of image] (filters) {multiscale\\linear filters};
+    \node[box, below=of image] (filters) {multiscale\\feature extraction};
     \node[box, below left=of filters] (color) {color\\maps};
     \node[box, below=of filters] (intensity) {intensity\\maps};
     \node[box, below right=of filters] (orient) {orientation\\maps};
@@ -185,11 +343,11 @@ In a purely bottom-up model, the weights \(w_k\) are fixed or uniform. Limited t
 
 \subsubsection{Winner-take-all and inhibition of return}
 
-The model selects the current priority peak:
+The current focus of attention is the saliency maximum,
 \[
 \ell_t = \operatorname*{arg\,max}_{(x,y)} S_t(x,y).
 \]
-After a location has been selected, inhibition of return reduces its local priority:
+The variable \(\ell_t\) is the location selected at time \(t\). To turn a static map into a sequence of attentional shifts, the model adds inhibition of return. After a location has been selected, its neighborhood is transiently suppressed:
 \[
 S_{t+1}(x,y)
 =
@@ -202,37 +360,47 @@ S_t(x,y)
 \qquad
 \gamma>0 .
 \]
-The next fixation or attentional shift is then selected from the updated map. This mechanism turns a static priority map into a sequence of visited locations.
+The amplitude \(\gamma\) controls how much the previously attended region is suppressed, and \(\sigma_{\mathrm{IOR}}\) controls the spatial extent of that suppression. Without inhibition of return, winner-take-all would repeatedly select the same maximum. With it, attention is encouraged to move to the next-best candidate.
 
-\subsubsection{What saliency maps explain}
+\subsubsection{What saliency maps do and do not explain}
 
-Saliency-map models explain early attentional capture by low-level features and qualitatively reproduce the pop-out versus serial-search distinction. They can also account for the first few fixation points in images with little task structure.
+Saliency maps explain attentional capture by low-level features and qualitatively reproduce the pop-out-versus-serial-search distinction. They are especially good at explaining the first few fixation points in simple scenes with low semantic structure.
 
-Their limitation is equally important. Later viewing behavior depends on personal relevance, task demands, object meaning, memory, and reward. The lecture's comparison between bottom-up saliency models and learned fixation predictors makes this point: modern CNN-based predictors can absorb more top-down regularities from human saccade data, but then the model is no longer a purely bottom-up saliency theory.
+Their limitation is equally instructive. Later viewing behavior depends strongly on task, memory, reward, and object meaning. A purely bottom-up saliency map cannot explain why a radiologist looks at one patch of an image, why a reader returns to a word, or why personal interest changes gaze.
+
+\paragraph{Practical implication.}
+Use saliency maps when the question is ``what captures attention early from the image alone?'' Do not expect them to explain long-range, goal-dependent viewing behavior without extra top-down structure.
 
 \subsection{Attention on the neural level}
 
-The second half of the lecture shifts from where attention goes to how attention changes neural responses. The empirical starting point is that neural responses are modulated by attention, and this modulation is stronger in higher visual areas such as V4 and IT than in early visual cortex.
+The second half of the lecture shifts from where attention goes to how it changes neural responses. The empirical starting point is simple: neural responses are modulated by attention, and the modulation tends to be stronger in higher visual areas such as V4 and IT than in earlier areas such as V1.
 
-A compact rate model writes the response of population \(i\) as
+A compact rate description is
 \[
 r_i = \phi(g_i s_i + b_i),
 \]
-where \(s_i\) is the sensory drive, \(g_i\) is a multiplicative gain, \(b_i\) is an additive bias, and \(\phi\) is a static nonlinearity. Attention can change gain, baseline, tuning width, or competition between populations. The biased-competition model focuses on the last of these.
+where \(s_i\) is the sensory drive to population \(i\), \(g_i\) is multiplicative gain, \(b_i\) is an additive bias, and \(\phi\) is a static nonlinearity. This equation is not yet a competition model. It only states the basic ways in which attention can alter a response: by scaling the input, shifting the baseline, or both.
 
-\subsection{Stimulus interactions and suppression}
+The lecture then asks what happens when several stimuli fall within the same receptive field or otherwise share downstream processing resources.
 
-When two stimuli appear inside the same receptive field, the response to the pair is not generally the sum of the responses to each stimulus alone. The lecture summarizes this with a suppression index:
+\subsubsection{Stimulus interactions and suppression}
+
+If two stimuli are shown together, the response to the pair is generally not the sum of the responses to each stimulus alone. A distractor can suppress the response to the preferred stimulus. The slides summarize this with a suppression index:
 \[
 \mathrm{SI}
 =
 100\frac{r_{\mathrm{pair}}-r_{\mathrm{best}}}{r_{\mathrm{best}}}.
 \]
-Here \(r_{\mathrm{best}}\) is the response to the preferred stimulus alone, and \(r_{\mathrm{pair}}\) is the response when the preferred and nonpreferred stimuli are shown together. If \(\mathrm{SI}<0\), the distractor suppresses the response to the preferred stimulus. This suppression is the neural signature of competition.
+Here \(r_{\mathrm{best}}\) is the response to the preferred stimulus alone, and \(r_{\mathrm{pair}}\) is the response when preferred and nonpreferred stimuli are shown together. Negative values mean that adding the distractor reduced the response. The more negative the index, the stronger the competition.
+
+This already suggests that attention cannot be understood as gain on isolated neurons alone. Once several candidate stimuli are active together, the relevant state variable is often the balance between competing populations.
+
+\paragraph{Practical implication.}
+When several stimuli share a receptive field, compare responses to each stimulus alone with the combined response. That residual is the direct signature of neural competition.
 
 \subsection{Biased competition}
 
-The biased-competition model says that stimuli activate neural populations, those populations inhibit one another, and top-down attention biases the competition toward the task-relevant population. Attention does not create the representation from nothing. It changes which active representation wins.
+The biased-competition model says that stimuli activate neural populations, those populations inhibit one another, and top-down attention biases the competition toward the task-relevant population. Attention does not create a representation from nothing. It changes which active representation wins.
 
 Let \(r_A(t)\) and \(r_X(t)\) be firing rates for populations representing stimuli \(A\) and \(X\). Let \(I_A\) and \(I_X\) be bottom-up sensory inputs, and let \(b_A\) and \(b_X\) be top-down attentional biases. A minimal two-population model is
 \[
@@ -249,34 +417,9 @@ Let \(r_A(t)\) and \(r_X(t)\) be firing rates for populations representing stimu
 +
 \phi\!\left(I_X+b_X+Er_X-Lr_A\right).
 \]
-The parameter \(E>0\) captures recurrent self-excitation, \(L>0\) captures lateral inhibition, and \(\tau\) is a time constant.
+The parameter \(E>0\) captures recurrent self-excitation, \(L>0\) captures lateral inhibition, and \(\tau\) is a time constant. Increasing \(E\) stabilizes an active representation; increasing \(L\) sharpens competition between the populations.
 
-If attention is directed to \(A\), then \(b_A>b_X\). The top-down signal tilts the competition toward the population representing \(A\). This is why the same physical display can produce different neural responses depending on the attended target.
-
-\subsubsection{Sum and difference variables}
-
-In the linear active regime, where \(\phi(z)=z\), the equilibrium obeys
-\[
-(1-E)r_A + Lr_X = I_A+b_A,
-\]
-\[
-Lr_A + (1-E)r_X = I_X+b_X.
-\]
-Adding the equations gives
-\[
-(1-E+L)(r_A+r_X)
-=
-I_A+I_X+b_A+b_X.
-\]
-If total sensory input and total attentional drive are held fixed, the sum of the rates is approximately constrained. This matches the lecture's emphasis on a roughly constant total activity in competitive dynamics.
-
-Subtracting the equations gives
-\[
-(1-E-L)(r_A-r_X)
-=
-(I_A-I_X)+(b_A-b_X).
-\]
-The difference \(b_A-b_X\) directly changes the difference between the competing population activities. This is the mathematical core of biased competition: attention can redistribute activity rather than simply increasing all responses.
+If attention is directed to \(A\), then \(b_A>b_X\). The same physical display can therefore produce different neural responses depending on which object is currently behaviorally relevant.
 
 \begin{figure}[!htbp]
 \centering
@@ -317,7 +460,47 @@ The difference \(b_A-b_X\) directly changes the difference between the competing
 
 \clearpage
 
-\subsubsection{Divisive normalization as a related form}
+\subsubsection{Why the sum of activity can stay roughly constant}
+
+In the linear active regime, where \(\phi(z)=z\), the equilibrium obeys
+\[
+(1-E)r_A + Lr_X = I_A+b_A,
+\]
+\[
+Lr_A + (1-E)r_X = I_X+b_X.
+\]
+Adding the equations gives
+\[
+(1-E+L)(r_A+r_X)
+=
+I_A+I_X+b_A+b_X.
+\]
+If total sensory input and total bias are roughly fixed, then the sum of the two firing rates is approximately constrained. This matches the lecture's qualitative point that competition often redistributes activity rather than simply increasing everything at once.
+
+Subtracting the equations gives
+\[
+(1-E-L)(r_A-r_X)
+=
+(I_A-I_X)+(b_A-b_X).
+\]
+This equation is the core of biased competition. The difference in top-down bias directly changes the difference between the competing rates. Attention therefore tilts the balance between active representations.
+
+\subsubsection{Cueing, delay activity, and target selection}
+
+The Chelazzi-style experiments from the lecture use a cue, a delay, and then a later display containing target and distractor stimuli. The key result is that neural responses to the same physical search array depend on which target was cued beforehand.
+
+The model interpretation is straightforward:
+\begin{itemize}
+    \item the cue establishes a working-memory state;
+    \item this state persists during the delay;
+    \item the later display activates multiple sensory populations;
+    \item recurrent excitation and shared inhibition create competition;
+    \item the remembered target supplies a bias that favors one competitor.
+\end{itemize}
+
+This is why the lecture pairs attention with working memory. The bias term is not mysterious. It is often the currently maintained task template.
+
+\subsubsection{Divisive normalization as a related formulation}
 
 A modern way to write competitive response modulation is divisive normalization:
 \[
@@ -327,32 +510,22 @@ R_{\max}
 \frac{(g_i I_i)^n}
 {\sigma^n+\sum_j(g_j I_j)^n}.
 \]
-The numerator is the drive to population \(i\). The denominator is a pooled activity term. Increasing the attentional gain \(g_i\) for one population increases its own response, but because all populations share the denominator, the change is relative to the rest of the population. This gives a clean mathematical bridge between attention, competition, and cortical normalization.
+The numerator is the drive to population \(i\), amplified by attentional gain \(g_i\). The denominator pools activity across populations, with \(\sigma\) preventing division by zero and setting the operating range. Increasing \(g_i\) boosts population \(i\), but because all populations share the denominator, the effect is inherently relative.
 
-\subsection{Cueing, delay activity, and target trials}
+This equation is useful because it turns a verbal claim into a quantitative one: attention changes responses under a normalization constraint. It is therefore another way of expressing biased competition in a population code.
 
-The Chelazzi-style experiments in the lecture use a cue, a delay, and a later display containing target and distractor stimuli. The important observation is that neural responses depend on which stimulus is behaviorally relevant, even when the physical stimulus display is the same.
+\paragraph{Practical implication.}
+When interpreting attentional modulation in neural data, look not only for gain increases but for redistribution under a shared normalization pool. That is often the real computational signature.
 
-The model interpretation is:
-\begin{itemize}
-    \item the cue establishes a working-memory state;
-    \item this state supplies a top-down bias during the delay and stimulus presentation;
-    \item the display activates multiple sensory populations;
-    \item recurrent excitation and inhibition create competition;
-    \item the bias favors the population representing the target.
-\end{itemize}
+\subsection{Relation to machine-learning attention}
 
-So attention is not merely a late verbal label attached to a response. It is a dynamical variable that changes the evolution of neural activity during competition.
-
-\subsection{Relation to transformer self-attention}
-
-The lecture briefly connects biological attention to self-attention in machine learning. Transformer attention computes
+The lecture briefly connects biological attention to modern machine-learning attention. Transformer self-attention computes
 \[
 \operatorname{Attention}(Q,K,V)
 =
 \operatorname{softmax}\!\left(\frac{QK^\top}{\sqrt d}\right)V.
 \]
-For token \(i\), this is
+For token \(i\), this becomes
 \[
 y_i
 =
@@ -360,39 +533,32 @@ y_i
 \qquad
 \alpha_{ij}
 =
-\frac{\exp(q_i^\top k_j/\sqrt d)}
-{\sum_m \exp(q_i^\top k_m/\sqrt d)}.
+\frac{\exp(q_i^\top k_j/\sqrt d)}{\sum_m \exp(q_i^\top k_m/\sqrt d)}.
 \]
-The analogy is useful but limited. Both biological attention and transformer attention involve normalized, context-dependent weighting of information sources. In transformers, query-key similarity determines which values are routed into the next representation. In biological visual attention, task state and sensory competition determine which neural populations receive priority.
+The weights \(\alpha_{ij}\) are normalized routing coefficients. They determine how strongly value vector \(v_j\) contributes to the updated representation \(y_i\).
 
-The mismatch is just as important. Transformer self-attention is not gaze, consciousness, or a literal cortical circuit. It usually has no explicit saccade policy, no inhibition of return, and no biological recurrent dynamics. The productive bridge is therefore not that transformers are brains, but that both systems use normalized selection to route limited representational resources.
+The analogy to biological attention is useful but limited. In both cases, information is selectively weighted rather than uniformly pooled. But transformer attention is not a literal saliency map or a cortical circuit. It has no necessary notion of fixation, inhibition of return, or cue-maintained working memory. The shared idea is normalized context-dependent routing, not identity of mechanism.
 
-\subsection{Frontier directions}
+\paragraph{Practical implication.}
+The productive comparison is computational rather than anatomical: both systems allocate limited representational influence through normalized weights, but they implement that allocation in very different physical and dynamical ways.
 
-The classical saliency model uses hand-designed channels: color, intensity, and orientation. A modern learned priority model replaces these by features learned from fixation data, task behavior, or large-scale visual training. The computational question changes from asking which hand-designed feature contrast is locally distinctive to asking which learned visual and task variables predict where an agent will sample next.
+\subsection{How the three model families fit together}
 
-Another frontier move is to replace winner-take-all selection with a probability distribution over fixations:
-\[
-p(\ell_t=x)
-=
-\frac{\exp(S(x)/T)}
-{\sum_{x'}\exp(S(x')/T)}.
-\]
-Low temperature \(T\) approximates hard winner-take-all. Higher temperature permits exploration. This connects attention to active vision and reinforcement learning, where a fixation is an action chosen for its expected information or reward.
+The lecture is easiest to remember if the three main model families are assigned different explanatory targets.
 
-At the circuit level, the frontier question is what the bias term \(b_i\) actually contains. It may combine prefrontal working-memory signals, parietal priority maps, thalamic routing, neuromodulatory gain, and task context:
-\[
-b_i(t)
-=
-b_i^{\mathrm{PFC}}(t)
-+
-b_i^{\mathrm{parietal}}(t)
-+
-b_i^{\mathrm{thalamic}}(t)
-+
-b_i^{\mathrm{neuromod}}(t).
-\]
-The simple biased-competition equation is therefore a compact abstraction of many mechanisms.
+\begin{center}
+\begin{tabular}{lp{0.62\textwidth}}
+\hline
+Model family & Main question it answers \\
+\hline
+Dynamic routing & How can control variables reconfigure processing so that the same input is interpreted in different task-relevant reference frames? \\
+Saliency maps & Which image location should capture attention first on the basis of low-level feature contrast? \\
+Biased competition & How does attention change neural responses when several stimuli are active and compete within a shared circuit? \\
+\hline
+\end{tabular}
+\end{center}
+
+Seen this way, the models are complementary rather than mutually exclusive. A task can begin with bottom-up saliency, continue with top-down routing by a template, and end with biased competition inside a cortical population.
 
 \subsection{Summary of concepts introduced in Lecture 2}
 
@@ -401,9 +567,13 @@ The simple biased-competition equation is therefore a compact abstraction of man
 \hline
 Concept & Role in the lecture \\
 \hline
+Covert attention & priority shift without an eye movement \\
+Endogenous attention & top-down, voluntary control by the current task \\
+Exogenous attention & bottom-up, stimulus-driven capture \\
 Pop-out & near-flat reaction-time slope caused by a unique low-level priority peak \\
 Serial search & positive reaction-time slope when attention must inspect items sequentially \\
 Spotlight model & spatial gain field over a visual representation \\
+Dynamic routing & controlled reconfiguration of effective connectivity through control variables \\
 Saliency map & master priority map built from normalized feature contrasts \\
 Center-surround contrast & local feature value compared with surrounding context \\
 Inhibition of return & suppression of recently attended locations to support sequential exploration \\
@@ -420,21 +590,25 @@ Transformer attention & normalized routing analogy, not a literal biological mec
 \begin{itemize}
     \item Attention is best treated as a family of selection mechanisms, not as one process.
     \item Saliency depends on contrast relative to context, not on raw feature magnitude.
-    \item Pop-out and serial search differ behaviorally because their priority landscapes differ.
-    \item Saliency-map models explain early bottom-up capture but are limited for task-rich and semantic behavior.
-    \item Biased competition explains why the same stimulus can evoke different neural responses depending on the attended target.
-    \item Top-down attention can redistribute activity under a competition or normalization constraint rather than simply increasing all firing rates.
-    \item The bridge to modern machine learning is normalized, context-dependent routing; the gap is that biological attention is embodied, recurrent, and action-linked.
+    \item Pop-out and serial search differ because their priority landscapes differ.
+    \item Dynamic routing explains how top-down and bottom-up control can be expressed as different template choices over a shared set of basis connections.
+    \item Saliency-map models explain early attentional capture but are limited when task meaning and memory dominate behavior.
+    \item Biased competition explains why the same stimulus can evoke different neural responses depending on which object is currently relevant.
+    \item In neural populations, attention often redistributes activity under a competition or normalization constraint rather than simply increasing all firing rates.
+    \item The bridge to modern machine learning is normalized routing; the gap is that biological attention is embodied, recurrent, and tied to perception and action.
 \end{itemize}
 
 \subsection*{Sources mentioned in Lecture 2}
 
 \begin{itemize}
+    \item W. James (1890), \emph{The Principles of Psychology}.
+    \item B. A. Olshausen, C. H. Anderson, and D. C. Van Essen (1993), work on dynamic routing and attention.
     \item C. Koch and S. Ullman (1985), ``Shifts in selective visual attention: towards the underlying neural circuitry,'' \emph{Human Neurobiology}.
     \item L. Itti, C. Koch, and E. Niebur (1998), ``A model of saliency-based visual attention for rapid scene analysis,'' \emph{IEEE Transactions on Pattern Analysis and Machine Intelligence}.
     \item R. Desimone and J. Duncan (1995), ``Neural mechanisms of selective visual attention,'' \emph{Annual Review of Neuroscience}.
+    \item E. K. Miller, L. Gochin, and C. G. Gross (1993), work on suppressive interactions between stimuli.
     \item M. Usher and E. Niebur (1996), ``Modeling the temporal dynamics of IT neurons in visual search,'' \emph{Neurocomputing}.
-    \item L. Chelazzi and colleagues (1998), experiments on attention, memory, and competition in visual cortex.
+    \item L. Chelazzi and colleagues (1998), experiments on attention, working memory, and competition in visual cortex.
     \item C. J. McAdams and J. H. R. Maunsell (1999), work on attentional modulation in visual cortex.
     \item A. Vaswani and colleagues (2017), ``Attention is all you need,'' \emph{NeurIPS}.
     \item G. W. Lindsay (2020), review on attention in psychology, neuroscience, and machine learning.

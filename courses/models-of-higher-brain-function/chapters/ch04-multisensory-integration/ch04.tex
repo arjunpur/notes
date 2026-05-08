@@ -1,0 +1,359 @@
+\section{Lecture 3: Multisensory Integration}
+
+This lecture joins two themes that look different on the surface but share the same computational core. The first theme is \emph{perceptual bistability}: one fixed sensory input can support several perceptual interpretations, and the perceived state can switch over time. The second theme is \emph{multisensory integration}: several noisy sensory measurements are combined into one estimate of a hidden property of the world. In both cases, the key variable is not the stimulus itself but the latent hypothesis the brain currently endorses.
+
+A helpful summary is this: bistability emphasizes \emph{competition between interpretations}, whereas multisensory integration emphasizes \emph{reliability-weighted fusion of cues}. The lecture therefore extends the course-wide idea that perception is inference over hidden variables rather than a literal copy of the sensory input.
+
+\subsection{Perceptual bistability as competition between interpretations}
+
+Bistable perception occurs when a single stimulus is compatible with more than one stable interpretation. Classic examples include ambiguous figures and binocular rivalry. In binocular rivalry, different images shown to the two eyes do not simply fuse into one averaged percept. Instead, one percept dominates for a while, then another takes over.
+
+A minimal population model introduces one activity variable for each candidate percept. Let \(r_A\) and \(r_B\) denote the activities of populations representing percepts \(A\) and \(B\). A standard competitive architecture is
+\[
+\tau_r \dot r_A = -r_A + \phi(I_A - \beta r_B - a_A + \xi_A),
+\]
+\[
+\tau_r \dot r_B = -r_B + \phi(I_B - \beta r_A - a_B + \xi_B).
+\]
+Here \(I_A\) and \(I_B\) are stimulus drives, \(\beta>0\) is mutual inhibition, \(a_A\) and \(a_B\) are adaptation terms, and \(\xi_A,\xi_B\) are noise terms.
+
+Each piece has a clear interpretation:
+\begin{itemize}
+    \item the sensory drives favor one interpretation or the other;
+    \item mutual inhibition prevents both interpretations from winning strongly at the same time;
+    \item adaptation slowly weakens the currently dominant percept;
+    \item noise makes the timing of switches variable.
+\end{itemize}
+
+The lecture uses this family of models to explain why switching can happen even when the external stimulus is constant.
+
+\subsection{Mechanism 1: adaptation-driven switching}
+
+The most direct deterministic explanation for perceptual switching is adaptation. Whichever percept dominates for long enough accumulates an internal penalty. This can be interpreted either as neuronal fatigue or as synaptic depression, but the computational effect is similar: persistent dominance becomes self-limiting.
+
+A simple adaptation dynamics is
+\[
+\tau_a \dot a_A = -a_A + \alpha r_A,
+\qquad
+\tau_a \dot a_B = -a_B + \alpha r_B,
+\qquad
+\tau_a \gg \tau_r.
+\]
+The crucial point is the separation of time scales. The rates \(r_A,r_B\) respond quickly, while the adaptation variables \(a_A,a_B\) evolve slowly. If percept \(A\) dominates, then \(a_A\) gradually builds up and eventually reduces the net drive to \(A\) enough for percept \(B\) to take over.
+
+This already explains an important lesson from the lecture: perceptual switching need not require any change in the stimulus. Hidden internal state variables can force alternation under fixed input.
+
+\subsubsection{Oscillator intuition}
+
+When adaptation is strong and noise is weak, the system behaves like an oscillator. One percept dominates, adaptation builds against it, the state loses stability, and the competing percept becomes dominant. The same cycle then repeats in the opposite direction.
+
+A reduced intuition can be written using a dominance difference \(d=r_A-r_B\) and an adaptation difference \(z=a_A-a_B\):
+\[
+\tau_r \dot d = F(d,z),
+\qquad
+\tau_a \dot z = -z + \alpha d.
+\]
+Because \(\tau_a\gg\tau_r\), the fast perceptual state quickly settles to one branch of the dynamics while the slow adaptation variable drifts until the branch can no longer support dominance. This is why oscillator-style models generate regular alternations.
+
+\subsection{Mechanism 2: noise-driven switching}
+
+A second explanation says that the system occupies one of several metastable states and that random fluctuations occasionally push it from one to another. In that picture, the noise terms are not minor perturbations; they are essential causes of transitions.
+
+A convenient one-dimensional description introduces an effective energy landscape \(E(r)\) over a decision coordinate \(r\):
+\[
+\tau \dot r = -\frac{dE}{dr} + \sigma \eta(t),
+\]
+where \(\eta(t)\) is white noise. The deterministic term pulls the state toward a local minimum, while the stochastic term can occasionally push the state over the barrier that separates two minima.
+
+\begin{figure}[!htbp]
+\centering
+\begin{tikzpicture}[>=Latex, thick]
+    \begin{axis}[
+        width=0.72\textwidth,
+        height=5.2cm,
+        xlabel={decision coordinate \(r\)},
+        ylabel={energy \(E(r)\)},
+        xmin=-2.2, xmax=2.2,
+        ymin=-0.2, ymax=2.6,
+        xtick={-1.2,0,1.2},
+        xticklabels={A on,,B on},
+        ytick={0,1,2},
+        axis lines=left,
+        every axis plot/.append style={line width=1.2pt}
+    ]
+        \addplot[black, domain=-2:2, samples=201] {0.35*(x^4) - 1.0*(x^2) + 1.6};
+        \addplot[dashed] coordinates {(-1.2,0.16) (-1.2,1.15)};
+        \addplot[dashed] coordinates {(1.2,0.16) (1.2,1.15)};
+        \addplot[dashed] coordinates {(0,1.6) (0,2.3)};
+        \node at (axis cs:0,2.15) {barrier};
+    \end{axis}
+\end{tikzpicture}
+\caption{Noise-driven bistability in an energy picture. The two minima correspond to competing percepts. Deterministic dynamics relaxes toward a minimum, while noise occasionally drives the state over the barrier and produces a perceptual switch.}
+\end{figure}
+
+This model explains why strongly fluctuating neural activity can cause switching even when adaptation alone would not force a transition.
+
+\subsubsection{Why pure noise predicts exponential durations}
+
+If the escape rate from the current attractor is approximately constant in time, then switching is close to a Poisson process. The resulting dominance durations are exponential:
+\[
+P(T>t)=e^{-\lambda t},
+\qquad
+p(T)=\lambda e^{-\lambda t}.
+\]
+The parameter \(\lambda\) is a hazard rate: the probability per unit time of leaving the current percept, given that it has persisted so far.
+
+This distribution is memoryless. The chance of switching in the next instant does not depend on how long the current percept has already lasted. The lecture uses this to motivate why pure noise is usually not the full story.
+
+\subsection{Why Gamma-like percept durations matter}
+
+Empirically, percept durations are often fit better by a Gamma distribution than by a pure exponential law:
+\[
+P(T)=\frac{1}{\Gamma(k)\theta^k}T^{k-1}e^{-T/\theta},
+\qquad T>0.
+\]
+Its mean and variance are
+\[
+\mathbb E[T]=k\theta,
+\qquad
+\mathrm{Var}(T)=k\theta^2.
+\]
+For \(k=1\), the distribution reduces to the exponential case. For \(k>1\), the durations become less memoryless and develop a more pronounced mode.
+
+This matters because it tells us something about the hidden mechanism. If durations were nearly periodic, pure adaptation would look sufficient. If they were exactly exponential, pure noise would look sufficient. Gamma-like variability suggests a combination: adaptation changes the underlying hazard over time, while noise still determines the exact switch moment.
+
+\subsection{Adaptation plus noise as the robust explanation}
+
+The lecture's most convincing synthesis is that adaptation and noise solve different parts of the switching problem. Adaptation introduces a slow drift that makes the currently dominant percept increasingly fragile. Noise introduces variability around that drift.
+
+In the energy picture, one can write
+\[
+E(r,t)=E_0(r)+E_{\mathrm{adapt}}(r,t).
+\]
+As adaptation accumulates, the currently occupied well becomes shallower and the barrier to the alternative percept becomes easier to cross. A useful rate approximation is
+\[
+\lambda(t) \propto \exp\!\left(-\frac{\Delta E(t)}{\sigma^2}\right),
+\]
+where \(\Delta E(t)\) is the current barrier height. As adaptation grows, \(\Delta E(t)\) decreases, so the switching hazard increases over time.
+
+The practical implication is that perceptual switching is informative: it reveals hidden state variables such as fatigue, inhibition, and uncertainty that are not visible in the sensory input itself.
+
+\subsection{Bayesian sampling views of bistability}
+
+A different but compatible perspective says that the percept at any moment is a sample from a posterior distribution over interpretations. Let \(h\) denote a latent hypothesis and \(s\) the stimulus. Then
+\[
+P(h\mid s) \propto P(s\mid h)P(h).
+\]
+If the posterior over \(h\) is multimodal, then several interpretations remain plausible. A sampling process can spend long intervals near one posterior mode and then transition to another.
+
+This provides a conceptual bridge between dynamical-systems language and probabilistic inference. An attractor basin in neural state space can implement one high-probability region of a posterior. In that sense, bistability can be viewed either as competition between dynamical attractors or as sequential exploration of a multimodal posterior.
+
+\subsection{Multisensory integration as inference over a hidden cause}
+
+The second half of the lecture shifts to cue combination. When vision and touch both provide information about object size, the computational question is not simply how to average the raw measurements. The question is how to infer a hidden world variable from several noisy observations.
+
+Let \(h\) denote the hidden property of interest, for example object size. Let \(s_1\) and \(s_2\) denote sensory observations from two modalities. A generative model factorizes the joint distribution as
+\[
+P(s_1,s_2,h)=P(s_1,s_2\mid h)P(h).
+\]
+Under conditional independence of the modalities given the hidden cause,
+\[
+P(s_1,s_2\mid h)=P(s_1\mid h)P(s_2\mid h).
+\]
+Bayes' rule then gives
+\[
+P(h\mid s_1,s_2)=\frac{P(s_1\mid h)P(s_2\mid h)P(h)}{P(s_1,s_2)}.
+\]
+
+Each term has a direct interpretation:
+\begin{itemize}
+    \item \(P(h)\) is the prior expectation about plausible hidden states;
+    \item \(P(s_i\mid h)\) describes how modality \(i\) behaves if the hidden state were \(h\);
+    \item the posterior combines prior expectation and current evidence.
+\end{itemize}
+
+\begin{figure}[!htbp]
+\centering
+\begin{tikzpicture}[>=Latex, thick, node distance=1.4cm and 1.8cm]
+    \tikzstyle{box}=[draw, rounded corners, align=center, minimum height=0.9cm, inner sep=5pt]
+    \node[box] (prior) {prior\\\(P(h)\)};
+    \node[box, below=1.6cm of prior] (hidden) {hidden cause\\\(h\)};
+    \node[box, below left=1.5cm and 2.0cm of hidden] (s1) {modality 1\\\(s_1\)};
+    \node[box, below right=1.5cm and 2.0cm of hidden] (s2) {modality 2\\\(s_2\)};
+    \node[box, right=3.0cm of hidden] (post) {posterior\\\(P(h\mid s_1,s_2)\)};
+
+    \draw[->] (prior) -- (hidden);
+    \draw[->] (hidden) -- node[left] {\(P(s_1\mid h)\)} (s1);
+    \draw[->] (hidden) -- node[right] {\(P(s_2\mid h)\)} (s2);
+    \draw[->] (hidden) -- (post);
+    \draw[->] (s1) -- (post);
+    \draw[->] (s2) -- (post);
+\end{tikzpicture}
+\caption{A generative view of multisensory integration. A hidden cause generates noisy observations in several modalities, and inference runs backward from sensory cues to a posterior over the hidden state.}
+\end{figure}
+
+The key lesson is that cue combination is an inference problem, not merely an averaging trick.
+
+\subsection{Gaussian cues and the maximum-likelihood estimate}
+
+The lecture focuses on the simplest analytically tractable case. Assume a flat prior over the relevant range,
+\[
+P(h)=\text{const},
+\]
+and Gaussian likelihoods,
+\[
+P(s_i\mid h)=\frac{1}{\sqrt{2\pi\sigma_i^2}}\exp\left(-\frac{(s_i-h)^2}{2\sigma_i^2}\right).
+\]
+The variance \(\sigma_i^2\) measures the unreliability of modality \(i\). Small variance means high reliability.
+
+With a flat prior, maximizing the posterior is equivalent to maximizing the likelihood. The log-likelihood is
+\[
+\log P(s_1,s_2\mid h)
+=
+-\frac{(s_1-h)^2}{2\sigma_1^2}
+-\frac{(s_2-h)^2}{2\sigma_2^2}
++\text{const}.
+\]
+Differentiating with respect to \(h\) and setting the result to zero gives
+\[
+\frac{h-s_1}{\sigma_1^2}+\frac{h-s_2}{\sigma_2^2}=0.
+\]
+Solving yields the maximum-likelihood estimate
+\[
+\hat h = \frac{p_1 s_1 + p_2 s_2}{p_1+p_2},
+\qquad
+p_i=\frac{1}{\sigma_i^2}.
+\]
+
+This is one of the main formulas of the lecture. The combined estimate is a weighted average, but the weights are not arbitrary. They are the cue precisions, i.e. inverse variances.
+
+\subsubsection{Interpreting the precision weights}
+
+Writing the estimate as
+\[
+\hat h = w_1 s_1 + w_2 s_2,
+\qquad
+w_i=\frac{p_i}{p_1+p_2},
+\qquad
+w_1+w_2=1,
+\]
+makes the intuition explicit. If \(\sigma_1^2\ll\sigma_2^2\), then \(p_1\gg p_2\), so modality 1 dominates the estimate. If the two cue variances are equal, then both modalities receive equal weight.
+
+This explains why vision can dominate touch when visual noise is low, and why haptic information can take over when visual noise is increased enough.
+
+\subsubsection{Why integration should reduce uncertainty}
+
+Combining cues should not only change the mean estimate. It should also make the final estimate more precise. For independent Gaussian cues, precisions add:
+\[
+p_{1+2}=p_1+p_2,
+\qquad
+\sigma_{1+2}^2=\frac{1}{p_1+p_2}.
+\]
+Because \(p_1+p_2>p_i\) for either single cue alone, the integrated estimate has smaller variance than either unimodal estimate.
+
+This is the main psychophysical prediction of optimal integration: the bimodal estimate should both reweight the cues correctly and outperform each single cue in discrimination precision.
+
+\subsection{Psychometric functions, PSEs, and thresholds}
+
+The lecture connects the theory to psychophysics. Suppose a subject judges whether a comparison object is larger than a standard. Across many trials, the proportion of ``comparison is larger'' responses defines a psychometric curve.
+
+A standard model is
+\[
+P(\text{respond ``comparison larger''}\mid x)
+=
+\Phi\left(\frac{x-\mu}{\sigma_{\mathrm{psy}}}\right),
+\]
+where \(x\) is the comparison value, \(\Phi\) is the Gaussian cumulative distribution function, \(\mu\) is the point of subjective equality (PSE), and \(\sigma_{\mathrm{psy}}\) controls the slope.
+
+These parameters have direct meanings:
+\begin{itemize}
+    \item the \textbf{PSE} tells us which comparison value feels equal to the standard, so PSE shifts reveal cue weighting and perceptual bias;
+    \item the \textbf{threshold} is related to the inverse slope, so a smaller threshold means finer discrimination.
+\end{itemize}
+
+The theory therefore predicts two measurable effects when cue reliability changes:
+\begin{itemize}
+    \item the more reliable cue should receive more weight, shifting the PSE appropriately;
+    \item the bimodal threshold should improve relative to either unimodal threshold.
+\end{itemize}
+
+\subsection{The Ernst and Banks result}
+
+The lecture discusses the classic visual--haptic experiments of Ernst and Banks. Subjects judged object properties in conditions where visual reliability could be manipulated while haptic reliability remained available. The experiment followed a clean logic:
+\begin{enumerate}
+    \item measure unimodal visual thresholds at several visual noise levels;
+    \item measure unimodal haptic thresholds;
+    \item convert those thresholds into variance or precision estimates;
+    \item predict the bimodal weights and thresholds from the maximum-likelihood rule;
+    \item compare the predictions with observed bimodal behavior.
+\end{enumerate}
+
+The central result is that humans often combine visual and haptic information in a statistically near-optimal way. As visual noise increases, the visual weight decreases and the haptic weight increases. The combined threshold is typically close to the value predicted by the sum of unimodal precisions.
+
+This makes the theory experimentally meaningful: the precision-weighted fusion rule is not just mathematically convenient, it is behaviorally testable.
+
+\subsection{When the cues disagree too much}
+
+The precision-weighted average assumes that the cues arise from the same hidden cause and should therefore be fused. But this assumption can fail. If the visual and haptic cues disagree too strongly, the more important question is not how to weight them but whether they should be integrated at all.
+
+A robust formulation introduces a latent causal variable \(C\) indicating whether the cues share a common source:
+\[
+P(h,C\mid s_1,s_2) \propto P(s_1,s_2\mid h,C)P(h\mid C)P(C).
+\]
+Under \(C=1\), the cues are fused. Under \(C=0\), they are treated as arising from distinct causes and may be kept separate or one may be discounted.
+
+The conceptual lesson is important: optimal fusion is the right rule only \emph{after} deciding that the cues belong together. Causal inference decides whether fusion should happen in the first place.
+
+\subsection{A unifying bridge between bistability and cue integration}
+
+At first glance, bistability and multisensory integration seem like unrelated topics. One is about switching between percepts and the other about averaging cues. The deeper connection is that both are inference problems over latent variables.
+
+\begin{itemize}
+    \item In bistability, the latent variable is the current perceptual interpretation, and the posterior may be multimodal.
+    \item In multisensory integration, the latent variable is a continuous world property, and the posterior is often treated as unimodal once the cues are assumed to share a common cause.
+\end{itemize}
+
+The posterior shape determines the computational regime. A multimodal posterior encourages switching, sampling, or model selection. A narrow unimodal posterior encourages stable estimation by reliability-weighted averaging. The two halves of the lecture are therefore two versions of the same theme: hidden-state inference under uncertainty.
+
+\subsection{Summary of concepts introduced in Lecture 3}
+
+\begin{center}
+\begin{tabular}{lp{0.62\textwidth}}
+\hline
+Concept & Role in the lecture \\
+\hline
+Mutual inhibition & prevents incompatible percepts from being strongly active at the same time \\
+Adaptation & slowly weakens the currently dominant percept and promotes switching \\
+Noise-driven escape & random fluctuations push the state across an attractor barrier \\
+Gamma duration law & captures irregular but non-memoryless percept durations \\
+Posterior sampling & interprets percepts as samples from a multimodal posterior \\
+Generative model & specifies how hidden causes produce multisensory observations \\
+Precision & inverse variance; determines cue reliability and weighting \\
+Maximum-likelihood estimate & precision-weighted average of sensory measurements under Gaussian noise \\
+PSE & psychophysical marker of subjective equality and cue weighting \\
+Threshold improvement & behavioral signature that integrated cues reduce uncertainty \\
+Causal inference & decides whether discrepant cues should be fused at all \\
+\hline
+\end{tabular}
+\end{center}
+
+\subsection{Conceptual takeaways from Lecture 3}
+
+\begin{itemize}
+    \item Perception is an inference problem over hidden variables, not a direct copy of the stimulus.
+    \item Bistability reveals internal dynamics because several interpretations remain plausible under the same input.
+    \item Adaptation and noise solve different parts of the switching problem and are often both needed.
+    \item Multisensory fusion under Gaussian uncertainty leads to a precision-weighted average rather than an arbitrary blend.
+    \item Optimal integration predicts both the relative \emph{weights} of cues and the reduced \emph{variance} of the combined estimate.
+    \item Large cue discrepancies require causal inference, because the first question becomes whether the cues should be fused at all.
+\end{itemize}
+
+\subsection*{Sources mentioned in Lecture 3}
+
+\begin{itemize}
+    \item C. R. Laing and C. C. Chow (2002), oscillator-style models of binocular rivalry with adaptation.
+    \item J. Brascamp and colleagues (2005), measurements of percept-duration statistics in bistable perception.
+    \item R. Moreno-Bote, J. Rinzel, and N. Rubin (2007), adaptation-plus-noise accounts of perceptual switching.
+    \item S. J. Gershman, E. Vul, and J. B. Tenenbaum (2012), Bayesian sampling perspectives on cognition and perception.
+    \item M. O. Ernst and M. S. Banks (2002), ``Humans integrate visual and haptic information in a statistically optimal fashion,'' \emph{Nature}.
+\end{itemize}
