@@ -1,0 +1,145 @@
+\section{Lecture 7: Network Science and Physical Constraints}
+
+\subsection{Graphs as a Language for Computation}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=\textwidth]{network-science-constraints.png}
+  \caption{A raster teaching plate for graph and physical-constraint thinking. Nodes and edges define computation routes. Modules create local clusters. Hubs and shortcuts reduce graph distance but can become bottlenecks. Spatial embedding makes long wires expensive. Regularizers can remove unnecessary long connections while preserving task-relevant communication.}
+  \label{fig:network-science}
+\end{figure}
+
+A neural network is already a graph. Neurons, channels, tokens, experts, layers, chips, and servers can all be represented as nodes. Edges represent information flow, communication links, dependencies, or physical wires.
+
+Network science gives vocabulary for structure:
+
+\begin{itemize}[leftmargin=*]
+  \item \textbf{sparsity}: few edges relative to possible edges;
+  \item \textbf{degree}: number of edges incident to a node;
+  \item \textbf{hub}: a high-degree or high-traffic node;
+  \item \textbf{module}: a cluster with dense internal connections;
+  \item \textbf{path length}: number or cost of steps between nodes;
+  \item \textbf{small-world structure}: high local clustering plus a few long shortcuts;
+  \item \textbf{communicability}: how easily signals can move through the graph.
+\end{itemize}
+
+\begin{aside}[Core workflow]
+Represent the model or system as a graph, embed the graph in a space or hardware topology, assign costs to edges, and then ask which edges are worth paying for. The graph is not only a picture; it is a constraint model.
+\end{aside}
+
+\subsection{Why Physical Embedding Matters}
+
+In a purely mathematical graph, connecting any two nodes costs the same. In hardware and biology, distance matters. A long wire consumes area, delay, energy, and routing resources. A cross-chip message consumes network bandwidth and synchronization time. A remote memory access can be far more expensive than a local arithmetic operation.
+
+This turns architecture into constrained optimization. We do not merely ask, ``Can every part talk to every other part?'' We ask, ``Which communication is worth its cost?''
+
+\begin{keyequation}[Wiring-aware objective]
+\[
+  L(\theta)
+  =
+  L_{\text{task}}(\theta)
+  +
+  \lambda
+  \sum_{(i,j) \in E}
+    |w_{ij}| \, d(i,j).
+\]
+\tcblower
+The first term trains the task. The second penalizes strong long-distance connections. \(d(i,j)\) can be physical distance, communication latency, energy estimate, or network cost.
+\end{keyequation}
+
+\subsection{Modularity}
+
+Modularity means a network contains subgraphs that communicate more internally than externally. This is useful when subtasks have structure. A vision module can process local spatial features. A routing module can select experts. A memory module can store retrieval states.
+
+Modularity helps hardware because local communication is cheaper than global communication. But too much modularity can isolate information. The useful design is often local specialization plus a small number of carefully chosen long-range paths.
+
+This is the same tradeoff that appears in neural data analysis when choosing a representation. If the representation is too local, it misses global structure. If it is too global, it hides the mechanisms that made the signal. Graph design has the same tension: local modules make computation cheap and interpretable, but some tasks require long-range integration.
+
+\subsection{Small-World Structure}
+
+Small-world graphs combine clustered local neighborhoods with shortcuts. This is powerful because local clusters support specialized processing, while shortcuts keep global path length small.
+
+In hardware terms, a shortcut is not free. It might be a long wire, a cross-chip link, or a network route. The design problem is to buy a few shortcuts that dramatically improve communication while avoiding dense global connectivity.
+
+\subsection{Hubs and Bottlenecks}
+
+Hubs can make routing efficient, but they can also become bottlenecks. In a neural architecture, a hub might be:
+
+\begin{itemize}[leftmargin=*]
+  \item a shared attention token,
+  \item an expert that receives too many routed tokens,
+  \item a parameter server,
+  \item a memory bank,
+  \item an interconnect switch,
+  \item a CPU coordinator.
+\end{itemize}
+
+When profiling, a hub often appears as a saturated link, a busy queue, a hot device, or a synchronization point. Graph vocabulary helps you see that the bottleneck is structural, not accidental.
+
+\subsection{Implementing Structural Regularizers}
+
+Suppose each unit \(i\) has a spatial position \(p_i \in \mathbb{R}^2\). A simple connection-cost penalty is:
+\[
+  L_{\text{wire}} =
+  \sum_{i,j} |W_{ij}| \, \|p_i - p_j\|_2.
+\]
+
+In PyTorch-like pseudocode:
+
+\begin{lstlisting}[language=Python, caption={A schematic wiring-cost regularizer.}]
+def wiring_cost(weight, positions):
+    # weight: [n, n]
+    # positions: [n, 2]
+    delta = positions[:, None, :] - positions[None, :, :]
+    distance = delta.pow(2).sum(dim=-1).sqrt()
+    return (weight.abs() * distance).sum()
+
+loss = task_loss + lambda_wire * wiring_cost(W, positions)
+\end{lstlisting}
+
+This is only a starting point. More realistic penalties can include routing congestion, module boundaries, communication frequency, directionality, or energy models. The point is that graph structure becomes part of the objective.
+
+\subsection{A Diagnostic for Graph Constraints}
+
+After training a constrained model, inspect:
+\begin{enumerate}
+  \item the distribution of edge lengths,
+  \item which modules communicate most frequently,
+  \item whether high-degree hubs dominate traffic,
+  \item whether pruning long edges damages task performance,
+  \item whether the learned graph maps naturally onto the intended hardware.
+\end{enumerate}
+
+These diagnostics are more informative than the final loss alone. A model can achieve good loss by routing everything through a hub that would be physically expensive or fragile.
+
+\subsection{Connection to Spatially Embedded Models}
+
+Spatially embedded recurrent networks and pathway-routing models make this idea explicit. The model is not a fully abstract graph. Units have positions. Connections have cost. Communication patterns are part of the inductive bias. If the task can be solved with local processing and a few long-range routes, the learned architecture may become sparse, modular, and physically plausible.
+
+This connects directly to heterogeneous hardware. If a model learns modules that communicate frequently inside themselves and rarely across modules, those modules can be placed on different hardware islands with lower communication cost.
+
+\subsection{Next steps}
+
+For this chapter, the mathematical object is a graph with edge costs. The empirical diagnostic is traffic through edges, hubs, and modules after training or during serving. The failure mode is learning a graph that is sparse in parameters but expensive in communication.
+
+\begin{chaptersummary}
+\begin{itemize}[leftmargin=*]
+  \item Graph vocabulary makes communication structure explicit.
+  \item Physical distance turns edges into costs.
+  \item Sparse modular networks can reduce communication, but hubs and shortcuts must be managed.
+  \item Regularizers can impose wiring, spatial, energy, or communication constraints.
+  \item Model graph structure and hardware placement should be designed together.
+\end{itemize}
+\end{chaptersummary}
+
+\begin{conceptquestions}
+\item Why is a fully connected graph unrealistic for physical hardware?
+\item How can a hub be both useful and dangerous?
+\item What does a wiring-cost regularizer encourage a model to learn?
+\end{conceptquestions}
+
+\begin{exercises}
+\item Write a wiring-cost penalty for a network embedded on a one-dimensional line instead of a two-dimensional plane. What changes?
+\item Draw two graphs with the same number of edges: one modular and one hub-dominated. Which is more robust to removing one node? Which may have shorter paths?
+\item Consider an MoE model as a graph from tokens to experts. What would edge cost mean in this graph?
+\end{exercises}

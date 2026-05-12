@@ -1,0 +1,148 @@
+\section{Lecture 5: Heterogeneous Compute and Systems Thinking}
+
+\subsection{Why One Chip Is Not the Whole System}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=\textwidth]{heterogeneous-routing.png}
+  \caption{A heterogeneous AI system as a routing problem. The scheduler sees requests, queues, data locality, cost, latency, and fairness. Work can go to CPU hosts, GPU clusters, TPU-like pods, wafer-scale engines, FPGA pipelines, neuromorphic processors, or storage services. The important warning is in the lower right of the figure: cross-device communication is not free.}
+  \label{fig:heterogeneous-routing}
+\end{figure}
+
+A heterogeneous system uses multiple kinds of hardware. This is not rare; it is normal. A modern AI service may use:
+
+\begin{itemize}[leftmargin=*]
+  \item CPUs for orchestration, tokenization, retrieval, compression, and control logic,
+  \item GPUs for dense neural network execution,
+  \item specialized accelerators for training or inference,
+  \item storage systems for embeddings, checkpoints, logs, and datasets,
+  \item network fabrics for all-reduce, all-to-all, parameter exchange, or serving traffic,
+  \item sometimes FPGAs, dataflow accelerators, or neuromorphic chips for special workloads.
+\end{itemize}
+
+The design question is not, ``Which chip is best?'' It is, ``Which piece of the task belongs where, and what does it cost to move data between those pieces?''
+
+\begin{aside}[Core workflow]
+Decompose the system into stages, assign each stage to hardware, draw the data edges between stages, then optimize the slowest edge or queue. Heterogeneous compute is placement plus communication, not a collection of devices.
+\end{aside}
+
+\subsection{Distributed Training}
+
+Distributed training splits work across devices. The standard forms are:
+
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Data parallelism}: each device holds a model copy and processes different examples; gradients are averaged.
+  \item \textbf{Tensor parallelism}: large tensor operations are split across devices.
+  \item \textbf{Pipeline parallelism}: different layers live on different devices, and microbatches flow through them.
+  \item \textbf{Expert parallelism}: mixture-of-experts layers route tokens to different expert devices.
+  \item \textbf{Optimizer/state sharding}: parameters, gradients, and optimizer states are partitioned to reduce memory per device.
+\end{itemize}
+
+Every strategy trades memory, compute, and communication. Data parallelism is simple, but gradient all-reduce can dominate at scale. Tensor parallelism can fit large layers, but it requires frequent communication inside the forward pass. Pipeline parallelism can fit deep models, but bubbles appear if microbatches do not fill the pipeline. Expert parallelism can save compute per token, but all-to-all token routing can become the bottleneck.
+
+\subsection{Distributed Inference}
+
+Inference has different pressure. In autoregressive language models, each output token depends on previous tokens. Prefill processes the prompt and can use dense parallelism. Decode generates one token step at a time and often becomes memory-bandwidth and latency sensitive.
+
+Important inference terms:
+
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Time to first token}: how long the user waits before generation begins.
+  \item \textbf{Inter-token latency}: delay between generated tokens.
+  \item \textbf{Throughput}: tokens per second across all requests.
+  \item \textbf{KV cache}: stored keys and values from prior tokens, often a major memory consumer.
+  \item \textbf{Continuous batching}: dynamically combines active requests to improve throughput while respecting latency.
+\end{itemize}
+
+A serving system is a scheduler. It decides which requests batch together, where KV cache lives, when to preempt, how to place model shards, and whether to route a request to a cheaper or faster backend.
+
+For LLM serving, separate \textbf{prefill} from \textbf{decode}. Prefill processes the prompt and often looks like large dense matrix work. Decode reuses the KV cache and generates one step at a time, so memory bandwidth, cache placement, and batching policy can dominate. A system that is excellent at prefill can still feel slow if decode latency is poor.
+
+\subsection{Placement and Data Locality}
+
+Placement means deciding where model components, data, and tasks live. Good placement minimizes expensive communication. For example:
+
+\begin{itemize}[leftmargin=*]
+  \item Place layers that communicate heavily on the same device or tightly connected devices.
+  \item Keep embeddings near the inference path that uses them.
+  \item Avoid moving large activations across the network when a small summary would suffice.
+  \item Route sparse event streams to event-driven hardware only if conversion overhead is small.
+  \item Keep data preprocessing close to storage if it shrinks data before transfer.
+\end{itemize}
+
+The phrase ``move compute to data'' often matters more than ``move data to compute.'' If the data is huge and the compute is small, moving the compute is cheaper.
+
+\subsection{A Placement Worksheet}
+
+For any heterogeneous design, make a table with one row per component:
+\begin{enumerate}
+  \item component name,
+  \item input and output tensor sizes,
+  \item state that must persist,
+  \item latency target,
+  \item candidate hardware,
+  \item upstream and downstream communication,
+  \item failure mode if the component is overloaded.
+\end{enumerate}
+
+Then draw the graph of communication edges. The highest-volume edge and the highest-latency edge are not always the same. A huge asynchronous checkpoint write may not affect user latency, while a smaller synchronous all-to-all exchange may set the step time.
+
+\subsection{Load Balancing}
+
+Load imbalance means some devices wait while others are overloaded. Mixture-of-experts models make this visible. If a router sends too many tokens to one expert, that expert becomes the step-time bottleneck. Even if the average compute is low, the slowest overloaded expert sets latency.
+
+A typical load-balancing loss looks like:
+\[
+  L = L_{\text{task}} + \lambda L_{\text{balance}},
+\]
+where \(L_{\text{task}}\) is the modeling objective and \(L_{\text{balance}}\) penalizes routing collapse. The goal is not perfectly uniform routing at all costs. The goal is enough balance that hardware stays utilized without destroying specialization.
+
+\subsection{Communication Patterns}
+
+Distributed systems are often limited by collectives:
+
+\begin{itemize}[leftmargin=*]
+  \item \textbf{All-reduce}: combine values from all devices and return the result to all devices.
+  \item \textbf{All-gather}: collect shards from all devices.
+  \item \textbf{Reduce-scatter}: reduce values and scatter shards of the result.
+  \item \textbf{All-to-all}: each device sends different data to every other device, common in expert routing.
+\end{itemize}
+
+These operations are not just library calls. They create real traffic on links. Their cost depends on message size, topology, contention, and overlap with computation.
+
+\begin{aside}[System design warning]
+A mathematically sparse model can become a communication-heavy system. If sparsity routes data across the network, the saved FLOPs may be replaced by all-to-all traffic.
+\end{aside}
+
+\subsection{A Heterogeneous Intelligence View}
+
+If a system direction is ``heterogeneous chips plus heterogeneous intelligence,'' then hardware and model diversity should be considered together. Some tasks may need dense language reasoning. Others may need graph search, event-driven perception, retrieval, symbolic constraints, or control loops. A mature system routes tasks to the substrate that matches their computational structure.
+
+This is not only engineering. It is a modeling idea. Instead of forcing every cognitive operation through one dense transformer path, one can ask whether different modules should have different memory, latency, precision, sparsity, and communication profiles.
+
+\subsection{Next steps}
+
+For this chapter, the mathematical object is a system graph with compute nodes and communication edges. The empirical diagnostic is queue time, device utilization, and communication time per edge. The failure mode is saving local compute while increasing global waiting.
+
+\begin{chaptersummary}
+\begin{itemize}[leftmargin=*]
+  \item Heterogeneous systems route work across different hardware types.
+  \item Distributed training uses data, tensor, pipeline, expert, and state parallelism.
+  \item Inference cares about latency, KV cache, batching, and request scheduling.
+  \item Placement and data locality often decide performance.
+  \item Communication collectives can dominate large systems.
+  \item Heterogeneous intelligence means matching task structure to hardware structure.
+\end{itemize}
+\end{chaptersummary}
+
+\begin{conceptquestions}
+\item Why can mixture-of-experts save compute but increase communication?
+\item What is the difference between data parallelism and tensor parallelism?
+\item Why is the KV cache central to LLM inference performance?
+\end{conceptquestions}
+
+\begin{exercises}
+\item Draw a system graph for retrieval-augmented generation: request parsing, embedding, vector search, reranking, prompt assembly, prefill, decode, and logging. Which edges carry large data, and which edges are latency-sensitive?
+\item Compare data parallelism and tensor parallelism for a model that fits on one GPU versus a model whose single largest layer does not fit. What changes?
+\item Imagine an MoE layer with four experts where one expert receives half the tokens. Describe the effect on latency and one possible load-balancing intervention.
+\end{exercises}

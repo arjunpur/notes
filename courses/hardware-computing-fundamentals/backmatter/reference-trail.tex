@@ -1,0 +1,48 @@
+\section{Reference Trail}
+
+These notes are written as a beginner-oriented synthesis. Use the links below to check current product details and deepen specific implementation topics. Hardware specifications change quickly, so treat exact SKU numbers as time-sensitive and verify them against official documentation before making purchasing or architecture decisions.
+
+\begingroup
+\sloppy
+\Urlmuskip=0mu plus 4mu\relax
+
+\subsection*{Accelerators and Hardware}
+\begin{itemize}[leftmargin=*]
+  \item NVIDIA H100 architecture and Tensor Core GPU documentation: \url{https://developer.nvidia.com/blog/nvidia-hopper-architecture-in-depth/}
+  \item NVIDIA Blackwell architecture overview: \url{https://www.nvidia.com/en-us/data-center/technologies/blackwell-architecture/}
+  \item Google Cloud TPU documentation: \url{https://cloud.google.com/tpu/docs}
+  \item AWS Trainium and Trn instances: \url{https://aws.amazon.com/machine-learning/trainium/}
+  \item AMD Instinct accelerator documentation: \url{https://www.amd.com/en/products/accelerators/instinct.html}
+  \item Cerebras wafer-scale systems: \url{https://www.cerebras.ai/}
+  \item SambaNova reconfigurable dataflow systems: \url{https://sambanova.ai/}
+\end{itemize}
+
+\subsection*{Profiling, Kernels, and Distributed Systems}
+\begin{itemize}[leftmargin=*]
+  \item PyTorch profiler: \url{https://pytorch.org/docs/stable/profiler.html}
+  \item TensorBoard profiler: \url{https://www.tensorflow.org/tensorboard/tensorboard_profiling_keras}
+  \item NVIDIA Nsight Systems: \url{https://developer.nvidia.com/nsight-systems}
+  \item NVIDIA Nsight Compute: \url{https://developer.nvidia.com/nsight-compute}
+  \item Triton language tutorials: \url{https://triton-lang.org/main/getting-started/tutorials/index.html}
+  \item PyTorch distributed documentation: \url{https://pytorch.org/docs/stable/distributed.html}
+  \item JAX distributed arrays and sharding: \url{https://docs.jax.dev/en/latest/notebooks/Distributed_arrays_and_automatic_parallelization.html}
+  \item NVIDIA NCCL collectives: \url{https://developer.nvidia.com/nccl}
+\end{itemize}
+
+\subsection*{Spiking and Neuromorphic Systems}
+\begin{itemize}[leftmargin=*]
+  \item snnTorch tutorials: \url{https://snntorch.readthedocs.io/en/latest/tutorials/index.html}
+  \item Intel Lava neuromorphic software framework: \url{https://lava-nc.org/}
+  \item SpiNNaker project overview: \url{https://apt.cs.manchester.ac.uk/projects/SpiNNaker/}
+  \item BrainScaleS documentation: \url{https://electronicvisions.github.io/documentation-brainscales2/}
+\end{itemize}
+
+\subsection*{Conceptual Papers to Read Later}
+\begin{itemize}[leftmargin=*]
+  \item Roofline model: Williams, Waterman, and Patterson, ``Roofline: An Insightful Visual Performance Model for Multicore Architectures.''
+  \item Mixture-of-experts: Shazeer et al., ``Outrageously Large Neural Networks: The Sparsely-Gated Mixture-of-Experts Layer.''
+  \item FlashAttention: Dao et al., ``FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness.''
+  \item Neuromorphic computing survey literature for Loihi, SpiNNaker, BrainScaleS, event cameras, and surrogate-gradient SNN training.
+\end{itemize}
+
+\endgroup

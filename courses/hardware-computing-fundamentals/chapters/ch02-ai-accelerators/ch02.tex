@@ -1,0 +1,143 @@
+\section{Lecture 2: AI Accelerator Literacy}
+
+\subsection{The Landscape}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=\textwidth]{accelerator-landscape.png}
+  \caption{A raster teaching plate for accelerator families. Read it left-to-right and top-to-bottom as physical layout plus workload fit. A GPU-like package emphasizes many parallel lanes and nearby HBM. A systolic-array chip emphasizes regular matrix flow. A Trainium-like training accelerator emphasizes HBM and chip-to-chip links. A wafer-scale machine keeps an enormous model region on one physical substrate. A dataflow chip places operators along a routed pipeline. A neuromorphic chip communicates sparse events. The image is generated with Codex image generation; the conceptual labels here are authoritative.}
+  \label{fig:accelerator-landscape}
+\end{figure}
+
+The accelerator landscape is easier to understand if you classify chips by what they make cheap:
+
+\begin{itemize}[leftmargin=*]
+  \item \textbf{GPUs} make wide parallel arithmetic and dense tensor programs cheap. They are flexible, widely supported, and strong for training and inference.
+  \item \textbf{TPU-like systolic accelerators} make regular matrix multiplication and tensor contractions cheap by flowing data through a grid of multiply-accumulate units.
+  \item \textbf{Trainium-like training accelerators} are cloud training chips built around dense learning workloads, large HBM, and scale-out interconnect.
+  \item \textbf{Wafer-scale systems} reduce off-chip communication by placing a huge amount of compute and local memory on one wafer-scale substrate.
+  \item \textbf{Reconfigurable dataflow systems} map model operators onto a spatial pipeline, aiming to reduce repeated memory traffic and overhead.
+  \item \textbf{Neuromorphic systems} make sparse event-driven communication cheap, especially when the workload naturally consists of spikes or changes.
+\end{itemize}
+
+These are not mutually exclusive categories. A GPU contains tensor cores and memory hierarchy. TPU-like systems still need compilers and interconnect. Dataflow systems can run dense neural networks. Neuromorphic platforms still require software tooling. The categories are useful because they make workload fit visible.
+
+\begin{aside}[How to read the figure]
+Do not read Figure~\ref{fig:accelerator-landscape} as a product ranking. Read it as a map of design pressures: dense lanes, systolic flow, HBM capacity, chip-to-chip links, wafer-scale locality, dataflow pipelines, and event routing. The best device is the one whose cheap path matches the workload.
+\end{aside}
+
+\subsection{GPUs}
+
+GPUs began as graphics processors, but modern AI GPUs are general parallel accelerators. Their strength is not merely ``many cores.'' Their strength is a stack:
+
+\begin{itemize}[leftmargin=*]
+  \item thousands of parallel execution lanes,
+  \item tensor or matrix units for dense multiply-accumulate,
+  \item high-bandwidth memory close to the package,
+  \item optimized libraries such as cuBLAS, cuDNN, NCCL, and vendor equivalents,
+  \item mature compiler and framework support from PyTorch, TensorFlow, JAX, Triton, and CUDA.
+\end{itemize}
+
+GPUs are excellent when the program can present large, regular, dense blocks of work. Matrix multiplication, convolution, attention, embedding lookups with batching, normalization, and elementwise operations all run well when implemented with good kernels and enough work per launch.
+
+The GPU weakness is also important. A GPU can be inefficient on:
+
+\begin{itemize}[leftmargin=*]
+  \item small batches that fail to fill the device,
+  \item irregular control flow,
+  \item many tiny kernels,
+  \item workloads dominated by random memory access,
+  \item distributed jobs bottlenecked on cross-device communication.
+\end{itemize}
+
+\subsection{TPUs and Systolic Thinking}
+
+A TPU-like accelerator is built around arrays specialized for tensor contractions. A systolic array is a grid where data pulses from cell to cell. Each cell performs a small local operation, often multiply-accumulate, and passes partial results onward.
+
+The beginner intuition is a factory line. Rather than sending every worker back to a warehouse for every item, parts move through the workers in a rhythm. This is powerful when the computation is regular. Matrix multiplication is regular; the same data block is reused by many neighboring operations. Transformers and CNNs contain many such operations.
+
+The tradeoff is flexibility. If your workload is not naturally regular, the compiler must transform it into regular blocks or the array sits underused. Systolic systems reward static shapes, predictable tensor programs, and compiler-friendly graph structure.
+
+\subsection{Trainium-Like Training Chips}
+
+Trainium-like accelerators are cloud chips designed for large-scale model training. The key idea is not just one chip, but the full training appliance: accelerator memory, host CPUs, compiler stack, collectives, networking, and cluster scheduling. These systems often expose a framework integration layer so PyTorch or JAX models can be compiled and distributed across many devices.
+
+When evaluating such systems, avoid asking only, ``What is the peak FLOP/s?'' Ask:
+
+\begin{itemize}[leftmargin=*]
+  \item Does the compiler support the model's operators and dynamic shapes?
+  \item How much HBM is available per accelerator?
+  \item How fast is chip-to-chip communication?
+  \item How mature are debugging and profiling tools?
+  \item What model-parallel strategies are supported?
+  \item What is the total cost per trained token or trained example?
+\end{itemize}
+
+\subsection{Wafer-Scale and Dataflow Alternatives}
+
+Wafer-scale systems, such as Cerebras-style machines, attack a communication problem. Instead of cutting the wafer into many separate chips and then rebuilding communication through packages and network links, they keep a vast compute fabric on one wafer. This can reduce some off-chip movement and simplify certain model placements. The cost is that software must map work to a very unusual physical substrate.
+
+SambaNova-style reconfigurable dataflow systems attack a different problem. Neural networks are graphs of operations. If the hardware can spatially arrange those operations into a pipeline, then intermediate tensors can flow from one stage to the next instead of being repeatedly written to and reread from external memory. This can be excellent when the model graph is stable and the compiler can place it well.
+
+\subsection{Which Workload Prefers Which Chip?}
+
+\begin{longtable}{@{}p{0.22\textwidth}p{0.32\textwidth}p{0.34\textwidth}@{}}
+\toprule
+Workload & Usually likes & Why \\
+\midrule
+Large dense training & GPUs, TPU-like pods, Trainium-like clusters & Dense matrix multiplication, high throughput, mature distributed stack. \\
+Interactive LLM inference & GPUs or inference accelerators with strong memory bandwidth and batching support & Autoregressive decoding becomes memory- and latency-sensitive. \\
+Huge model with awkward sharding & Wafer-scale or tightly connected pods can help & Reduced cross-chip movement can matter more than raw FLOPs. \\
+Stable graph with pipeline structure & Dataflow accelerators can help & Operator placement can avoid repeated memory traffic. \\
+Sparse sensor events & Neuromorphic/event-driven chips can help & Work is naturally sparse in time and space. \\
+Irregular graph routing & Depends: CPU, GPU, dataflow, or custom kernels & Random memory access and communication often dominate. \\
+\bottomrule
+\end{longtable}
+
+\begin{aside}[A practical comparison rule]
+Compare chips on the workload you actually have: tensor shapes, sequence lengths, batch sizes, sparsity, precision, communication pattern, and latency target. A benchmark for one workload can mislead you about another.
+\end{aside}
+
+\subsection{A Comparison Worksheet}
+
+Before comparing accelerators, write one page with the following fields:
+\begin{enumerate}
+  \item task: training, batch inference, interactive inference, retrieval, event sensing, graph routing, or preprocessing;
+  \item tensor shapes: batch size, sequence length, hidden size, channels, expert count, and precision;
+  \item state: parameters, optimizer state, activations, KV cache, routing tables, and temporary buffers;
+  \item bottleneck guess: dense compute, HBM capacity, HBM bandwidth, host preprocessing, interconnect, launch overhead, or irregular access;
+  \item software constraint: framework support, compiler maturity, profiler visibility, and kernel availability;
+  \item measurement target: latency, throughput, cost, energy, quality, or time to train.
+\end{enumerate}
+
+This worksheet is intentionally plain. It forces the chip comparison to stay attached to the computation. A device with beautiful peak numbers but weak compiler support for your model is a research project, not a drop-in speedup.
+
+\subsection{Failure Modes}
+
+Accelerator choice fails in predictable ways. One failure is \textbf{benchmark drift}: using a benchmark whose tensor shapes, precision, or batch size do not match the real workload. Another is \textbf{memory surprise}: the model fits in theory but optimizer state, activation memory, or KV cache exceeds device memory in practice. A third is \textbf{software mismatch}: the chip has a fast path for dense matrix multiplication, but the model spends time in operators the compiler cannot lower efficiently.
+
+\subsection{Next steps}
+
+For this chapter, the mathematical object is the workload class. The empirical diagnostic is a benchmark run with tensor shapes, precision, memory use, and latency distribution recorded. The failure mode is treating an accelerator family as universally better rather than workload-specific.
+
+\begin{chaptersummary}
+\begin{itemize}[leftmargin=*]
+  \item GPUs are flexible dense parallel machines with excellent software support.
+  \item TPU-like systems use regular arrays to make tensor contractions efficient.
+  \item Trainium-like systems should be judged as training clusters, not isolated chips.
+  \item Wafer-scale systems and dataflow machines are attempts to make communication and intermediate movement cheaper.
+  \item Neuromorphic chips are interesting when the computation is sparse and event-driven.
+\end{itemize}
+\end{chaptersummary}
+
+\begin{conceptquestions}
+\item Why can a chip with lower peak FLOP/s beat a higher-FLOP chip on a memory-heavy workload?
+\item What makes a transformer training workload more suitable for GPUs or systolic arrays than an irregular graph search workload?
+\item Why should you evaluate compiler maturity when considering a specialized accelerator?
+\end{conceptquestions}
+
+\begin{exercises}
+\item Fill out the comparison worksheet for interactive LLM inference with a long context window. Which fields are dominated by memory rather than compute?
+\item Fill out the comparison worksheet for event-camera gesture recognition. Why might a dense GPU baseline be convenient but not conceptually matched to the data?
+\item Choose two accelerator families from the chapter and write a fair comparison for one workload. Include one reason each family could lose.
+\end{exercises}

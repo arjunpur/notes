@@ -1,0 +1,211 @@
+\section{Lecture 4: Hardware-Aware Neural Network Implementation}
+
+\subsection{From Python to Kernels}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=\textwidth]{profiling-compute-graph.png}
+  \caption{A hardware-aware implementation view. The top band is the model graph. The middle band is the runtime trace: CPU work, copies, kernel launches, GPU kernels, and synchronization. The bottom band shows common fixes: reduce activation memory, fuse small kernels, improve batch and tile shapes, then profile again.}
+  \label{fig:profiling-compute-graph}
+\end{figure}
+
+PyTorch, TensorFlow, and JAX let you write model code as tensor operations. That abstraction is productive, but the hardware executes kernels. A kernel is a compiled low-level operation launched on an accelerator. One Python line can call one large optimized kernel, many small kernels, or a compiler graph that fuses several operations.
+
+Hardware-aware implementation means learning to read both levels:
+
+\begin{itemize}[leftmargin=*]
+  \item the \textbf{compute graph}: what tensor operations define the model;
+  \item the \textbf{runtime trace}: what actually happened on CPU, device, memory, and interconnect.
+\end{itemize}
+
+The graph asks, ``What should be computed?'' The trace asks, ``Where did time and memory go?''
+
+\begin{aside}[Implementation philosophy]
+Keep prose, code, and profiling evidence synchronized. If a code change is justified by hardware, the trace should show the bottleneck and the notes should state the assumption being tested.
+\end{aside}
+
+\subsection{The Questions to Ask}
+
+When you inspect a neural network, ask these questions in order.
+
+\subsubsection{What is the compute graph?}
+
+List the main operations. For a transformer layer:
+
+\begin{itemize}[leftmargin=*]
+  \item embedding lookup,
+  \item linear projections,
+  \item attention,
+  \item feedforward matrix multiplications,
+  \item normalization,
+  \item elementwise activations,
+  \item residual connections,
+  \item loss and optimizer updates.
+\end{itemize}
+
+Then ask which operations are dense, which are irregular, which are memory-heavy, and which synchronize.
+
+\subsubsection{Where is memory pressure?}
+
+During training, memory is not just parameters. It includes:
+
+\begin{itemize}[leftmargin=*]
+  \item parameters,
+  \item gradients,
+  \item optimizer states,
+  \item activations saved for backward,
+  \item temporary workspaces,
+  \item communication buffers,
+  \item dataloader and host-side staging buffers.
+\end{itemize}
+
+For Adam-style optimizers, optimizer state can be larger than parameters because each parameter may have first and second moment estimates. Activation memory can dominate for long sequences or deep networks. Gradient checkpointing trades extra compute for lower activation memory by recomputing parts of the forward pass during backward.
+
+\subsubsection{What can be fused, skipped, or routed?}
+
+Fusion combines operations into one kernel so intermediate tensors stay near compute. Skipping avoids useless work. Routing sends only relevant tokens or examples to certain modules.
+
+Examples:
+
+\begin{itemize}[leftmargin=*]
+  \item Fuse bias, activation, and residual addition when possible.
+  \item Use FlashAttention-style kernels to avoid writing the full attention matrix to HBM.
+  \item Use structured sparsity or mixture-of-experts routing only if load balancing and communication are controlled.
+  \item Skip padded tokens in sequence models when dynamic shape overhead does not erase the benefit.
+\end{itemize}
+
+\subsection{A Minimal Profiling Loop}
+
+You do not optimize by guessing. You measure.
+
+\begin{lstlisting}[language=Python, caption={A small PyTorch profiler loop. The schedule skips warmup noise, records a few active steps, and emits a trace for inspection.}]
+import torch
+from torch.profiler import profile, ProfilerActivity, schedule, tensorboard_trace_handler
+
+model = model.cuda()
+optimizer = torch.optim.AdamW(model.parameters(), lr=3e-4)
+
+prof_schedule = schedule(wait=2, warmup=2, active=4, repeat=1)
+
+with profile(
+    activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA],
+    schedule=prof_schedule,
+    record_shapes=True,
+    profile_memory=True,
+    with_stack=False,
+    on_trace_ready=tensorboard_trace_handler("./traces"),
+) as prof:
+    for step, batch in enumerate(loader):
+        batch = {k: v.cuda(non_blocking=True) for k, v in batch.items()}
+        optimizer.zero_grad(set_to_none=True)
+        loss = model(**batch).loss
+        loss.backward()
+        optimizer.step()
+        prof.step()
+\end{lstlisting}
+
+When you open the trace, look for:
+
+\begin{itemize}[leftmargin=*]
+  \item CPU gaps before GPU kernels,
+  \item long host-to-device or device-to-host copies,
+  \item many tiny kernels,
+  \item kernels with poor occupancy,
+  \item memory allocation spikes,
+  \item synchronization calls that force waiting,
+  \item all-reduce or all-to-all calls in distributed runs.
+\end{itemize}
+
+Do not inspect a trace only for the longest single operation. A trace is a story about sequencing. Ten medium kernels separated by synchronization can be worse than one long dense kernel. A copy that overlaps with compute may be harmless, while a shorter copy on the critical path can dominate user-visible latency.
+
+\subsection{Tool Map}
+
+\begin{longtable}{p{0.2\textwidth}p{0.38\textwidth}p{0.34\textwidth}}
+\toprule
+Tool & Best for & What to look for \\
+\midrule
+PyTorch profiler & Framework-level CPU/GPU trace, shapes, memory & Gaps, copies, launch overhead, expensive ops, allocation. \\
+TensorBoard profiler & TensorFlow and general trace visualization & Input pipeline stalls, device utilization, op timelines. \\
+Nsight Systems & System-wide timeline for CPU, CUDA, communication & Kernel launch gaps, synchronization, NCCL collectives, CPU bottlenecks. \\
+Nsight Compute & Deep single-kernel analysis & Occupancy, memory coalescing, cache behavior, tensor-core use. \\
+Triton & Writing custom GPU kernels in Python-like syntax & Tiling, memory layout, fused kernels, custom operators. \\
+CUDA & Full low-level GPU programming & Fine control, maximum effort, strongest debugging burden. \\
+\bottomrule
+\end{longtable}
+
+\subsection{A Profiler Notebook Convention}
+
+A useful profiling notebook should record:
+\begin{enumerate}
+  \item model name and git revision,
+  \item hardware device and driver/runtime versions,
+  \item tensor shapes, precision, and batch size,
+  \item warmup steps and measured steps,
+  \item peak memory and step-time distribution,
+  \item the top time-consuming operations,
+  \item one screenshot or trace export,
+  \item the hypothesis for the next change.
+\end{enumerate}
+
+This makes performance work reproducible. Without this convention, it becomes easy to remember that a change ``felt faster'' while forgetting that the batch size, precision, data path, or sequence length changed.
+
+\begin{aside}[Before changing code]
+Write the bottleneck as a sentence: ``This run is slow because \(\ldots\).'' If the sentence does not name a trace event, memory allocation, tensor shape, or communication primitive, profile more before optimizing.
+\end{aside}
+
+\subsection{Shapes Matter}
+
+Accelerators prefer certain tile sizes. A matrix dimension divisible by a preferred tile size can use specialized units efficiently. Odd shapes may still run, but with padding, edge kernels, or lower utilization.
+
+This is why model dimensions often look oddly round: 768, 1024, 2048, 4096, 8192. They align better with hardware and library kernels. The mathematical model does not require these numbers; the hardware often rewards them.
+
+\subsection{Dataloader and Host Bottlenecks}
+
+Many beginners assume the accelerator is the bottleneck. Sometimes the GPU is waiting for the CPU to feed it. Signs include:
+
+\begin{itemize}[leftmargin=*]
+  \item GPU utilization oscillates between high and zero.
+  \item Profiler shows gaps before each training step.
+  \item Host-to-device copies are serialized instead of overlapped.
+  \item Data augmentation or tokenization runs on the critical path.
+\end{itemize}
+
+Fixes can include more dataloader workers, pinned memory, asynchronous copies, preprocessing caches, fused transforms, larger prefetch queues, or moving preprocessing to the device. The correct fix depends on the trace.
+
+\subsection{Hardware-Aware Model Choices}
+
+Implementation thinking should influence architecture:
+
+\begin{itemize}[leftmargin=*]
+  \item Long context improves modeling power but can square attention memory unless kernels or architectures avoid it.
+  \item Mixture-of-experts increases parameter count without using all parameters per token, but routing can create communication and load-balance problems.
+  \item Quantization reduces memory bandwidth and cache pressure, but calibration and outliers matter.
+  \item Recurrence can reduce memory at inference, but sequential dependencies can limit parallelism.
+  \item Convolutions exploit spatial locality; attention exploits content-based routing; graph neural networks often suffer irregular memory access.
+\end{itemize}
+
+\subsection{Next steps}
+
+For this chapter, the mathematical object is the compute graph together with saved training state. The empirical diagnostic is a profiler trace with shapes and memory enabled. The failure mode is optimizing Python source structure while ignoring the kernels and transfers that actually execute.
+
+\begin{chaptersummary}
+\begin{itemize}[leftmargin=*]
+  \item The framework graph is not the runtime trace.
+  \item Training memory includes parameters, gradients, optimizer state, activations, temporaries, and communication buffers.
+  \item Fusion, checkpointing, precision, batching, and tiling are hardware-aware implementation moves.
+  \item Profiling should precede optimization.
+  \item Model architecture choices have hardware consequences.
+\end{itemize}
+\end{chaptersummary}
+
+\begin{conceptquestions}
+\item Why can one Python line create several device kernels?
+\item What is the difference between activation checkpointing and kernel fusion?
+\item If a trace shows a gap before every GPU kernel group, where would you investigate first?
+\end{conceptquestions}
+
+\begin{exercises}
+\item Take a small PyTorch model and run one profiler trace. Record the batch shape, top five operations by time, and peak memory. Explain one thing the trace showed that the Python code did not make obvious.
+\item In a transformer block, identify two operations that are good candidates for fusion and two that are likely to be library matrix multiplications. Explain the difference.
+\item Suppose activation memory is the bottleneck. Compare three responses: smaller batch size, gradient checkpointing, and lower precision. What does each trade away?
+\end{exercises}

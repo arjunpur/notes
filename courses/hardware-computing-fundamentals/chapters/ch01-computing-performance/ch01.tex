@@ -1,0 +1,133 @@
+\section{Lecture 1: The Performance Vocabulary}
+
+\subsection{Why Hardware Matters for AI}
+
+A neural network looks like mathematics when written on paper:
+\[
+  y = f_\theta(x).
+\]
+On hardware, that same expression becomes a sequence of tensor allocations, memory reads, memory writes, kernel launches, communication events, reductions, random number operations, and synchronization points. The hardware does not see ``intelligence.'' It sees data movement and operations.
+
+The most useful beginner shift is to stop asking only, ``How many parameters does the model have?'' and start asking:
+
+\begin{itemize}[leftmargin=*]
+  \item How many operations are required?
+  \item How many bytes must move between memory levels?
+  \item Which operations can run in parallel?
+  \item Which steps force devices to wait?
+  \item Does the workload arrive as one request, many batched requests, or sparse events?
+\end{itemize}
+
+Once those questions become natural, chip names become less mysterious. GPUs, TPUs, Trainium-like accelerators, wafer-scale systems, reconfigurable dataflow machines, and neuromorphic chips are different answers to the same underlying problem: how to place data and arithmetic so useful work happens with minimal waiting.
+
+\begin{aside}[Core workflow]
+Start from the operation, count the data it touches, identify the memory level that supplies that data, and only then reason about hardware fit. This mirrors the analysis workflow used for neural data: define the object first, choose the statistic second, and interpret the result last.
+\end{aside}
+
+\subsection{FLOPs, Bytes, and Time}
+
+A floating-point operation, or FLOP, is a numerical operation such as addition or multiplication. Modern accelerators advertise enormous peak FLOP/s because dense matrix multiplication can be made extremely parallel. But a FLOP can happen only after its input data arrives.
+
+Consider a simple vector addition:
+\[
+  c_i = a_i + b_i.
+\]
+For every output element, the hardware reads \(a_i\), reads \(b_i\), computes one addition, and writes \(c_i\). In 32-bit floating point, that is roughly 12 bytes of memory traffic for one FLOP. The arithmetic is cheap; moving the data dominates.
+
+Now compare matrix multiplication:
+\[
+  C_{ij} = \sum_{k=1}^{K} A_{ik} B_{kj}.
+\]
+If blocks of \(A\) and \(B\) are kept near the compute units and reused for many output elements, the same bytes can support many multiply-adds. Matrix multiplication is valuable not just because it has many FLOPs, but because well-tiled matrix multiplication has high data reuse.
+
+\begin{keyequation}[Arithmetic intensity]
+\[
+  \text{arithmetic intensity} =
+  \frac{\text{FLOPs performed}}{\text{bytes moved from a chosen memory level}}.
+\]
+\tcblower
+Low arithmetic intensity means the workload is likely memory-bound. High arithmetic intensity means the workload has a chance to become compute-bound, if it is shaped well for the hardware.
+\end{keyequation}
+
+The phrase ``from a chosen memory level'' matters. A matrix tile may have high arithmetic intensity relative to HBM because it is reused in on-chip SRAM, but lower intensity relative to registers if each register value is used only briefly. Performance work is therefore local: always name the boundary across which bytes are moving.
+
+\subsection{Latency and Throughput}
+
+Latency is how long one thing takes. Throughput is how many things are completed per unit time. A restaurant analogy is useful. If one meal takes ten minutes, that is latency. If the kitchen serves sixty meals per hour, that is throughput. Batching often improves throughput by letting the kitchen prepare similar work together, but it can increase the waiting time for the first request in the batch.
+
+In AI systems:
+
+\begin{itemize}[leftmargin=*]
+  \item Training usually prefers throughput. Large batches keep accelerator arrays busy and amortize communication.
+  \item Interactive inference usually cares about latency. A chatbot user notices time to first token and per-token delay.
+  \item Offline inference cares about cost per item, which is throughput divided by dollars and energy.
+  \item Event-driven sensing cares about reacting to changes without processing empty frames.
+\end{itemize}
+
+\begin{aside}[Common mistake]
+``Fast chip'' is incomplete. A chip can have high training throughput but poor single-request latency. Another chip can be excellent for dense matrix multiplication but inefficient for irregular graph routing or tiny kernels.
+\end{aside}
+
+\subsection{Utilization}
+
+Utilization asks whether the expensive hardware is doing useful work. Low utilization can happen for many reasons:
+
+\begin{itemize}[leftmargin=*]
+  \item The batch is too small to fill the compute array.
+  \item Tensor shapes do not align with the accelerator's preferred tile sizes.
+  \item The program launches many tiny kernels with overhead between them.
+  \item The model waits for host preprocessing, data loading, or CPU synchronization.
+  \item Devices wait for all-reduce, all-to-all routing, or slow network links.
+  \item Memory capacity forces recomputation, swapping, or small microbatches.
+\end{itemize}
+
+Utilization is not a moral score. It is a diagnostic. If utilization is low, ask what the hardware is waiting for. If utilization is high but the step time is still bad, ask whether the algorithm is doing too much work or moving too many bytes.
+
+\subsection{A First Measurement Loop}
+
+The minimal hardware analysis loop is:
+\begin{enumerate}
+  \item write the computation in mathematical form,
+  \item estimate tensor sizes and bytes moved,
+  \item estimate the amount of reusable arithmetic,
+  \item run the workload and measure time, memory, and utilization,
+  \item explain the measurement before changing the implementation.
+\end{enumerate}
+
+This sequence prevents a common beginner mistake: optimizing a symptom without naming the bottleneck. If the dataloader is starving the GPU, a custom CUDA kernel will not help. If the workload is memory-bound, a chip with more peak FLOPs may not help. If the batch is too small, a larger accelerator can look worse simply because it is emptier.
+
+\subsection{The First Mental Model}
+
+You can explain a surprising amount of AI performance with one sentence:
+
+\begin{aside}[One-sentence model]
+Useful computation happens only when the right data is near the right arithmetic units at the right time.
+\end{aside}
+
+This sentence contains the whole course. ``Right data'' means memory layout, precision, batch shape, routing, and communication. ``Near'' means memory hierarchy and interconnect. ``Right arithmetic units'' means GPUs, systolic arrays, vector units, tensor cores, custom kernels, FPGA pipelines, or spiking event processors. ``Right time'' means scheduling, batching, synchronization, load balance, and latency constraints.
+
+\subsection{Next steps}
+
+For this chapter, the mathematical object is the workload as operations plus bytes. The empirical diagnostic is a small timing and memory measurement with the tensor shapes recorded. The failure mode is confusing peak compute with realized performance.
+
+\begin{chaptersummary}
+\begin{itemize}[leftmargin=*]
+  \item FLOPs count arithmetic, but bytes moved often set performance.
+  \item Bandwidth is rate; latency is delay. A system can have high bandwidth and still poor latency.
+  \item Batching improves throughput by amortizing overhead and filling arrays, but it can hurt latency.
+  \item Utilization tells you whether the hardware is busy doing useful work.
+  \item The core question is always placement of data, operations, and time.
+\end{itemize}
+\end{chaptersummary}
+
+\begin{conceptquestions}
+\item Why is vector addition often memory-bound even though it is easy to parallelize?
+\item Why might increasing batch size improve throughput but worsen user experience?
+\item If a GPU reports low utilization, name three plausible causes before blaming the GPU.
+\end{conceptquestions}
+
+\begin{exercises}
+\item A vector addition reads two FP32 vectors and writes one FP32 vector. Estimate bytes moved per element and FLOPs per element. What is its arithmetic intensity?
+\item A matrix multiplication \(C = AB\) multiplies two \(1024 \times 1024\) FP16 matrices and writes an FP16 result. First estimate the naive bytes touched. Then explain why a tiled implementation can do much better than the naive estimate.
+\item Pick one model operation you know, such as an embedding lookup, convolution, attention step, or normalization. Write one paragraph naming its operations, bytes, possible parallelism, and likely bottleneck.
+\end{exercises}

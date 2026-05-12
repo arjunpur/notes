@@ -1,0 +1,26 @@
+[
+  {
+    "lecture_slug": "hardware-computing-fundamentals",
+    "title": "Hardware Computing Fundamentals for AI",
+    "slide_filename": "",
+    "chapter_paths": [
+      "chapters/ch01-computing-performance/ch01.tex",
+      "chapters/ch02-ai-accelerators/ch02.tex",
+      "chapters/ch03-memory-roofline/ch03.tex",
+      "chapters/ch04-hardware-aware-neural-networks/ch04.tex",
+      "chapters/ch05-heterogeneous-systems/ch05.tex",
+      "chapters/ch06-neuromorphic-spiking/ch06.tex",
+      "chapters/ch07-network-science-constraints/ch07.tex",
+      "chapters/ch08-codesign-practice/ch08.tex"
+    ],
+    "aliases": [
+      "hardware computing",
+      "ai accelerator literacy",
+      "hardware-aware neural network implementation",
+      "heterogeneous compute",
+      "neuromorphic spiking networks",
+      "algorithm hardware co-design"
+    ],
+    "lecture_date": "2026-05-11"
+  }
+]
