@@ -2,43 +2,77 @@
 
 \subsection{Why Hardware Matters for AI}
 
-A neural network looks like mathematics when written on paper:
+\subsubsection{From a model equation to a workload}
+
+A neural network is often written as a compact mathematical expression:
 \[
   y = f_\theta(x).
 \]
-On hardware, that same expression becomes a sequence of tensor allocations, memory reads, memory writes, kernel launches, communication events, reductions, random number operations, and synchronization points. The hardware does not see ``intelligence.'' It sees data movement and operations.
+Here \(x\) is the input tensor, \(\theta\) denotes the learned parameters, \(f_\theta\) is the computation performed by the model, and \(y\) is the output. This notation is useful, but it hides the physical work.
+
+On hardware, the same expression becomes tensor allocations, memory reads, memory writes, arithmetic operations, kernel launches, communication events, random number generation, reductions, and synchronization. The hardware does not see ``intelligence.'' It sees values moving through a machine.
+
+A \emph{workload} is the concrete computation created by a model, tensor shapes, precision, batch size, and execution mode. The same model can create different workloads in training, prompt processing, single-token decoding, or offline batch inference.
 
 The most useful beginner shift is to stop asking only, ``How many parameters does the model have?'' and start asking:
 
 \begin{itemize}[leftmargin=*]
-  \item How many operations are required?
+  \item How many arithmetic operations are required?
   \item How many bytes must move between memory levels?
+  \item Which values are reused, and where are they reused?
   \item Which operations can run in parallel?
-  \item Which steps force devices to wait?
+  \item Which steps force one device, request, or kernel to wait for another?
   \item Does the workload arrive as one request, many batched requests, or sparse events?
 \end{itemize}
 
-Once those questions become natural, chip names become less mysterious. GPUs, TPUs, Trainium-like accelerators, wafer-scale systems, reconfigurable dataflow machines, and neuromorphic chips are different answers to the same underlying problem: how to place data and arithmetic so useful work happens with minimal waiting.
+Once those questions become natural, chip names become less mysterious. GPUs, TPU-like systolic arrays, Trainium-like clusters, wafer-scale systems, reconfigurable dataflow machines, and neuromorphic chips are different attempts to place data and arithmetic so useful work happens with minimal waiting.
 
 \begin{aside}[Core workflow]
 Start from the operation, count the data it touches, identify the memory level that supplies that data, and only then reason about hardware fit. This mirrors the analysis workflow used for neural data: define the object first, choose the statistic second, and interpret the result last.
 \end{aside}
 
-\subsection{FLOPs, Bytes, and Time}
+\subsubsection{A transformer example}
 
-A floating-point operation, or FLOP, is a numerical operation such as addition or multiplication. Modern accelerators advertise enormous peak FLOP/s because dense matrix multiplication can be made extremely parallel. But a FLOP can happen only after its input data arrives.
+A transformer language model illustrates why execution mode matters. During \emph{prefill}, the model processes the prompt tokens and constructs a \emph{KV cache}. The KV cache stores the key and value tensors that later tokens will attend to. Prefill contains large matrix multiplications over many tokens, so it can often use accelerator matrix units well.
 
-Consider a simple vector addition:
+During \emph{autoregressive decoding}, the model usually generates one new token at a time for each active request. Each step reuses the weights and reads the existing KV cache. For long contexts, the limiting cost may be memory capacity or memory bandwidth rather than raw arithmetic. A chip with more peak FLOP/s will not help much if the arithmetic units are waiting for cache and weight bytes.
+
+Training creates a third workload. The forward pass computes predictions, the backward pass computes gradients, optimizer state must be read and updated, and many devices may need an all-reduce to combine gradients. The same transformer architecture therefore stresses dense compute, memory bandwidth, memory capacity, and interconnect at different points.
+
+\subsection{FLOPs, FLOP/s, Bytes, and Time}
+
+\subsubsection{What a FLOP counts}
+
+A \emph{floating-point operation}, or FLOP, is one numerical operation on floating-point values, such as addition or multiplication. A rate such as FLOP/s means floating-point operations per second. Peak FLOP/s is the fastest arithmetic rate the hardware advertises under favorable conditions, usually for large dense matrix operations in a supported precision.
+
+FLOPs count arithmetic. They do not count the bytes that must be fetched before the arithmetic can happen.
+
+Consider vector addition:
 \[
   c_i = a_i + b_i.
 \]
-For every output element, the hardware reads \(a_i\), reads \(b_i\), computes one addition, and writes \(c_i\). In 32-bit floating point, that is roughly 12 bytes of memory traffic for one FLOP. The arithmetic is cheap; moving the data dominates.
+For one index \(i\), the hardware reads the input element \(a_i\), reads the input element \(b_i\), adds them, and writes the output element \(c_i\). In FP32, each element is 4 bytes. Ignoring cache effects and write-allocate traffic, this is at least
+\[
+  4 \text{ bytes} + 4 \text{ bytes} + 4 \text{ bytes}
+  = 12 \text{ bytes}
+\]
+for one FLOP. The arithmetic is easy to parallelize, but the useful work per byte is small.
+
+\subsubsection{Why matrix multiplication can be different}
 
 Now compare matrix multiplication:
 \[
   C_{ij} = \sum_{k=1}^{K} A_{ik} B_{kj}.
 \]
-If blocks of \(A\) and \(B\) are kept near the compute units and reused for many output elements, the same bytes can support many multiply-adds. Matrix multiplication is valuable not just because it has many FLOPs, but because well-tiled matrix multiplication has high data reuse.
+The output element \(C_{ij}\) is in row \(i\) and column \(j\) of \(C\). The index \(k\) runs over the shared dimension. Each term \(A_{ik}B_{kj}\) multiplies one value from row \(i\) of \(A\) by one value from column \(j\) of \(B\), and the sum adds those products into one dot product.
+
+If \(A\) has shape \(M \times K\) and \(B\) has shape \(K \times N\), the result \(C\) has shape \(M \times N\). Dense matrix multiplication performs about
+\[
+  2M N K
+\]
+FLOPs, counting one multiply and one add for each product term. The important hardware fact is reuse: one loaded value of \(A\) can contribute to many columns of \(C\), and one loaded value of \(B\) can contribute to many rows of \(C\).
+
+Good matrix multiplication kernels exploit this reuse by \emph{tiling}. Tiling means loading a small block of tensors into fast memory near the arithmetic units, doing many multiply-adds with that block, and only then moving to the next block. The mathematical answer is unchanged. The byte path is changed.
 
 \begin{keyequation}[Arithmetic intensity]
 \[
@@ -46,31 +80,52 @@ If blocks of \(A\) and \(B\) are kept near the compute units and reused for many
   \frac{\text{FLOPs performed}}{\text{bytes moved from a chosen memory level}}.
 \]
 \tcblower
-Low arithmetic intensity means the workload is likely memory-bound. High arithmetic intensity means the workload has a chance to become compute-bound, if it is shaped well for the hardware.
+The numerator counts arithmetic. The denominator counts traffic across a named boundary, such as HBM to on-chip SRAM or host DRAM to accelerator memory. Low arithmetic intensity means the workload is likely memory-bound. High arithmetic intensity means the workload has a chance to become compute-bound, if the shapes and kernels fit the hardware.
 \end{keyequation}
 
-The phrase ``from a chosen memory level'' matters. A matrix tile may have high arithmetic intensity relative to HBM because it is reused in on-chip SRAM, but lower intensity relative to registers if each register value is used only briefly. Performance work is therefore local: always name the boundary across which bytes are moving.
+The phrase ``from a chosen memory level'' matters. A matrix tile may have high arithmetic intensity relative to HBM because it is reused in on-chip memory, but lower intensity relative to registers if each register value is used only briefly. Performance claims should always name the memory boundary being discussed.
 
-\subsection{Latency and Throughput}
+\subsection{Bandwidth, Latency, and Batching}
 
-Latency is how long one thing takes. Throughput is how many things are completed per unit time. A restaurant analogy is useful. If one meal takes ten minutes, that is latency. If the kitchen serves sixty meals per hour, that is throughput. Batching often improves throughput by letting the kitchen prepare similar work together, but it can increase the waiting time for the first request in the batch.
+\subsubsection{Bandwidth is rate; latency is delay}
+
+\emph{Bandwidth} is the amount of data that can move per unit time once a transfer is underway. It is measured in units such as GB/s or TB/s. \emph{Latency} is the delay before useful data or a completed result is available. A rough transfer model is
+\[
+  \text{time} \approx \text{latency} +
+  \frac{\text{bytes transferred}}{\text{bandwidth}}.
+\]
+The latency term is the fixed waiting cost. The fraction is the streaming cost once bytes are flowing.
+
+Different links have different bandwidth and latency: registers to arithmetic units, on-chip SRAM to tensor cores, HBM to the accelerator package, PCIe or NVLink between devices, host DRAM to an accelerator, and network links between machines. A program can be fast at one boundary and bottlenecked at another.
+
+\subsubsection{Throughput versus latency}
+
+\emph{Latency} is how long one item takes. \emph{Throughput} is how many items finish per unit time. Batching often improves throughput because many examples can share a large matrix operation, amortize launch overhead, and fill more lanes of the accelerator. Batching can also increase the latency of an individual request if that request waits for the batch to form.
 
 In AI systems:
 
 \begin{itemize}[leftmargin=*]
   \item Training usually prefers throughput. Large batches keep accelerator arrays busy and amortize communication.
-  \item Interactive inference usually cares about latency. A chatbot user notices time to first token and per-token delay.
-  \item Offline inference cares about cost per item, which is throughput divided by dollars and energy.
+  \item Interactive inference cares about latency. A chatbot user notices time to first token and per-token delay.
+  \item Offline inference cares about cost per item, which depends on throughput, utilization, hardware price, and energy.
   \item Event-driven sensing cares about reacting to changes without processing empty frames.
 \end{itemize}
 
 \begin{aside}[Common mistake]
-``Fast chip'' is incomplete. A chip can have high training throughput but poor single-request latency. Another chip can be excellent for dense matrix multiplication but inefficient for irregular graph routing or tiny kernels.
+``Fast chip'' is incomplete. A chip can have high training throughput but poor single-request latency. Another chip can be excellent for dense matrix multiplication but inefficient for irregular graph routing, tiny kernels, or long-context decoding dominated by memory traffic.
 \end{aside}
 
-\subsection{Utilization}
+\subsection{Utilization and Bottlenecks}
 
-Utilization asks whether the expensive hardware is doing useful work. Low utilization can happen for many reasons:
+\subsubsection{What utilization means}
+
+\emph{Utilization} asks whether an expensive hardware resource is doing useful work. The resource must be named. Tensor-core utilization, memory-bandwidth utilization, network-link utilization, and CPU utilization can tell different stories.
+
+Low utilization is a symptom, not a diagnosis. It means some resource is idle or underused. The next question is what it is waiting for.
+
+\subsubsection{Common causes of low useful work}
+
+Low useful work can happen for many reasons:
 
 \begin{itemize}[leftmargin=*]
   \item The batch is too small to fill the compute array.
@@ -78,23 +133,41 @@ Utilization asks whether the expensive hardware is doing useful work. Low utiliz
   \item The program launches many tiny kernels with overhead between them.
   \item The model waits for host preprocessing, data loading, or CPU synchronization.
   \item Devices wait for all-reduce, all-to-all routing, or slow network links.
-  \item Memory capacity forces recomputation, swapping, or small microbatches.
+  \item Memory capacity forces recomputation, swapping, or very small microbatches.
+  \item A sparse workload saves arithmetic but spends the savings on indexing, routing, or load imbalance.
 \end{itemize}
 
-Utilization is not a moral score. It is a diagnostic. If utilization is low, ask what the hardware is waiting for. If utilization is high but the step time is still bad, ask whether the algorithm is doing too much work or moving too many bytes.
+If utilization is low, ask what the hardware is waiting for. If utilization is high but step time is still bad, ask whether the algorithm is doing too much work, moving too many bytes, or communicating too often.
+
+\subsubsection{Sparsity is not automatically speed}
+
+\emph{Sparsity} means that many values, connections, tokens, experts, or events are absent or unused. Sparsity helps only when the implementation can skip real work. A block-sparse matrix may speed up because the skipped blocks are regular. A random pattern of zeros may fail to help because the hardware must still load indices, branch around missing values, and handle uneven work.
+
+Mixture-of-experts transformers show both sides. Routing each token to a small number of experts can reduce arithmetic per token. But if tokens must be exchanged across devices, the all-to-all communication and load imbalance can become the bottleneck. The right question is not whether the mathematical model is sparse. The right question is whether the executed program moves fewer bytes and performs fewer operations after routing overhead is included.
+
+\subsection{Accelerator Fit}
+
+\subsubsection{What a device makes cheap}
+
+An accelerator is a collection of cheap paths and expensive paths. A GPU makes large dense tensor programs cheap when good kernels and enough parallel work are available. A TPU-like systolic array makes regular matrix flow cheap. A training cluster makes large distributed jobs possible only if its memory, compiler, collectives, and interconnect match the model. A CPU remains useful for control-heavy code, preprocessing, orchestration, and workloads that are too small or irregular for an accelerator.
+
+Accelerator choice is therefore a workload question. For long-context LLM decoding at small batch size, memory bandwidth and KV-cache capacity may matter more than peak FLOP/s. For large transformer training, all-reduce bandwidth and optimizer-state memory may matter as much as matrix throughput. For sparse event streams, an event-driven or dataflow design may be attractive only if the events stay sparse after preprocessing and batching.
 
 \subsection{A First Measurement Loop}
 
 The minimal hardware analysis loop is:
 \begin{enumerate}
-  \item write the computation in mathematical form,
-  \item estimate tensor sizes and bytes moved,
-  \item estimate the amount of reusable arithmetic,
-  \item run the workload and measure time, memory, and utilization,
+  \item write the computation in mathematical form;
+  \item record tensor shapes, precision, batch size, and execution mode;
+  \item estimate tensor sizes and bytes moved across the relevant memory boundary;
+  \item estimate the amount of reusable arithmetic;
+  \item run the workload and measure time, memory, utilization, and communication;
   \item explain the measurement before changing the implementation.
 \end{enumerate}
 
-This sequence prevents a common beginner mistake: optimizing a symptom without naming the bottleneck. If the dataloader is starving the GPU, a custom CUDA kernel will not help. If the workload is memory-bound, a chip with more peak FLOPs may not help. If the batch is too small, a larger accelerator can look worse simply because it is emptier.
+This sequence prevents a common beginner mistake: optimizing a symptom without naming the bottleneck. If the dataloader is starving the GPU, a custom CUDA kernel will not help. If the workload is memory-bound, a chip with more peak FLOP/s may not help. If the batch is too small, a larger accelerator can look worse simply because it is emptier.
+
+For a transformer measurement, separate prefill from decoding. Report batch size, sequence length, hidden size, precision, KV-cache size, number of devices, and whether requests are batched. Without those details, a latency or throughput number is hard to interpret.
 
 \subsection{The First Mental Model}
 
@@ -104,30 +177,35 @@ You can explain a surprising amount of AI performance with one sentence:
 Useful computation happens only when the right data is near the right arithmetic units at the right time.
 \end{aside}
 
-This sentence contains the whole course. ``Right data'' means memory layout, precision, batch shape, routing, and communication. ``Near'' means memory hierarchy and interconnect. ``Right arithmetic units'' means GPUs, systolic arrays, vector units, tensor cores, custom kernels, FPGA pipelines, or spiking event processors. ``Right time'' means scheduling, batching, synchronization, load balance, and latency constraints.
+``Right data'' means tensor layout, precision, batch shape, routing, sparsity pattern, and communication state. ``Near'' means registers, on-chip memory, HBM, host memory, storage, and interconnect. ``Right arithmetic units'' means CPUs, vector units, tensor cores, systolic arrays, custom kernels, FPGA pipelines, or spiking event processors. ``Right time'' means scheduling, batching, synchronization, load balance, and latency constraints.
 
 \subsection{Next steps}
 
-For this chapter, the mathematical object is the workload as operations plus bytes. The empirical diagnostic is a small timing and memory measurement with the tensor shapes recorded. The failure mode is confusing peak compute with realized performance.
+For this chapter, the mathematical object is the workload as operations plus bytes. The empirical diagnostic is a timing and memory measurement with tensor shapes recorded. The failure mode is confusing peak compute with realized performance.
 
 \begin{chaptersummary}
 \begin{itemize}[leftmargin=*]
   \item FLOPs count arithmetic, but bytes moved often set performance.
-  \item Bandwidth is rate; latency is delay. A system can have high bandwidth and still poor latency.
-  \item Batching improves throughput by amortizing overhead and filling arrays, but it can hurt latency.
-  \item Utilization tells you whether the hardware is busy doing useful work.
-  \item The core question is always placement of data, operations, and time.
+  \item FLOP/s is a rate, not a guarantee that the workload can reach that rate.
+  \item Arithmetic intensity is FLOPs divided by bytes moved across a named memory boundary.
+  \item Bandwidth is transfer rate; latency is waiting time.
+  \item Batching improves throughput by amortizing overhead and filling arrays, but it can hurt per-request latency.
+  \item Utilization is a diagnostic: always ask which resource is idle and what it is waiting for.
+  \item The core question is placement of data, operations, and time.
 \end{itemize}
 \end{chaptersummary}
 
 \begin{conceptquestions}
 \item Why is vector addition often memory-bound even though it is easy to parallelize?
-\item Why might increasing batch size improve throughput but worsen user experience?
-\item If a GPU reports low utilization, name three plausible causes before blaming the GPU.
+\item Why might increasing batch size improve throughput but worsen interactive user experience?
+\item In the arithmetic-intensity formula, why must you name the memory boundary?
+\item If a GPU reports low tensor-core utilization, name three plausible causes before blaming the GPU.
+\item Why can sparsity fail to produce a speedup?
 \end{conceptquestions}
 
 \begin{exercises}
-\item A vector addition reads two FP32 vectors and writes one FP32 vector. Estimate bytes moved per element and FLOPs per element. What is its arithmetic intensity?
-\item A matrix multiplication \(C = AB\) multiplies two \(1024 \times 1024\) FP16 matrices and writes an FP16 result. First estimate the naive bytes touched. Then explain why a tiled implementation can do much better than the naive estimate.
-\item Pick one model operation you know, such as an embedding lookup, convolution, attention step, or normalization. Write one paragraph naming its operations, bytes, possible parallelism, and likely bottleneck.
+\item A vector addition reads two FP32 vectors and writes one FP32 vector. Estimate bytes moved per element, FLOPs per element, and arithmetic intensity. State any assumptions you make about cache or write traffic.
+\item A matrix multiplication \(C = AB\) multiplies two \(1024 \times 1024\) FP16 matrices and writes an FP16 result. Estimate the dense FLOP count using \(2MNK\). Then estimate the minimum bytes needed to read \(A\), read \(B\), and write \(C\) once. Explain why tiling can make the realized arithmetic intensity much higher than a naive element-by-element implementation.
+\item For transformer inference, compare prompt prefill with single-token decoding. For each mode, name the main tensors touched, the reusable data, and whether you expect compute, memory bandwidth, or latency overhead to dominate.
+\item Choose one model operation, such as an embedding lookup, convolution, attention step, normalization, all-reduce, or mixture-of-experts routing. Write one paragraph naming its operations, bytes, possible parallelism, and likely bottleneck.
 \end{exercises}
