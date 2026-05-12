@@ -1,7 +1,7 @@
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{coursenotes-environments}[2026/04/17 Generic course-notes environments]
+\ProvidesPackage{coursenotes-environments}[2026/05/12 AAND-style course-note environments]
 
-% Requires tcolorbox and enumitem (loaded by main.tex).
+% Requires tcolorbox and enumitem.
 
 % ================================================================
 %
@@ -9,15 +9,12 @@
 %
 %     keyequation  - centred display equation with notation legend
 %     aside        - inline paragraph note
-%                    needs to stand apart from the main text flow
 %     derivation   - smaller font, clearly skippable detail
 %
-%   Most content should be plain prose. Prefer inline text over boxes.
+%   Most content should be plain prose. Prefer inline explanation over boxes.
 %
 % ================================================================
 
-% --- Key Equation ---
-%   Thin top rule, centred equation, optional \tcblower for notation.
 \newtcolorbox{keyequation}[1][]{
   enhanced,
   colback=white,
@@ -37,16 +34,12 @@
   before skip=1.2em, after skip=1.2em
 }
 
-% --- Aside ---
-%   AAND-style inline note: no framed callout, just a bold paragraph lead.
 \newenvironment{aside}[1][Note]{%
   \par\smallskip\noindent\textbf{#1.}\quad\ignorespaces
 }{%
   \par\smallskip
 }
 
-% --- Derivation ---
-%   Indented, slightly smaller font. Clearly "optional" reading.
 \newtcolorbox{derivation}[1][Derivation]{
   enhanced, breakable,
   colback=black!2,
@@ -62,19 +55,12 @@
   before skip=1em, after skip=1em
 }
 
-
-% ================================================================
-% SUMMARY TABLE environment (end of chapter)
-% ================================================================
 \newenvironment{chaptersummary}{%
   \subsection{Conceptual takeaways}
 }{%
   \bigskip
 }
 
-% ================================================================
-% EXERCISES environment (end of chapter)
-% ================================================================
 \newenvironment{exercises}{%
   \subsection{Practice exercises}
   \begin{enumerate}[leftmargin=*]
@@ -82,9 +68,6 @@
   \end{enumerate}
 }
 
-% ================================================================
-% CONCEPTUAL QUESTIONS (end of chapter)
-% ================================================================
 \newenvironment{conceptquestions}{%
   \subsection{Study questions}
   \begin{enumerate}[leftmargin=*]
@@ -92,9 +75,6 @@
   \end{enumerate}
 }
 
-% ================================================================
-% PARTS LIST (for sub-items in exercises)
-% ================================================================
 \newlist{parts}{enumerate}{1}
 \setlist[parts]{label=\textbf{(\alph*)}, leftmargin=*, itemsep=0.4em, topsep=0.2em, parsep=0pt}
 

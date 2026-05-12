@@ -1,62 +1,38 @@
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesClass{coursenotes}[2026/04/17 Generic course notes template extracted from Models of Neural Systems]
+\ProvidesClass{coursenotes}[2026/05/12 AAND-style lecture notes compatibility template]
 
-% ---------- Base class ----------
-\LoadClass[
-  12pt,
-  twoside,
-  openright,
-  headings=normal,
-  chapterprefix=true,
-  numbers=noenddot
-]{scrbook}
+% This class is a compatibility bridge for older courses that still use
+% \documentclass{coursenotes} and chapter-style source files. New courses should
+% use the article preamble in templates/aand-article/main.tex directly.
 
-% ---------- Typography ----------
-\RequirePackage{fontspec}
-\RequirePackage{mathtools}  % Load before unicode-math
-\RequirePackage{unicode-math}
+\LoadClass[11pt]{article}
+
+% ---------- Typography and layout ----------
+\RequirePackage[margin=1in]{geometry}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[utf8]{inputenc}
+\RequirePackage{lmodern}
 \RequirePackage{microtype}
-
-\defaultfontfeatures{Ligatures=TeX}
-\setmainfont{TeX Gyre Pagella}
-\setsansfont{TeX Gyre Heros}[Scale=MatchLowercase]
-\setmonofont{Latin Modern Mono}[Scale=MatchLowercase]
-\setmathfont{TeX Gyre Pagella Math}
-
-% ---------- Layout ----------
-\RequirePackage{geometry}
-\geometry{
-  papersize={8.5in, 11in},
-  textheight=8.5in,
-  inner=0.9in,
-  outer=0.9in,
-  top=0.85in
-}
-
-\setlength{\parskip}{0pt}
-\setlength{\parindent}{1.5em}
-\linespread{1.15}
-
-% ---------- Colours ----------
-\RequirePackage{xcolor}
-
-% Only what we actually use
-\definecolor{courseRule}{RGB}{0, 0, 0}     % black rules
-
-% ---------- Core packages ----------
-\RequirePackage{graphicx}
-\RequirePackage{amsmath}
+\RequirePackage{amsmath,amssymb,mathtools}
+\RequirePackage{amsthm}
 \RequirePackage{booktabs}
+\RequirePackage{graphicx}
+\RequirePackage{hyperref}
+\hypersetup{hidelinks}
+\RequirePackage{parskip}
 \RequirePackage{enumitem}
-\RequirePackage[most]{tcolorbox}
+\RequirePackage{longtable}
 \RequirePackage{tabularx}
+\RequirePackage{xcolor}
+\RequirePackage[most]{tcolorbox}
+\RequirePackage{listings}
+\RequirePackage{url}
+\RequirePackage{xparse}
 
 % ---------- Diagrams ----------
 \RequirePackage{tikz}
 \RequirePackage{pgfplots}
-\pgfplotsset{compat=1.18}
 \RequirePackage[european, straightvoltages]{circuitikz}
-
 \usetikzlibrary{
   arrows.meta,
   calc,
@@ -67,60 +43,82 @@
   patterns,
   backgrounds
 }
+\pgfplotsset{compat=1.18}
 
 % ---------- Cross-references ----------
-\RequirePackage{hyperref}
+\RequirePackage[capitalise,noabbrev]{cleveref}
+\crefname{chapter}{lecture}{lectures}
+\Crefname{chapter}{Lecture}{Lectures}
+
+% ---------- Defaults ----------
+\setcounter{tocdepth}{3}
+\setlist{itemsep=0.25em, topsep=0.35em}
+\urlstyle{same}
+\lstset{
+  basicstyle=\small\ttfamily,
+  breaklines=true,
+  frame=single,
+  framerule=0.2pt,
+  columns=fullflexible,
+  keepspaces=true,
+  showstringspaces=false
+}
+
+% Older course files may write chapter entries into the ToC. Article does not
+% define that level, so map it to the same visual level as sections.
 \makeatletter
-\AtBeginDocument{%
-  \hypersetup{%
-    colorlinks=true,
-    linkcolor=black!70,
-    citecolor=black!60,
-    urlcolor=black!60,
-    pdfauthor={\@author},
-    pdftitle={\@title}
+\providecommand*\l@chapter{\@dottedtocline{1}{1.5em}{2.3em}}
+\makeatother
+
+% ---------- Legacy book-command compatibility ----------
+\providecommand{\frontmatter}{}
+\providecommand{\mainmatter}{}
+\providecommand{\backmatter}{}
+\providecommand{\chaptermark}[1]{}
+\providecommand{\sectionmark}[1]{}
+\providecommand{\index}[1]{}
+
+\newcounter{chapter}
+\renewcommand{\thechapter}{\arabic{chapter}}
+
+\let\CourseNotesSection\section
+\let\CourseNotesSubsection\subsection
+\let\CourseNotesSubsubsection\subsubsection
+
+\RenewDocumentCommand{\part}{s m}{%
+  \par\bigskip
+  \IfBooleanTF{#1}{%
+    \CourseNotesSection*{#2}%
+  }{%
+    \CourseNotesSection*{#2}%
+    \addcontentsline{toc}{section}{#2}%
+  }%
+  \par\medskip
+}
+
+\NewDocumentCommand{\chapter}{s m}{%
+  \IfBooleanTF{#1}{%
+    \CourseNotesSection*{#2}%
+  }{%
+    \refstepcounter{chapter}%
+    \CourseNotesSection{Lecture \thechapter: #2}%
   }%
 }
-\makeatother
-\RequirePackage[capitalise, noabbrev]{cleveref}
 
-% ---------- Bibliography ----------
-\RequirePackage{csquotes}
-
-% ---------- Headers and footers (KOMA-Script) ----------
-\RequirePackage{scrlayer-scrpage}
-\pagestyle{scrheadings}
-\clearpairofpagestyles
-\ofoot[\pagemark]{\pagemark}
-\ihead{\leftmark}
-\ohead{\rightmark}
-
-% Chapter on left page header, section on right
-\automark[section]{chapter}
-
-% ---------- Chapter heading style ----------
-\addtokomafont{chapter}{\sffamily\color{black}}
-\addtokomafont{section}{\sffamily\color{black}}
-\addtokomafont{subsection}{\sffamily\color{black}}
-\addtokomafont{chapterprefix}{\sffamily\large}
-\renewcommand*{\raggedchapter}{\raggedright}
-
-% Rule under chapter title
-\renewcommand*{\chapterformat}{%
-  \mbox{\scalebox{2.2}{\thechapter\autodot\enskip}}%
-}
-\RedeclareSectionCommand[
-  afterskip=1.5em,
-  beforeskip=0pt
-]{chapter}
-\renewcommand{\chapterlineswithprefixformat}[3]{%
-  #2#3%
-  \par\nobreak\vskip 4pt%
-  {\rule{\textwidth}{0.6pt}}%
+\RenewDocumentCommand{\section}{s m}{%
+  \IfBooleanTF{#1}{%
+    \CourseNotesSubsection*{#2}%
+  }{%
+    \CourseNotesSubsection{#2}%
+  }%
 }
 
-% ---------- Part heading style ----------
-\addtokomafont{part}{\sffamily\color{black}}
-\addtokomafont{partprefix}{\sffamily\large}
+\RenewDocumentCommand{\subsection}{s m}{%
+  \IfBooleanTF{#1}{%
+    \CourseNotesSubsubsection*{#2}%
+  }{%
+    \CourseNotesSubsubsection{#2}%
+  }%
+}
 
 \endinput

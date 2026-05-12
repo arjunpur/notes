@@ -1,0 +1,60 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{amsmath,amssymb,mathtools}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\hypersetup{hidelinks}
+\usepackage{parskip}
+\usepackage{enumitem}
+\usepackage{longtable}
+\usepackage{tabularx}
+\usepackage{xcolor}
+\usepackage[most]{tcolorbox}
+\usepackage{listings}
+\usepackage{url}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\usetikzlibrary{arrows.meta,positioning,calc}
+\pgfplotsset{compat=1.18}
+\setcounter{tocdepth}{3}
+\urlstyle{same}
+
+\usepackage{coursenotes-macros}
+\usepackage{coursenotes-environments}
+
+\graphicspath{{imagegen-figures/}}
+
+\lstset{
+  basicstyle=\small\ttfamily,
+  breaklines=true,
+  frame=single,
+  framerule=0.2pt,
+  columns=fullflexible,
+  keepspaces=true,
+  showstringspaces=false
+}
+
+\title{Course Title\\Lecture Notes}
+\author{Arjun Puri}
+\date{Term Year}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+
+\input{frontmatter/preface}
+\input{frontmatter/notation}
+
+% BEGIN COURSE LECTURE INPUTS
+\input{chapters/ch01-topic/ch01}
+% END COURSE LECTURE INPUTS
+
+\input{backmatter/reference-trail}
+
+\end{document}
