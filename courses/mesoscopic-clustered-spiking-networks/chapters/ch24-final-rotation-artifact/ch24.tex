@@ -1,0 +1,270 @@
+\chapter{Suggested Final Rotation Artifact}
+\label{ch:final-rotation-artifact}
+
+\textit{A strong rotation artifact is not just a collection of simulations. It is a compact research package: a reproduction, a derivation, a mesoscopic extension, a microscopic comparison, a phase diagram, and a clear statement of what remains unresolved.}
+
+% ============================================================
+\section{A Clean Reproduction Notebook}
+\label{sec:clean-reproduction-notebook}
+% ============================================================
+
+The first artifact should be a single clean reproduction notebook or script-backed notebook that rebuilds the E-clustered baseline from a configuration file. Its purpose is not exploratory plotting. Its purpose is to answer: can we reproduce the minimal phenomena reliably?
+
+The notebook should have five outputs:
+%
+\begin{enumerate}[leftmargin=*]
+  \item a raster plot with cluster labels visible;
+  \item smoothed excitatory cluster rates and inhibitory population rate;
+  \item active-cluster count $n_{\mathrm{act}}(t)$;
+  \item Fano factor and autocorrelation summaries;
+  \item a table of parameter values and random seeds.
+\end{enumerate}
+
+The core state variable should match the theory:
+%
+\begin{equation}
+  \widehat r_k(t)
+  =
+  \frac{1}{N_k}
+  \sum_{i\in \mathcal{C}_k}(\kappa*s_i)(t).
+  \label{eq:artifact-cluster-rate}
+\end{equation}
+%
+If the notebook makes claims about cluster up-states, those claims should be made from $\widehat r_k(t)$ or a documented thresholded version of it.
+
+The reproduction notebook should keep all parameters in one visible configuration block. A future reader should be able to change cluster strength, cluster size, or random seed without editing analysis code.
+
+% ============================================================
+\section{A Derivation Note}
+\label{sec:derivation-note}
+% ============================================================
+
+The second artifact should be a derivation note that connects the microscopic and mesoscopic descriptions. It does not need to be long, but it should be explicit about the retained variables and discarded degrees of freedom.
+
+The minimal derivation structure is:
+%
+\begin{enumerate}[leftmargin=*]
+  \item define microscopic spike trains $s_i(t)$ and cluster activities $A_k^a(t)$;
+  \item define filtered rates $r_k^a(t)$;
+  \item write the effective inputs $u_k^a(t)$ in terms of coupling matrices;
+  \item introduce transfer functions $\Phi_a$;
+  \item add finite-size noise with the intended $N_k^{-1/2}$ scaling;
+  \item state what assumptions are approximations rather than consequences.
+\end{enumerate}
+
+The central equation should be the E/I mesoscopic model:
+%
+\begin{equation}
+  \tau_a\dot r_k^a
+  =
+  -r_k^a
+  +
+  \Phi_a(u_k^a)
+  +
+  \frac{\sigma_a(r_k^a)}{\sqrt{N_k^a}}\xi_k^a(t),
+  \qquad
+  a\in\{E,I\}.
+  \label{eq:artifact-ei-mesoscopic-equation}
+\end{equation}
+%
+Each term should be interpreted: relaxation, expected population response, and intrinsic finite-size fluctuation.
+
+The derivation note should also include the fast-inhibition reduction from \cref{eq:ei-effective-coupling}. That reduction is the shortest mathematical explanation of how inhibitory clustering changes effective competition among excitatory clusters.
+
+% ============================================================
+\section{E-Only Mesoscopic Model Results}
+\label{sec:e-only-mesoscopic-results}
+% ============================================================
+
+The E-only mesoscopic model is the control theory model. It should reproduce the qualitative behavior of the E-clustered microscopic baseline before any E/I extension is presented.
+
+The result set should include:
+%
+\begin{enumerate}[leftmargin=*]
+  \item fixed-point branches as a function of cluster strength or drive;
+  \item local stability eigenvalues for low and high cluster states;
+  \item stochastic trajectories showing metastable switching;
+  \item dwell-time distributions and size scaling;
+  \item comparison to microscopic cluster-rate statistics.
+\end{enumerate}
+
+A useful minimal conclusion has the form
+%
+\begin{equation}
+  g_{EE}\uparrow
+  \Rightarrow
+  \text{bistable cluster fixed points}
+  \Rightarrow
+  \text{finite-size switching when } n_E<\infty .
+  \label{eq:e-only-result-chain}
+\end{equation}
+%
+The first arrow should be supported by deterministic fixed points. The second should be supported by stochastic simulations and cluster-size scaling.
+
+This E-only result prevents the project from over-attributing effects to inhibitory clustering. If the E-only mesoscopic model already explains a statistic, the E/I extension should be asked what it improves: robustness, local balance, spike irregularity, parameter range, or match to a specific task model.
+
+% ============================================================
+\section{E/I Mesoscopic Extension}
+\label{sec:ei-mesoscopic-extension-artifact}
+% ============================================================
+
+The E/I extension artifact should introduce paired inhibitory clusters as the smallest additional mechanism. It should make one explicit comparison against the E-only model while holding the baseline as fixed as possible.
+
+The central comparison is:
+%
+\begin{equation}
+  \theta_{\mathrm{E-only}}
+  \longrightarrow
+  \theta_{\mathrm{E/I}}
+  =
+  \theta_{\mathrm{E-only}}
+  \cup
+  \{g_{IE},g_{EI},g_{II},N_k^I,\tau_I,\Phi_I\}.
+  \label{eq:ei-extension-parameter-addition}
+\end{equation}
+%
+This notation makes clear which parameters are new. It also discourages retuning every old parameter until the desired result appears.
+
+The E/I result should report:
+%
+\begin{enumerate}[leftmargin=*]
+  \item local E/I tracking $\operatorname{corr}_t(r_k^E,r_k^I)$;
+  \item balance residuals $B_k(t)$;
+  \item stability region in $(g_{EE},g_{EI})$ or $(g_{IE},g_{EI})$;
+  \item whether within-state spike irregularity changes;
+  \item whether metastable dwell times become more robust to parameter perturbations.
+\end{enumerate}
+
+The strongest possible conclusion would not be that E/I clustering merely creates metastability. E-only clustering already can do that. The stronger conclusion would be that E/I clustering preserves metastability while improving local balance or expanding the region where microscopic spiking remains irregular and stable.
+
+% ============================================================
+\section{Microscopic vs Mesoscopic Comparison}
+\label{sec:microscopic-vs-mesoscopic-comparison-artifact}
+% ============================================================
+
+The comparison should be built around matched variables. For each microscopic simulation, compute the empirical mesoscopic state
+%
+\begin{equation}
+  \widehat{\vec x}(t)
+  =
+  \left(
+    \widehat r_1^E(t),\ldots,\widehat r_Q^E(t),
+    \widehat r_1^I(t),\ldots,\widehat r_Q^I(t)
+  \right).
+  \label{eq:empirical-mesoscopic-state-vector}
+\end{equation}
+%
+Then compare it to $\vec x(t)$ from the mesoscopic equations using statistics that do not require spike-by-spike identity.
+
+The comparison table should include:
+%
+\begin{longtable}{@{}p{0.24\textwidth}p{0.34\textwidth}p{0.32\textwidth}@{}}
+\toprule
+\textbf{Observable} & \textbf{Microscopic estimate} & \textbf{Mesoscopic estimate} \\
+\midrule
+Mean cluster rate & Smoothed spikes averaged over neurons. & Time average of $r_k^a(t)$. \\
+State occupancy & Thresholded $\widehat r_k^a(t)$. & Thresholded $r_k^a(t)$. \\
+Dwell time & Consecutive active intervals. & Same detection rule. \\
+Fano factor & Spike counts in windows. & Counts sampled from rate, or integrated activity approximation. \\
+Autocorrelation & $\widehat r_k^a(t)$ or $n_{\mathrm{act}}(t)$. & $r_k^a(t)$ or active-cluster count. \\
+Transition path & Transition-triggered average of smoothed spikes. & Transition-triggered average of rates. \\
+\bottomrule
+\end{longtable}
+
+The same detection thresholds and smoothing windows should be used wherever possible. If they differ, the reason should be stated. Otherwise a good match can be manufactured by analysis choices rather than by model quality.
+
+% ============================================================
+\section{Phase Diagram}
+\label{sec:phase-diagram-artifact}
+% ============================================================
+
+The phase diagram is the summary artifact that turns model behavior into a research result. It should include at least one E-only diagram and one E/I diagram with aligned axes where possible.
+
+A minimal phase-diagram package contains:
+%
+\begin{enumerate}[leftmargin=*]
+  \item categorical regime map with predefined labels;
+  \item scalar overlay: leading eigenvalue, $\log\E[L]$, autocorrelation time, or Fano factor;
+  \item representative trajectories for selected grid points;
+  \item seed and simulation-duration table;
+  \item explicit classification rules.
+\end{enumerate}
+
+The diagram should distinguish deterministic and stochastic classifications. For example, a point may have multiple stable deterministic fixed points but show no switches in a finite stochastic run because barriers are too high. Another point may show irregular deterministic trajectories with positive Lyapunov exponent. These are not the same regime.
+
+The phase diagram should answer one rotation-level question: does E/I clustering change the mechanism, or does it change the robustness of the same mechanism?
+
+% ============================================================
+\section{Summary of Open Questions}
+\label{sec:summary-open-questions-artifact}
+% ============================================================
+
+The final artifact should end with open questions that are precise enough to become next experiments. Useful open questions include:
+%
+\begin{enumerate}[leftmargin=*]
+  \item Which parameters most strongly shape the mesoscopic transfer functions?
+  \item Does the E/I extension require paired inhibitory clusters, or would structured $I\to E$ feedback alone suffice?
+  \item Does switching vanish under fixed-$Q$, large-cluster scaling?
+  \item Are any irregular mesoscopic regimes deterministic with positive Lyapunov exponent?
+  \item Which variability statistic is best matched: Fano factor, autocorrelation, dwell time, or state occupancy?
+  \item Which claims depend on exact parameter values from the source papers and therefore need citation-level verification?
+\end{enumerate}
+
+Each open question should include a proposed test. An open question without a test is too vague for a rotation handoff.
+
+% ============================================================
+\section{Possible Next-Paper Contribution}
+\label{sec:possible-next-paper-contribution}
+% ============================================================
+
+A plausible next-paper contribution would be a mesoscopic theory of E/I clustered attractor networks that connects three levels: microscopic spiking architecture, E/I mesoscopic equations, and a phase diagram with scaling predictions. In shorthand,
+%
+\begin{equation}
+  \text{micro}
+  \longrightarrow
+  \text{E/I meso}
+  \longrightarrow
+  \text{phase diagram}.
+  \label{eq:next-paper-three-levels}
+\end{equation}
+%
+The contribution is strongest if it makes a prediction that is hard to see from simulation alone.
+
+Examples of defensible contribution statements are:
+%
+\begin{enumerate}[leftmargin=*]
+  \item E/I clustering expands the parameter region where attractor-like cluster states coexist with balanced irregular spiking.
+  \item The apparent slow variability in a specified regime is finite-size-driven because switching disappears under fixed-$Q$ cluster-size scaling.
+  \item A different specified regime is deterministic mesoscopic irregularity because switching persists with intrinsic noise removed and the largest Lyapunov exponent is positive.
+  \item The fast-inhibition effective coupling matrix predicts which E/I architectures favor single-cluster versus multi-cluster active states.
+\end{enumerate}
+
+The final paper-like story should avoid overclaiming. It can state that the mesoscopic model preserves some observables and fails on others. That is scientifically more useful than presenting a polished model with no failure modes.
+
+\begin{chaptersummary}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.45}
+\begin{tabularx}{\textwidth}{@{}l X X@{}}
+  \toprule
+  \textbf{Artifact} & \textbf{Purpose} & \textbf{Main evidence} \\
+  \midrule
+  Reproduction notebook & Establish baseline phenomena & Raster, cluster rates, Fano factor, lifetimes \\
+  Derivation note & Connect microscopic and mesoscopic variables & Equations, assumptions, noise scaling \\
+  E-only mesoscopic result & Control model for clustering & Fixed points, stability, switching \\
+  E/I extension & Test paired inhibition mechanism & Balance, robustness, phase-region changes \\
+  Micro/meso comparison & Validate retained variables & Matched observables and scaling \\
+  Phase diagram & Turn simulations into theory & Regime map with classification rules \\
+  Open questions & Define next experiments & Testable uncertainties \\
+  \bottomrule
+\end{tabularx}
+\end{center}
+
+\end{chaptersummary}
+
+\begin{conceptquestions}
+  \item Why should the reproduction notebook expose all parameters in one configuration block?
+  \item What would count as evidence that the E/I extension improves robustness rather than merely retuning the E-only model?
+  \item Which microscopic observable is most directly matched to the mesoscopic variable $r_k^E(t)$?
+  \item What is one next-paper claim that would require a Lyapunov-exponent calculation?
+\end{conceptquestions}

@@ -1,0 +1,435 @@
+\chapter{The Main Theory Question: Multistability or Mesoscopic Chaos?}
+\label{ch:multistability-or-mesoscopic-chaos}
+
+\textit{Slow irregular cluster activity can come from two different mechanisms. One is multistability plus finite-size noise: the deterministic system has attractors, and stochastic population fluctuations drive rare switches between them. The other is mesoscopic chaos: the deterministic population equations already generate sensitive, irregular switching. The rotation's core theory problem is to distinguish these mechanisms with scaling, stability, Lyapunov, autocorrelation, and perturbation-response tests.}
+
+% ============================================================
+\section{Stable Attractors Plus Finite-Size Noise}
+\label{sec:stable-attractors-plus-finite-size-noise}
+% ============================================================
+
+The multistability picture begins with a deterministic mesoscopic system
+%
+\begin{equation}
+  \dot{\vec x}=f(\vec x;\theta),
+  \label{eq:deterministic-mesoscopic-system}
+\end{equation}
+%
+where $\vec x$ collects the population variables. In an E-clustered model, $\vec x=(r_1,\ldots,r_Q)$. In an E/I clustered model, $\vec x=(\vec r^{\,E},\vec r^{\,I})$. The parameter vector $\theta$ contains cluster strengths, inhibitory gains, time constants, external drives, and transfer-function parameters.
+
+Multistability means that \eqref{eq:deterministic-mesoscopic-system} has several stable attractors:
+%
+\begin{equation}
+  f(\vec x_m^*;\theta)=0,
+  \qquad
+  m=1,\ldots,M,
+  \label{eq:multiple-fixed-points}
+\end{equation}
+%
+with each $\vec x_m^*$ representing a different active-cluster pattern. One fixed point may have no active clusters; another may have cluster 3 active; another may have clusters 2 and 7 active.
+
+Finite-size spiking adds noise:
+%
+\begin{keyequation}[Attractors with Finite-Size Noise]
+\begin{equation}
+  \dd \vec x
+  =
+  f(\vec x;\theta)\,\dd t
+  +
+  \frac{1}{\sqrt{N_{\mathrm{eff}}}}
+  B(\vec x;\theta)\,\dd \vec W(t).
+  \label{eq:finite-size-attractor-sde}
+\end{equation}
+\tcblower
+$f$ is deterministic population drift, $B$ is the state-dependent noise matrix, $\vec W$ is standard Brownian motion, and $N_{\mathrm{eff}}$ is the relevant population size, often a cluster size rather than the full network size.
+\end{keyequation}
+
+\noindent In this picture, the deterministic system does not switch by itself. It relaxes toward one attractor. Switching happens because finite-size fluctuations push the state across a basin boundary. The learner should therefore compute fixed points, their basins, and how transition rates scale with population size.
+
+% ============================================================
+\section{Metastable Switching as Noise-Driven Escape}
+\label{sec:metastable-switching-noise-driven-escape}
+% ============================================================
+
+Let $\mathcal{B}_m$ be the basin of attraction of stable state $\vec x_m^*$. A noise-driven transition from state $m$ to state $\ell$ occurs when the stochastic trajectory exits $\mathcal{B}_m$ and enters $\mathcal{B}_{\ell}$.
+
+In one dimension, the basin boundary is an unstable fixed point. In many dimensions, it is usually a separatrix containing saddles or saddle-like invariant sets. The most likely escape path is the path that reaches the boundary with least stochastic cost.
+
+A compact way to express the scaling is
+%
+\begin{equation}
+  \mathbb{E}[T_{m\to \ell}]
+  \asymp
+  C_{m\ell}
+  \exp\!\left(N_{\mathrm{eff}}S_{m\ell}\right),
+  \label{eq:escape-large-deviation}
+\end{equation}
+%
+where $S_{m\ell}$ is a quasipotential barrier and $C_{m\ell}$ is a prefactor. The symbol $\asymp$ means logarithmic equivalence in the large-size limit, not exact equality.
+
+Term by term: $T_{m\to\ell}$ is the first-passage time, $N_{\mathrm{eff}}$ multiplies the barrier because noise amplitude scales as $N_{\mathrm{eff}}^{-1/2}$, and $S_{m\ell}$ measures how hard it is to reach the relevant basin boundary. Increasing cluster size should therefore increase lifetimes approximately exponentially when the deterministic attractor landscape is fixed.
+
+Noise-driven escape has three practical signatures:
+%
+\begin{enumerate}[leftmargin=*]
+  \item trajectories spend long intervals near fixed-point patterns;
+  \item transitions are brief relative to dwell times;
+  \item dwell times grow strongly with cluster size or effective population size.
+\end{enumerate}
+
+The first two signatures can be misleading because deterministic systems can also linger and jump. The third signature is harder to fake: finite-size escape should change predictably when the noise scale is changed without moving the deterministic vector field.
+
+% ============================================================
+\section{Mesoscopic Chaos as a Different Mechanism}
+\label{sec:mesoscopic-chaos-different-mechanism}
+% ============================================================
+
+Mesoscopic chaos means that the deterministic population equations themselves generate irregular aperiodic activity with sensitive dependence on initial conditions. The defining object is still
+%
+\begin{equation}
+  \dot{\vec x}=f(\vec x;\theta),
+  \label{eq:chaos-deterministic-system}
+\end{equation}
+%
+but now the long-time attractor is not a stable fixed point or a simple limit cycle. It is a chaotic invariant set.
+
+The defining test is the largest Lyapunov exponent:
+%
+\begin{equation}
+  \lambda_{\max}
+  =
+  \lim_{t\to\infty}
+  \frac{1}{t}
+  \log
+  \frac{\|\delta\vec x(t)\|}{\|\delta\vec x(0)\|}.
+  \label{eq:largest-lyapunov-definition}
+\end{equation}
+%
+If $\lambda_{\max}>0$, nearby deterministic trajectories separate exponentially for a range of times. The mechanism of irregularity is then not rare noise-driven barrier crossing. It is deterministic stretching and folding in the mesoscopic state space.
+
+Chaos requires enough effective dimension and the right feedback structure. A two-dimensional autonomous rate model cannot be chaotic, but higher-dimensional cluster systems, E/I systems with many pairs, delayed or filtered synapses, adaptation variables, and refractory-density variables can have the necessary dimension.
+
+The key conceptual difference is this: metastable switching is irregular because noise chooses when a basin boundary is crossed; mesoscopic chaos is irregular because the deterministic flow continually amplifies small state differences.
+
+% ============================================================
+\section{What Would Persist as Network Size Goes to Infinity?}
+\label{sec:what-persists-network-size-infinity}
+% ============================================================
+
+The cleanest distinction is the infinite-size limit. Suppose the number of clusters $Q$ is fixed and the size of each cluster grows:
+%
+\begin{equation}
+  n_{\alpha}\to\infty,
+  \qquad
+  Q \ \text{fixed}.
+  \label{eq:fixed-q-large-clusters}
+\end{equation}
+%
+Then finite-size noise in each cluster scales as $n_{\alpha}^{-1/2}$ and vanishes. The stochastic system \eqref{eq:finite-size-attractor-sde} converges to the deterministic system \eqref{eq:deterministic-mesoscopic-system}.
+
+The predictions are opposite:
+%
+\begin{enumerate}[leftmargin=*]
+  \item \textbf{Finite-size multistability}: switching disappears as $n_{\alpha}\to\infty$. The system falls into one attractor and stays there unless externally perturbed.
+  \item \textbf{Mesoscopic chaos}: irregular switching or wandering persists in the deterministic limit, up to numerical precision and model details.
+\end{enumerate}
+
+This does not mean finite-size effects are unimportant in a chaotic system. Noise can blur trajectories, induce attractor hopping, or change measured variability. But if the deterministic skeleton is chaotic, removing intrinsic noise should not collapse the dynamics into a single stable fixed point.
+
+The infinite-size question should be asked at fixed deterministic parameters. If parameters are refit as $n_{\alpha}$ changes, scaling conclusions become ambiguous.
+
+% ============================================================
+\section{Scaling Cluster Size While Holding Cluster Number Fixed}
+\label{sec:scaling-cluster-size-fixed-number}
+% ============================================================
+
+Holding $Q$ fixed while increasing $n$ is the most direct finite-size test. Let $n_{\alpha}=n$ and $N_E=Qn$. If coupling is normalized so the deterministic vector field $f$ does not change with $n$, the stochastic model is
+%
+\begin{equation}
+  \dd \vec x
+  =
+  f(\vec x;\theta)\,\dd t
+  +
+  \frac{1}{\sqrt n}B(\vec x;\theta)\,\dd \vec W(t).
+  \label{eq:fixed-q-size-scaling}
+\end{equation}
+%
+The drift is held fixed. Only the noise amplitude changes.
+
+For noise-driven switching, the log lifetime should grow approximately linearly with $n$:
+%
+\begin{equation}
+  \log \mathbb{E}[T_{\mathrm{life}}(n)]
+  \approx
+  a + nS ,
+  \qquad
+  S>0 .
+  \label{eq:log-lifetime-linear-n}
+\end{equation}
+%
+$S$ is an effective barrier. It may depend on which transition is measured, but it should not vanish throughout the metastable regime.
+
+Other quantities should scale too. The variance of small fluctuations inside one basin should often scale like
+%
+\begin{equation}
+  \operatorname{Var}[\delta x]
+  \propto
+  \frac{1}{n}
+  \label{eq:within-basin-variance-scaling}
+\end{equation}
+%
+when measured away from bifurcations. Near saddle-node boundaries, fluctuations can be larger because the deterministic restoring eigenvalue is small.
+
+For deterministic chaos, changing $n$ mainly changes the amplitude of added noise. Lifetime-like statistics may converge to a nontrivial deterministic value rather than diverging exponentially. The largest Lyapunov exponent estimated from the deterministic equations should be positive and independent of $n$.
+
+% ============================================================
+\section{Scaling Cluster Number and Cluster Size Together}
+\label{sec:scaling-cluster-number-and-size-together}
+% ============================================================
+
+The second thermodynamic question is more subtle: what happens when both the number of clusters and their sizes change? Let
+%
+\begin{equation}
+  N_E = Qn .
+  \label{eq:total-e-size-qn}
+\end{equation}
+%
+There are several distinct limits, and they answer different questions.
+
+If $Q\to\infty$ with $n$ fixed, each cluster remains noisy while the number of possible cluster states grows. The model approaches a high-dimensional stochastic system, not a deterministic low-noise system.
+
+If $n\to\infty$ and $Q\to\infty$, the outcome depends on the order of limits and on coupling normalization. A mean input normalization might use
+%
+\begin{equation}
+  \sum_{\beta=1}^{Q} W_{\alpha\beta}^{EE} r_{\beta}
+  =
+  W_{+}^{EE}r_{\alpha}
+  +
+  \frac{W_{-}^{EE}}{Q}
+  \sum_{\beta\ne\alpha} r_{\beta}.
+  \label{eq:q-normalized-coupling}
+\end{equation}
+%
+The $1/Q$ factor keeps total between-cluster input order one as $Q$ grows. Without such normalization, the input can grow with $Q$ and change the model class.
+
+Large $Q$ also changes stability. The Jacobian gains many contrast modes. Even if each finite-$Q$ system has stable fixed points, the leading eigenvalues may approach zero as $Q$ grows, creating long transients or collective fluctuations. Conversely, high dimension can make deterministic chaos more plausible.
+
+The practical rule is to report the scaling protocol explicitly:
+%
+\begin{equation}
+  (Q,n,W)\mapsto(Q',n',W')
+  \label{eq:scaling-protocol}
+\end{equation}
+%
+and explain which quantities are held fixed: mean input, cluster fraction, within-cluster gain, inhibitory gain, and total network size.
+
+% ============================================================
+\section{Lyapunov Exponents and Sensitivity to Perturbations}
+\label{sec:lyapunov-exponents-sensitivity}
+% ============================================================
+
+Lyapunov exponents measure deterministic sensitivity. For the ODE $\dot{\vec x}=f(\vec x)$, an infinitesimal perturbation evolves according to the tangent equation
+%
+\begin{equation}
+  \frac{\dd}{\dd t}\delta\vec x
+  =
+  \mathcal{J}(\vec x(t))\delta\vec x,
+  \qquad
+  \mathcal{J}_{ij}(\vec x)=\frac{\partial f_i}{\partial x_j}(\vec x).
+  \label{eq:tangent-linear-system}
+\end{equation}
+%
+The largest Lyapunov exponent is computed by repeatedly evolving this tangent system and renormalizing $\delta\vec x$:
+%
+\begin{equation}
+  \lambda_{\max}
+  \approx
+  \frac{1}{T}
+  \sum_{m=1}^{M}
+  \log
+  \frac{\|\delta\vec x(t_m^-)\|}{\|\delta\vec x(t_{m-1}^+)\|}.
+  \label{eq:numerical-lyapunov}
+\end{equation}
+%
+$t_m^-$ is the time just before renormalization and $t_{m-1}^+$ is the time just after the previous renormalization. The sum averages local expansion rates along the trajectory.
+
+For a stable fixed point, every Lyapunov exponent is negative. For a stable limit cycle, the largest exponent is zero along the phase direction and the rest are negative. For deterministic chaos, the largest exponent is positive.
+
+In stochastic simulations, one must be careful. Two trajectories with independent noise separate even if the deterministic system is stable. A better test is to estimate Lyapunov exponents from the deterministic mesoscopic equations, or to run paired stochastic trajectories with identical noise and slightly different initial conditions. Identical-noise separation is closer to deterministic sensitivity; independent-noise separation mostly measures noise injection.
+
+% ============================================================
+\section{Autocorrelation Signatures of Noise-Driven Versus Chaotic Switching}
+\label{sec:autocorrelation-signatures}
+% ============================================================
+
+Autocorrelation is a useful but not decisive diagnostic. For a cluster activity $r_{\alpha}(t)$, define
+%
+\begin{equation}
+  C_{\alpha}(\tau)
+  =
+  \frac{
+    \mathbb{E}[(r_{\alpha}(t)-\bar r_{\alpha})(r_{\alpha}(t+\tau)-\bar r_{\alpha})]
+  }{
+    \operatorname{Var}[r_{\alpha}(t)]
+  }.
+  \label{eq:ch12-autocorrelation}
+\end{equation}
+%
+If switching is a two-state Markov process with transition rates $k_{UD}$ and $k_{DU}$, the slow component of the autocorrelation decays like
+%
+\begin{equation}
+  C_{\mathrm{slow}}(\tau)
+  \approx
+  \exp[-(k_{UD}+k_{DU})\tau].
+  \label{eq:two-state-autocorrelation}
+\end{equation}
+%
+Thus noise-driven metastability often produces long exponential tails whose time constants match dwell-time statistics.
+
+The dwell-time distribution for memoryless escape is approximately
+%
+\begin{equation}
+  p(T_{\mathrm{dwell}}>t)
+  \approx
+  \exp(-t/\tau_{\mathrm{dwell}}).
+  \label{eq:exponential-dwell-survival}
+\end{equation}
+%
+The key test is how $\tau_{\mathrm{dwell}}$ changes with $n$. If $\tau_{\mathrm{dwell}}$ grows like \eqref{eq:log-lifetime-linear-n}, the autocorrelation tail should lengthen strongly with cluster size.
+
+Chaotic dynamics can also produce decaying autocorrelations and broad spectra. The difference is that the time scale is generated by deterministic mixing rather than rare escape. Autocorrelation time may converge as $n$ increases, and the power spectrum may retain broadband structure in the deterministic simulation.
+
+Therefore autocorrelation should be paired with scaling and Lyapunov tests. By itself, a long correlation time proves only that the system has slow dynamics, not why it has them.
+
+% ============================================================
+\section{Perturbation-Response Tests}
+\label{sec:perturbation-response-tests}
+% ============================================================
+
+Perturbation tests ask how the system responds when we push it in state space. They are useful because attractor landscapes and chaotic flows respond differently.
+
+For a stable fixed-point attractor, a small perturbation inside the basin decays:
+%
+\begin{equation}
+  \|\delta\vec x(t)\|
+  \lesssim
+  C e^{-\gamma t}\|\delta\vec x(0)\|,
+  \qquad
+  \gamma>0,
+  \label{eq:stable-perturbation-decay}
+\end{equation}
+%
+until noise or nonlinear effects dominate. A larger perturbation can cross a basin boundary and cause a discrete state transition. The response is threshold-like: below the boundary the system returns; above it the system switches.
+
+For deterministic chaos, a small perturbation grows on average:
+%
+\begin{equation}
+  \|\delta\vec x(t)\|
+  \approx
+  \|\delta\vec x(0)\|e^{\lambda_{\max} t}
+  \label{eq:chaotic-perturbation-growth}
+\end{equation}
+%
+until it saturates at the attractor scale. The response is sensitive even without crossing a basin boundary.
+
+Concrete tests for the rotation are:
+%
+\begin{enumerate}[leftmargin=*]
+  \item \textbf{Pulse test}: briefly increase $h_{\alpha}$ for one cluster and measure whether the system returns, switches, or diverges into a different irregular trajectory.
+  \item \textbf{Clamp-release test}: hold one cluster high or low, release it, and measure relaxation to the same state versus sensitive divergence.
+  \item \textbf{Identical-noise twin test}: run two stochastic simulations with the same noise stream and nearby initial states.
+  \item \textbf{Deterministic replay test}: remove finite-size noise after a switching-like trajectory and ask whether irregular switching persists.
+\end{enumerate}
+
+The pulse amplitude should be varied systematically. A threshold curve in amplitude-duration space supports a basin-crossing picture. Exponential separation under tiny perturbations supports a chaotic-flow picture.
+
+% ============================================================
+\section{The Core Theoretical Distinction for the Rotation}
+\label{sec:core-theoretical-distinction-rotation}
+% ============================================================
+
+The rotation should not frame the question as ``is the model noisy or deterministic?'' Every finite spiking network is noisy at some level, and every useful mesoscopic model has deterministic drift. The sharper question is which mechanism sets the slow switching.
+
+A disciplined decision workflow is:
+%
+\begin{enumerate}[leftmargin=*]
+  \item Build the deterministic mesoscopic equations and locate fixed points, limit cycles, or irregular deterministic attractors.
+  \item Compute Jacobian spectra at candidate fixed points and identify basin boundaries or unstable modes.
+  \item Add finite-size noise with an explicit $n^{-1/2}$ scaling.
+  \item Measure dwell times, autocorrelations, occupancy distributions, and transition paths as $n$ changes at fixed deterministic parameters.
+  \item Estimate the largest Lyapunov exponent of the deterministic equations in the same parameter regime.
+  \item Run perturbation-response tests to distinguish basin return, basin crossing, and sensitive deterministic divergence.
+\end{enumerate}
+
+The expected outcomes can be summarized as:
+%
+\begin{center}
+\renewcommand{\arraystretch}{1.35}
+\begin{tabularx}{\textwidth}{@{}l X X@{}}
+  \toprule
+  \textbf{Diagnostic} & \textbf{Finite-size multistability} & \textbf{Mesoscopic chaos} \\
+  \midrule
+  Deterministic dynamics & stable fixed points or simple attractors & irregular deterministic trajectory \\
+  Largest Lyapunov exponent & negative near fixed points & positive on the attractor \\
+  Increasing cluster size & lifetimes grow strongly; switching vanishes & irregular dynamics persists, added noise shrinks \\
+  Dwell times & often approximately exponential escape statistics & not primarily barrier-crossing statistics \\
+  Perturbation response & return unless basin boundary is crossed & small perturbations grow until saturation \\
+  Infinite-size limit & one attractor selected by initial condition & deterministic wandering remains \\
+  \bottomrule
+\end{tabularx}
+\end{center}
+
+The final theory deliverable should be a phase diagram whose regions are labeled by mechanism, not just by appearance. ``Slow switching'' is an observation. ``Finite-size escape between stable cluster attractors'' and ``deterministic mesoscopic chaos'' are different explanations, with different scaling laws and different predictions for larger networks.
+
+\begin{chaptersummary}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.45}
+\begin{tabularx}{\textwidth}{@{}l X X@{}}
+  \toprule
+  \textbf{Concept} & \textbf{Equation} & \textbf{Key Insight} \\
+  \midrule
+  Deterministic skeleton &
+  $\dot{\vec x}=f(\vec x;\theta)$ &
+  Defines attractors, basins, spectra, and possible chaos \\
+  Finite-size noise &
+  $\dd\vec x=f\,\dd t+N_{\mathrm{eff}}^{-1/2}B\,\dd\vec W$ &
+  Population size controls stochastic forcing \\
+  Escape scaling &
+  $\mathbb{E}[T]\asymp C\exp(N_{\mathrm{eff}}S)$ &
+  Noise-driven lifetimes grow rapidly with size \\
+  Chaos test &
+  $\lambda_{\max}=\lim_{t\to\infty}t^{-1}\log\|\delta x(t)\|/\|\delta x(0)\|$ &
+  Positive value means deterministic sensitive dependence \\
+  Fixed-$Q$ scaling &
+  $\dd\vec x=f\,\dd t+n^{-1/2}B\,\dd\vec W$ &
+  Cleanly separates drift from cluster-size noise \\
+  Autocorrelation &
+  $C_{\mathrm{slow}}(\tau)\approx e^{-(k_{UD}+k_{DU})\tau}$ &
+  Long tails are interpretable only with dwell-time and size scaling \\
+  Perturbation response &
+  decay, basin crossing, or exponential separation &
+  Response geometry reveals the mechanism behind switching \\
+  \bottomrule
+\end{tabularx}
+\end{center}
+
+\end{chaptersummary}
+
+\begin{conceptquestions}
+  \item Why is the deterministic mesoscopic system called the ``skeleton'' of the stochastic finite-size model?
+
+  \item In the finite-size escape picture, why should mean dwell time increase rapidly with cluster size when all deterministic parameters are held fixed?
+
+  \item What does a positive largest Lyapunov exponent mean operationally for two nearby mesoscopic trajectories?
+
+  \item Why is the limit $n\to\infty$ with fixed $Q$ cleaner than changing total network size while also changing the number of clusters?
+
+  \item How can two mechanisms produce similar-looking slow autocorrelations? What additional measurements separate them?
+
+  \item Design a pulse experiment that would distinguish basin crossing from deterministic sensitive dependence.
+
+  \item If a stochastic simulation switches between clusters but the deterministic mesoscopic equations have no stable fixed points and a positive Lyapunov exponent, which mechanism is more plausible?
+
+  \item If increasing cluster size freezes the active-cluster pattern, what does that imply about the source of metastability?
+\end{conceptquestions}

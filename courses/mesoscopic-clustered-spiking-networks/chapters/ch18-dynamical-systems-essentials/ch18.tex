@@ -1,0 +1,286 @@
+\chapter{Dynamical Systems Essentials}
+\label{ch:dynamical-systems-essentials}
+
+\textit{Mesoscopic cluster models are dynamical systems before they are simulations. Fixed points describe candidate network states, stability predicts whether those states persist, bifurcations explain why states appear or disappear, and noise-driven escape turns stable states into metastable trajectories.}
+
+% ============================================================
+\section{Fixed points}
+\label{sec:fixed-points-clustered}
+% ============================================================
+
+A deterministic population model has a state vector $\vec{x}(t)$ and parameters $\theta$:
+%
+\begin{equation}
+  \dot{\vec{x}} = \vec{f}(\vec{x};\theta).
+  \label{eq:deterministic-population-flow}
+\end{equation}
+%
+For this course, $\vec{x}$ may contain cluster rates, population activities, synaptic currents, adaptation variables, or refractory-density summaries. The vector field $\vec{f}$ says how those quantities change at the current state.
+
+A fixed point $\vec{x}^*$ satisfies
+%
+\begin{equation}
+  \vec{f}(\vec{x}^*;\theta)=\vec{0}.
+  \label{eq:fixed-point-definition}
+\end{equation}
+%
+It is a self-consistent population state: if the network is exactly there and the parameters are held fixed, the mesoscopic variables do not move. In a clustered network, fixed points can represent a low-rate asynchronous state, one active cluster, several active clusters, or a globally high-rate state.
+
+In a rate approximation, fixed points often appear as self-consistency equations,
+%
+\begin{equation}
+  r_i^* = \Phi_i\!\left(\sum_j W_{ij}r_j^* + I_i\right),
+  \label{eq:rate-self-consistency}
+\end{equation}
+%
+where $r_i^*$ is the mean rate of population $i$, $W_{ij}$ is effective coupling from population $j$ to $i$, $I_i$ is external drive, and $\Phi_i$ is the transfer function. Varying a recurrent excitation, inhibition, or stimulus parameter changes the solutions of this equation; those changes are the first signs of multistability.
+
+The practical computation is: solve for fixed points, classify which clusters are active at each solution, then ask which solutions are stable enough to be seen in finite simulations.
+
+% ============================================================
+\section{Linearization}
+\label{sec:linearization-clustered}
+% ============================================================
+
+Linearization asks what happens after a small perturbation away from a fixed point. Write
+%
+\begin{equation}
+  \vec{x}(t)=\vec{x}^*+\delta\vec{x}(t).
+  \label{eq:perturbation-definition}
+\end{equation}
+%
+Expanding the vector field to first order gives
+%
+\begin{equation}
+  \dot{\delta\vec{x}} \approx \Jac(\vec{x}^*)\,\delta\vec{x},
+  \qquad
+  (\Jac)_{ij}(\vec{x}^*) =
+  \pd{f_i}{x_j}\bigg|_{\vec{x}=\vec{x}^*}.
+  \label{eq:jacobian-linearization}
+\end{equation}
+%
+The Jacobian entry $(\Jac)_{ij}$ measures the local sensitivity of variable $i$ to a small change in variable $j$. In a cluster model, a large positive within-cluster excitatory derivative means that a small rate increase in one cluster tends to reinforce itself; a strong inhibitory derivative means the same perturbation is suppressed or redirected through an E/I loop.
+
+Linearization is local. It cannot tell us which basin a large perturbation enters, but it tells us whether a state is locally stable, which modes are slow, and which directions are likely to be amplified by noise or stimuli.
+
+% ============================================================
+\section{Eigenvalues and stability}
+\label{sec:eigenvalues-stability-clustered}
+% ============================================================
+
+The eigenvalues of the Jacobian determine local stability. If
+%
+\begin{equation}
+  \Jac\vec{v}_\mu = \lambda_\mu \vec{v}_\mu,
+  \label{eq:jacobian-eigenmode}
+\end{equation}
+%
+then a perturbation along eigenvector $\vec{v}_\mu$ evolves approximately like $\exp(\lambda_\mu t)$. For continuous-time systems:
+%
+\begin{equation}
+  \Re(\lambda_\mu)<0 \;\text{for all }\mu
+  \quad\Longrightarrow\quad
+  \vec{x}^* \text{ is locally stable}.
+  \label{eq:continuous-stability}
+\end{equation}
+%
+If one real eigenvalue is close to zero from below, the fixed point is stable but slow: perturbations decay on a time scale roughly $1/|\Re(\lambda_\mu)|$. If a complex pair has negative real part, trajectories spiral back with damped oscillations. If any eigenvalue has positive real part, the fixed point repels perturbations in at least one direction.
+
+In clustered networks, slow eigenmodes often correspond to coordinated changes in which clusters are active. The eigenvector tells us the pattern; the eigenvalue tells us whether that pattern decays, grows, or lingers.
+
+% ============================================================
+\section{Nullclines}
+\label{sec:nullclines-clustered}
+% ============================================================
+
+For a two-dimensional subsystem, say an excitatory cluster rate $r_E$ and an inhibitory partner rate $r_I$, nullclines are curves where one derivative vanishes:
+%
+\begin{equation}
+  \dot r_E=0,
+  \qquad
+  \dot r_I=0.
+  \label{eq:nullcline-definition}
+\end{equation}
+%
+Their intersections are fixed points. Between the curves, the signs of $\dot r_E$ and $\dot r_I$ tell us the direction of motion.
+
+Nullclines are useful because they separate algebra from geometry. The $E$-nullcline shows where excitation is instantaneously balanced; the $I$-nullcline shows where inhibition is instantaneously balanced. When within-cluster excitation becomes stronger, the $E$-nullcline can bend into an S-shape, creating multiple intersections. That geometry is the rate-level signature of up/down bistability.
+
+High-dimensional cluster systems rarely fit on a page. Still, two-dimensional projections are valuable: choose an order parameter, such as the rate of one cluster and the mean rate of its competitors, then plot the corresponding approximate nullclines.
+
+% ============================================================
+\section{Bifurcations}
+\label{sec:bifurcations-clustered}
+% ============================================================
+
+A bifurcation is a qualitative change in dynamics as a parameter changes. The parameter might be cluster strength, inhibitory-cluster strength, external drive, adaptation strength, synaptic time constant, or population size if finite-size corrections are included.
+
+The typical workflow is:
+\begin{enumerate}[leftmargin=*]
+  \item choose a parameter $\alpha$ and solve $\vec{f}(\vec{x};\alpha)=\vec{0}$;
+  \item compute the Jacobian at each fixed point;
+  \item track where eigenvalues cross a stability boundary;
+  \item interpret the resulting states in terms of active clusters.
+\end{enumerate}
+
+For continuous-time systems, two local bifurcation signals are especially important:
+%
+\begin{equation}
+  \lambda=0
+  \quad\text{suggests fixed-point creation or destruction,}
+  \qquad
+  \lambda,\bar{\lambda}=\pm i\omega
+  \quad\text{suggests oscillatory onset.}
+  \label{eq:bifurcation-eigenvalue-signals}
+\end{equation}
+%
+Bifurcation analysis does not replace simulation. It tells us which simulation regimes are structurally different and which parameter sweeps deserve dense sampling.
+
+% ============================================================
+\section{Saddle-node bifurcations and bistability}
+\label{sec:saddle-node-bistability-clustered}
+% ============================================================
+
+A saddle-node bifurcation is the simplest mechanism by which a stable and unstable fixed point appear or disappear together. The normal form
+%
+\begin{equation}
+  \dot y = \mu - y^2
+  \label{eq:saddle-node-normal-form}
+\end{equation}
+%
+has two fixed points when $\mu>0$: $y=+\sqrt{\mu}$ is stable and $y=-\sqrt{\mu}$ is unstable. At $\mu=0$ they collide; for $\mu<0$ neither remains.
+
+For clustered spiking networks, saddle-nodes are the local geometry behind up-state creation. Increasing recurrent excitation can create a stable high-rate cluster state and an unstable threshold separating it from the low-rate state. The stable branches are candidate attractors; the unstable branch is the boundary that noise must cross to switch states.
+
+Bistability means two stable attractors coexist for the same parameter values. Hysteresis follows naturally: increasing drive may switch a cluster up at one threshold, while decreasing drive switches it down at a different threshold. This matters for stimuli because a brief input can select a state that persists after the input is gone.
+
+% ============================================================
+\section{Hopf bifurcations and oscillations}
+\label{sec:hopf-clustered}
+% ============================================================
+
+A Hopf bifurcation occurs when a complex-conjugate eigenvalue pair crosses the imaginary axis. A standard normal form is
+%
+\begin{equation}
+  \dot z = (\mu + i\omega)z - \beta |z|^2z,
+  \qquad z\in\mathbb{C}.
+  \label{eq:hopf-normal-form}
+\end{equation}
+%
+The real parameter $\mu$ controls growth or decay of small oscillations, $\omega$ is the angular frequency near onset, and $\beta>0$ gives a supercritical Hopf bifurcation with a stable small-amplitude limit cycle for $\mu>0$.
+
+E/I population loops are natural places for Hopf bifurcations: excitation drives inhibition, inhibition suppresses excitation, and finite synaptic or population time constants introduce lag. A Hopf bifurcation is not the same mechanism as slow metastable switching, but oscillatory modes can shape the path between attractors and can contaminate variability measurements if not separated from switching dynamics.
+
+The diagnostic question is whether the observed time scale is a coherent oscillatory period, a decay time near a stable fixed point, or a random dwell time between metastable states.
+
+% ============================================================
+\section{Attractor basins}
+\label{sec:attractor-basins-clustered}
+% ============================================================
+
+An attractor is a set toward which nearby trajectories converge. The basin of attraction of attractor $A$ is
+%
+\begin{equation}
+  \mathcal{B}(A)=
+  \{\vec{x}_0:\ \vec{x}(t;\vec{x}_0)\to A \text{ as } t\to\infty\}.
+  \label{eq:basin-definition}
+\end{equation}
+%
+The basin is not just a mathematical detail. It determines how likely a stimulus, spontaneous fluctuation, or initial condition is to place the network into a particular state.
+
+In a clustered attractor network, an attractor may encode ``cluster 3 active'', ``clusters 2 and 5 active'', or ``no cluster active''. Basin boundaries separate these alternatives. Near a boundary, small perturbations can change the selected attractor; far from boundaries, the same perturbation decays without changing the qualitative state.
+
+For rotation work, basin geometry suggests concrete tests: perturb one cluster, inhibit a competitor, or initialize the mesoscopic model in many random states and estimate the fraction that lands in each attractor.
+
+% ============================================================
+\section{Noise-driven escape}
+\label{sec:noise-driven-escape-clustered}
+% ============================================================
+
+Finite spiking populations do not sit exactly on deterministic attractors. A minimal one-dimensional escape model is
+%
+\begin{equation}
+  \dd x = -U'(x)\,\dd t + \sqrt{2D}\,\dd W_t,
+  \label{eq:potential-escape-sde}
+\end{equation}
+%
+where $U(x)$ is an effective potential, $D$ is noise intensity, and $W_t$ is Brownian motion. The deterministic term pulls the state downhill toward a potential minimum; the stochastic term produces random kicks.
+
+If the attractor is separated from another basin by a barrier of height $\Delta U$, the mean escape time often scales approximately as
+%
+\begin{equation}
+  \mathbb{E}[T_{\mathrm{escape}}]
+  \approx C \exp\!\left(\frac{\Delta U}{D}\right).
+  \label{eq:kramers-scaling}
+\end{equation}
+%
+The prefactor $C$ depends on local curvature near the attractor and saddle. The exponential dependence is the important point: small changes in barrier height or finite-size noise can produce large changes in dwell time.
+
+In mesoscopic spiking theory, intrinsic noise usually decreases with population size, roughly $D\propto 1/N$. Thus finite-size-driven switching should slow dramatically as cluster size grows, while deterministic switching or mesoscopic chaos need not disappear in the same way.
+
+% ============================================================
+\section{Phase diagrams}
+\label{sec:phase-diagrams-clustered}
+% ============================================================
+
+A phase diagram summarizes qualitative regimes across parameter space. For this course, useful axes include excitatory cluster strength, inhibitory cluster strength, external drive, cluster size, number of clusters, adaptation strength, and finite-size noise amplitude.
+
+The labels on a phase diagram should be operational, not decorative. Examples are:
+\begin{enumerate}[leftmargin=*]
+  \item asynchronous irregular: no stable cluster up-states, weak slow fluctuations;
+  \item bistable: stable low and high cluster states coexist without frequent switching;
+  \item metastable: fixed points are stable in the deterministic model, but finite-size noise causes transitions;
+  \item oscillatory: dominant complex modes or limit cycles organize activity;
+  \item chaotic or irregular deterministic: switching-like dynamics persist with negligible noise.
+\end{enumerate}
+
+The practical standard is to combine three pieces of evidence: deterministic fixed-point and stability analysis, stochastic simulation at finite size, and scaling tests with $N$. A convincing phase diagram tells the reader what equations were analyzed, what observables define each region, and where the boundaries are uncertain.
+
+\begin{chaptersummary}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.5}
+\begin{tabularx}{\textwidth}{@{}l X X@{}}
+  \toprule
+  \textbf{Concept} & \textbf{Equation} & \textbf{Use in clustered networks} \\
+  \midrule
+  Fixed point &
+  $\vec{f}(\vec{x}^*)=\vec{0}$ &
+  Candidate low-rate, up-state, or multi-cluster state \\
+  Linearization &
+  $\dot{\delta\vec{x}}\approx \Jac\delta\vec{x}$ &
+  Local response to perturbations and noise \\
+  Stability &
+  $\Re(\lambda_\mu)<0$ &
+  Determines whether a state persists locally \\
+  Nullcline &
+  $\dot r_E=0$, $\dot r_I=0$ &
+  Geometric view of E/I balance and intersections \\
+  Saddle-node &
+  $\dot y=\mu-y^2$ &
+  Creation of up/down bistability \\
+  Hopf &
+  $\dot z=(\mu+i\omega)z-\beta|z|^2z$ &
+  Oscillatory onset in delayed E/I loops \\
+  Escape &
+  $\mathbb{E}[T]\approx C e^{\Delta U/D}$ &
+  Finite-size noise turns attractors into metastable states \\
+  Phase diagram &
+  regimes over parameters &
+  Compact map of asynchronous, bistable, metastable, and chaotic regions \\
+  \bottomrule
+\end{tabularx}
+\end{center}
+
+\end{chaptersummary}
+
+\begin{conceptquestions}
+  \item In an E/I cluster model, what does a fixed point represent biologically? How would you distinguish a one-cluster fixed point from a many-cluster fixed point?
+  \item Why does an eigenvalue close to zero produce slow dynamics even when the fixed point is stable?
+  \item How can an S-shaped excitatory nullcline create bistability?
+  \item What is the difference between a stable attractor, its basin, and the basin boundary?
+  \item If switching is finite-size-driven, what should happen to mean dwell time as the number of neurons per cluster increases?
+  \item What evidence would convince you that a phase-diagram region is deterministic chaos rather than noise-driven metastability?
+\end{conceptquestions}
+
+\clearpage

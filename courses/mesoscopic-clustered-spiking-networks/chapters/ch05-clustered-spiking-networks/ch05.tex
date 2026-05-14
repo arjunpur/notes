@@ -1,0 +1,562 @@
+\chapter{Clustered Spiking Networks}
+\label{ch:clustered-spiking-networks}
+
+\textit{A clustered spiking network is a balanced recurrent network with structured connectivity at the group level. The relevant variables are no longer only single-neuron voltages or global E/I rates, but cluster activities, active sets, lifetimes, autocorrelations, and dimensionality.}
+
+% Figure idea for coordinator: a cluster-observables panel showing a clustered connectivity matrix, cluster-rate traces, active-set sequence, lifetime distribution, and participation-ratio spectrum.
+
+% ============================================================
+\section{What is a cluster?}
+\label{sec:what-is-a-cluster}
+% ============================================================
+
+A cluster is a subset of neurons with stronger internal coupling than coupling to the rest of the network. In the simplest excitatory-clustered model, the excitatory population is partitioned into disjoint sets
+%
+\begin{equation}
+  \mathcal{C}_1,\ldots,\mathcal{C}_K,
+  \qquad
+  \mathcal{C}_k\cap\mathcal{C}_{\ell}=\varnothing\ (k\neq \ell),
+  \qquad
+  \bigcup_{k=1}^{K}\mathcal{C}_k=\{1,\ldots,N_E\}.
+  \label{eq:cluster-partition-ch05}
+\end{equation}
+%
+The cluster size is $N_k=|\mathcal{C}_k|$. If clusters are equal sized, $N_k=N_E/K$.
+
+The cluster is a connectivity object first. It becomes a dynamical object when the neurons in $\mathcal{C}_k$ share enough recurrent excitation that their activity can rise and persist together.
+
+The basic cluster activity is
+%
+\begin{equation}
+  A_k(t)
+  =
+  \frac{1}{N_k}\sum_{i\in\mathcal{C}_k}s_i(t),
+  \qquad
+  r_k(t)
+  =
+  (\kappa_A*A_k)(t).
+  \label{eq:cluster-activity-rate-ch05}
+\end{equation}
+%
+$A_k$ is the raw spikes per neuron per unit time. $r_k$ is a filtered activity trace used for state detection, fixed-point approximations, and comparison with mesoscopic theory.
+
+A cluster is not the same thing as a cell type. Cell type labels such as $E$ and $I$ describe synaptic sign or physiology. Cluster labels describe structured recurrence. Later E/I clustered models combine both: cluster $k$ may have an excitatory subpopulation and a paired inhibitory subpopulation.
+
+% ============================================================
+\section{Excitatory-only clustering}
+\label{sec:excitatory-only-clustering}
+% ============================================================
+
+Excitatory-only clustering modifies recurrent excitation among excitatory neurons while leaving inhibition as an unclustered or shared stabilizing population. This is the clean baseline because it asks what structured excitation adds to an otherwise balanced E/I network.
+
+A schematic E-to-E weight matrix is
+%
+\begin{keyequation}[Excitatory-Clustered Weight Matrix]
+\begin{equation}
+  J_{ij}^{EE}
+  =
+  \begin{cases}
+    J_+J_{EE}, & i,j\in\mathcal{C}_k \text{ for the same }k,\\
+    J_-J_{EE}, & i\in\mathcal{C}_k,\ j\in\mathcal{C}_{\ell},\ k\neq \ell .
+  \end{cases}
+  \label{eq:ee-clustered-weight-matrix-ch05}
+\end{equation}
+\tcblower
+$J_+>1$: strengthened within-cluster excitation; $J_-<1$: weakened between-cluster excitation; $J_{EE}$: baseline E-to-E scale.
+\end{keyequation}
+
+\noindent The strengthened term lets activity in a cluster feed back onto itself. The weakened term prevents clustering from simply increasing excitation everywhere.
+
+The inhibitory population still matters. A cluster up-state is not pure recurrent excitation in isolation. It is recurrent excitation that survives the inhibitory feedback recruited by the rest of the network.
+
+The main experimental comparison is between two networks with matched mean E/I balance: one with random E-to-E connectivity and one with clustered E-to-E connectivity. If clustering is doing the work, slow state switching should appear in the clustered network and not in the matched random control.
+
+% ============================================================
+\section{Within-cluster vs between-cluster connectivity}
+\label{sec:within-vs-between-connectivity}
+% ============================================================
+
+Clustering can be implemented by changing connection probabilities, synaptic weights, or both. If $p_{\mathrm{in}}$ and $p_{\mathrm{out}}$ are E-to-E connection probabilities, then
+%
+\begin{equation}
+  p_{ij}^{EE}
+  =
+  \begin{cases}
+    p_{\mathrm{in}}, & i,j\in\mathcal{C}_k \text{ for the same }k,\\
+    p_{\mathrm{out}}, & i\in\mathcal{C}_k,\ j\in\mathcal{C}_{\ell},\ k\neq \ell .
+  \end{cases}
+  \label{eq:clustered-connection-probabilities}
+\end{equation}
+%
+The same logic applies to weights:
+%
+\begin{equation}
+  w_{ij}^{EE}
+  =
+  \begin{cases}
+    w_{\mathrm{in}}, & i,j\in\mathcal{C}_k \text{ for the same }k,\\
+    w_{\mathrm{out}}, & i\in\mathcal{C}_k,\ j\in\mathcal{C}_{\ell},\ k\neq \ell .
+  \end{cases}
+  \label{eq:clustered-weights-in-out}
+\end{equation}
+%
+The expected recurrent excitation received by a neuron in cluster $k$ is approximately
+%
+\begin{equation}
+  I_k^{EE}
+  \approx
+  K_{\mathrm{in}} w_{\mathrm{in}} r_k
+  +
+  \sum_{\ell\neq k} K_{\mathrm{out}}^{(k\ell)} w_{\mathrm{out}} r_{\ell}.
+  \label{eq:expected-cluster-excitation}
+\end{equation}
+%
+The first term is within-cluster feedback. The second term is excitation from other clusters.
+
+To isolate structure from total input, one often keeps the average recurrent excitation fixed. A simple normalization is
+%
+\begin{equation}
+  f_{\mathrm{in}}J_+
+  +
+  (1-f_{\mathrm{in}})J_-
+  =
+  1,
+  \label{eq:cluster-strength-normalization-ch05}
+\end{equation}
+%
+where $f_{\mathrm{in}}$ is the fraction of a neuron's E-to-E partners inside its cluster. Increasing $J_+$ then forces $J_-$ downward. The network becomes more modular without trivially increasing total excitation.
+
+The quantity to inspect is the connectivity matrix sorted by cluster label. A good clustered architecture should show block structure in E-to-E connectivity while preserving global E/I balance.
+
+% ============================================================
+\section{Cluster strength parameters}
+\label{sec:cluster-strength-parameters}
+% ============================================================
+
+Cluster strength measures how much more strongly neurons connect within a cluster than across clusters. Several parameterizations are equivalent at the level of mechanism.
+
+A weight ratio is
+%
+\begin{equation}
+  \Gamma_w
+  =
+  \frac{w_{\mathrm{in}}}{w_{\mathrm{out}}}.
+  \label{eq:weight-cluster-ratio}
+\end{equation}
+%
+A probability ratio is
+%
+\begin{equation}
+  \Gamma_p
+  =
+  \frac{p_{\mathrm{in}}}{p_{\mathrm{out}}}.
+  \label{eq:probability-cluster-ratio}
+\end{equation}
+%
+An effective gain contrast combines probability and weight:
+%
+\begin{equation}
+  \Gamma_{\mathrm{eff}}
+  =
+  \frac{p_{\mathrm{in}}w_{\mathrm{in}}}
+       {p_{\mathrm{out}}w_{\mathrm{out}}}.
+  \label{eq:effective-cluster-ratio}
+\end{equation}
+%
+The effective gain contrast is often the most useful because recurrent input depends on expected total coupling, not only on probability or weight separately.
+
+For a cluster-level rate description, define the self-gain
+%
+\begin{equation}
+  G_{kk}
+  =
+  \frac{\partial I_k^{EE}}{\partial r_k}
+  \approx
+  K_{\mathrm{in}}w_{\mathrm{in}},
+  \label{eq:cluster-self-gain}
+\end{equation}
+%
+and the cross-gain
+%
+\begin{equation}
+  G_{k\ell}
+  =
+  \frac{\partial I_k^{EE}}{\partial r_{\ell}}
+  \approx
+  K_{\mathrm{out}}^{(k\ell)}w_{\mathrm{out}},
+  \qquad k\neq\ell.
+  \label{eq:cluster-cross-gain}
+\end{equation}
+%
+Increasing $G_{kk}$ makes cluster $k$ more self-sustaining. Decreasing $G_{k\ell}$ makes other clusters less able to recruit it by diffuse excitation.
+
+Cluster strength should be reported with the normalization used to keep mean input controlled. Otherwise increasing cluster strength may confound two effects: stronger modularity and stronger total excitation.
+
+% ============================================================
+\section{Up-states as attractors}
+\label{sec:up-states-as-attractors}
+% ============================================================
+
+An up-state is a high-activity state of a cluster that persists longer than a single synaptic or membrane fluctuation. In mesoscopic language, it is a high-rate fixed point or metastable state of $r_k$.
+
+A minimal one-cluster reduction is
+%
+\begin{equation}
+  \tau_r\dot r_k
+  =
+  -r_k
+  +
+  \Phi\!\left(
+    h_k
+    +
+    W_{kk}r_k
+    +
+    \sum_{\ell\neq k}W_{k\ell}r_{\ell}
+    -
+    W_{kI}r_I
+  \right).
+  \label{eq:cluster-rate-upstate}
+\end{equation}
+%
+The leak term $-r_k$ pulls activity down. The transfer function $\Phi$ maps input into expected output rate. The self-coupling $W_{kk}r_k$ is recurrent excitation within the cluster. The cross terms describe input from other clusters. The inhibitory term limits total activity.
+
+A fixed point satisfies
+%
+\begin{equation}
+  r_k^*
+  =
+  \Phi\!\left(
+    h_k
+    +
+    W_{kk}r_k^*
+    +
+    \sum_{\ell\neq k}W_{k\ell}r_{\ell}^*
+    -
+    W_{kI}r_I^*
+  \right).
+  \label{eq:cluster-fixed-point-ch05}
+\end{equation}
+%
+A high-rate fixed point becomes possible when the recurrent self-gain is strong enough that the right-hand side crosses the line $r_k$ at a high value.
+
+Local stability in the one-dimensional reduction requires
+%
+\begin{equation}
+  -1
+  +
+  W_{kk}
+  \Phi'\!\left(I_k^*\right)
+  <
+  0,
+  \label{eq:one-cluster-stability}
+\end{equation}
+%
+where $I_k^*$ is the total input at the fixed point. The product $W_{kk}\Phi'(I_k^*)$ is the recurrent loop gain. When it approaches one, the cluster becomes slow and sensitive. When it exceeds one at the wrong point, the low state can lose stability or a high state can appear.
+
+The attractor language must be tested empirically. A rate threshold alone does not prove an attractor. One should check dwell times, return after perturbations, separated rate histograms, and finite-size scaling.
+
+% ============================================================
+\section{Transitions between cluster states}
+\label{sec:transitions-between-cluster-states}
+% ============================================================
+
+With $K$ clusters, the network state can be summarized by an active set
+%
+\begin{equation}
+  \mathcal{S}(t)
+  =
+  \{k:\ r_k(t)>\theta_{\mathrm{up}}\}.
+  \label{eq:active-set-ch05}
+\end{equation}
+%
+The threshold $\theta_{\mathrm{up}}$ is an analysis choice. It should be fixed in advance or chosen by a reproducible rule, not tuned separately for each trace.
+
+A transition occurs when the active set changes:
+%
+\begin{equation}
+  \mathcal{S}(t^-)\neq \mathcal{S}(t^+).
+  \label{eq:active-set-transition}
+\end{equation}
+%
+For example, one cluster can turn on, one cluster can turn off, or the network can exchange one active cluster for another.
+
+At the mesoscopic level, transitions can be described by stochastic cluster-rate dynamics:
+%
+\begin{equation}
+  \dd r_k
+  =
+  f_k(\vec r)\,\dd t
+  +
+  \frac{1}{\sqrt{N_k}}g_k(\vec r)\,\dd W_k(t).
+  \label{eq:cluster-transition-langevin-ch05}
+\end{equation}
+%
+The drift $f_k$ contains deterministic recurrent and inhibitory feedback. The noise term represents finite-size spiking fluctuations in cluster $k$. The amplitude scales as $N_k^{-1/2}$ in the simplest finite-size picture.
+
+Transitions can also be driven by adaptation, synaptic depression, external inputs, or deterministic high-dimensional dynamics. The rotation question is to distinguish these mechanisms. A finite-size escape mechanism predicts strong dependence on $N_k$. A deterministic switching mechanism may persist as $N_k$ grows.
+
+% ============================================================
+\section{Cluster lifetime}
+\label{sec:cluster-lifetime}
+% ============================================================
+
+A cluster lifetime is the duration for which a cluster remains continuously active. If $m_k(t)$ is the binary up-state indicator,
+%
+\begin{equation}
+  m_k(t)
+  =
+  \mathbf{1}\{r_k(t)>\theta_{\mathrm{up}}\},
+  \label{eq:cluster-up-indicator-ch05}
+\end{equation}
+%
+then an up-state lifetime is the length of a contiguous interval on which $m_k(t)=1$.
+
+The lifetime distribution can be summarized by a probability density $p_L(\ell)$ or a survival function
+%
+\begin{equation}
+  S_L(\ell)
+  =
+  \mathbb{P}\{L>\ell\}.
+  \label{eq:cluster-lifetime-survival}
+\end{equation}
+%
+The survival function is often more stable to estimate in the tail because it avoids binning rare long events too aggressively.
+
+If switching is approximately memoryless between two states, lifetimes are exponential:
+%
+\begin{equation}
+  S_L(\ell)
+  =
+  e^{-q_{\mathrm{off}}\ell},
+  \qquad
+  \mathbb{E}[L]=\frac{1}{q_{\mathrm{off}}}.
+  \label{eq:exponential-lifetime}
+\end{equation}
+%
+Here $q_{\mathrm{off}}$ is the transition rate out of the up-state. Deviations from exponential lifetimes can indicate multiple barriers, adaptation-driven termination, nonstationarity, or hidden state variables.
+
+Under a finite-size escape picture, a rough large-deviation prediction is
+%
+\begin{equation}
+  \mathbb{E}[L]
+  \propto
+  \exp\!\left(N_k\Delta S\right),
+  \label{eq:lifetime-finite-size-scaling-ch05}
+\end{equation}
+%
+where $\Delta S$ is an effective barrier. The key test is not the exact prefactor; it is whether lifetimes grow strongly and systematically with cluster size after mean rates and deterministic fixed points are controlled.
+
+% ============================================================
+\section{Number of active clusters}
+\label{sec:number-active-clusters}
+% ============================================================
+
+The number of active clusters is
+%
+\begin{equation}
+  n_{\mathrm{act}}(t)
+  =
+  \sum_{k=1}^{K}m_k(t).
+  \label{eq:number-active-clusters}
+\end{equation}
+%
+It is a low-dimensional summary of the active set. It discards which clusters are active, but keeps how many are active.
+
+Shared inhibition makes $n_{\mathrm{act}}$ informative. If too many clusters are active, inhibitory feedback rises and suppresses activity. If too few are active, inhibition falls and another cluster may turn on. The network can therefore prefer a range of active-cluster counts rather than independent on/off decisions for each cluster.
+
+The distribution
+%
+\begin{equation}
+  P(n_{\mathrm{act}}=q),
+  \qquad q=0,\ldots,K,
+  \label{eq:active-count-distribution}
+\end{equation}
+%
+is a compact way to compare spontaneous and evoked dynamics. A stimulus that biases the network into fewer compatible states may narrow this distribution, shift its mean, or reduce its entropy.
+
+The active count is not sufficient by itself. Two states with the same $n_{\mathrm{act}}$ can activate different clusters and have different effects on downstream neurons. It should be paired with active-set identity or cluster-rate covariance.
+
+% ============================================================
+\section{Cluster autocorrelation timescale}
+\label{sec:cluster-autocorrelation-timescale}
+% ============================================================
+
+Cluster autocorrelation measures how long a cluster's activity remembers its past. For a filtered rate trace $r_k(t)$, define
+%
+\begin{equation}
+  C_k(\tau)
+  =
+  \frac{
+    \mathbb{E}\!\left[(r_k(t)-\bar r_k)(r_k(t+\tau)-\bar r_k)\right]
+  }{
+    \mathbb{E}\!\left[(r_k(t)-\bar r_k)^2\right]
+  }.
+  \label{eq:cluster-autocorrelation}
+\end{equation}
+%
+The numerator is covariance at lag $\tau$. The denominator normalizes the value so that $C_k(0)=1$.
+
+If a cluster behaves like a two-state process with transition rates $q_{\mathrm{on}}$ and $q_{\mathrm{off}}$, then
+%
+\begin{equation}
+  C_k(\tau)
+  \approx
+  e^{-\tau/\tau_{\mathrm{corr}}},
+  \qquad
+  \tau_{\mathrm{corr}}
+  =
+  \frac{1}{q_{\mathrm{on}}+q_{\mathrm{off}}}.
+  \label{eq:two-state-cluster-correlation}
+\end{equation}
+%
+Rare transitions produce long autocorrelation times even though spikes inside each state remain fast and irregular.
+
+This is the timescale separation that makes clustered networks attractive for variability. Millisecond synaptic and membrane dynamics generate spikes. Slow active-set switching generates low-frequency rate fluctuations and long-window count variability.
+
+When estimating autocorrelation, one should compare three traces: single-neuron spikes, cluster rates, and global population rate. Slow autocorrelation confined to cluster rates supports the clustered-state interpretation more strongly than a global oscillation does.
+
+% ============================================================
+\section{Cluster-level dimensionality}
+\label{sec:cluster-level-dimensionality}
+% ============================================================
+
+Cluster-level dimensionality asks how many independent collective directions the network explores. Let $\vec r(t)=(r_1(t),\ldots,r_K(t))^\top$ be the vector of cluster rates. Its covariance matrix is
+%
+\begin{equation}
+  \Sigma
+  =
+  \mathbb{E}\!\left[
+    (\vec r-\bar{\vec r})(\vec r-\bar{\vec r})^\top
+  \right].
+  \label{eq:cluster-covariance-matrix}
+\end{equation}
+%
+If $\lambda_1,\ldots,\lambda_K$ are the eigenvalues of $\Sigma$, a standard participation-ratio dimensionality is
+%
+\begin{keyequation}[Participation-Ratio Dimensionality]
+\begin{equation}
+  D_{\mathrm{PR}}
+  =
+  \frac{\left(\sum_{q=1}^{K}\lambda_q\right)^2}
+       {\sum_{q=1}^{K}\lambda_q^2}.
+  \label{eq:participation-ratio-dimensionality}
+\end{equation}
+\tcblower
+$D_{\mathrm{PR}}\approx1$ if one mode dominates; $D_{\mathrm{PR}}\approx K$ if variance is spread evenly across cluster modes.
+\end{keyequation}
+
+\noindent Dimensionality changes with clustering and stimulus. Strong winner-take-all competition may make the activity low-dimensional because one active-set direction dominates. Rich metastable switching among many active sets may increase dimensionality. A strong stimulus may reduce dimensionality by biasing the network into a smaller set of states.
+
+Dimensionality should be interpreted together with active-set statistics. A high participation ratio could mean meaningful exploration of many cluster configurations, or it could mean noisy unstructured fluctuations. The cluster-rate traces and state-detection protocol tell the difference.
+
+% ============================================================
+\section{What observables should be reproduced?}
+\label{sec:cluster-observables-reproduced}
+% ============================================================
+
+A mesoscopic clustered model should reproduce more than a raster that looks plausible. It should match the observables that define the mechanism.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.45}
+\begin{tabularx}{\textwidth}{@{}l X X@{}}
+  \toprule
+  \textbf{Observable} & \textbf{Definition} & \textbf{Why it matters} \\
+  \midrule
+  Mean rates &
+  $r_E,r_I$ and cluster means $\bar r_k$ &
+  Confirms comparable E/I operating point \\
+  Spike irregularity &
+  ISI $\operatorname{CV}$ and short-window count statistics &
+  Checks that within-state spiking remains cortical-like \\
+  Cluster up-states &
+  $m_k(t)=\mathbf{1}\{r_k>\theta_{\mathrm{up}}\}$ &
+  Defines the latent state sequence \\
+  Active set &
+  $\mathcal{S}(t)=\{k:m_k(t)=1\}$ &
+  Tracks which attractor-like configuration is occupied \\
+  Active count &
+  $n_{\mathrm{act}}=\sum_k m_k$ &
+  Measures competition through shared inhibition \\
+  Lifetimes &
+  $S_L(\ell)=\mathbb{P}\{L>\ell\}$ &
+  Tests metastability and finite-size scaling \\
+  Autocorrelation &
+  $C_k(\tau)$ &
+  Measures slow cluster memory \\
+  Pairwise correlations &
+  Within- and between-cluster count correlations &
+  Tests whether clustering creates structured shared variability \\
+  Dimensionality &
+  $D_{\mathrm{PR}}$ from cluster-rate covariance &
+  Quantifies how many collective modes are used \\
+  Stimulus effects &
+  Changes in $P(\mathcal{S})$, $F(T)$, and $D_{\mathrm{PR}}$ &
+  Connects clustering to variability quenching \\
+  \bottomrule
+\end{tabularx}
+\end{center}
+
+The reproduction workflow should therefore be layered. First match the unclustered balanced control. Then add clustering and verify up/down structure. Then test finite-size scaling of lifetimes. Finally compare microscopic and mesoscopic models on the same cluster-level observables.
+
+The most important warning is that a single summary is never enough. Mean rate alone misses metastability. Fano factor alone cannot identify the state variable. A raster alone can be misleading. The mechanism is convincing only when rate, variability, active-set, lifetime, correlation, and dimensionality measurements agree.
+
+\begin{chaptersummary}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.55}
+\begin{tabularx}{\textwidth}{@{}l X X@{}}
+  \toprule
+  \textbf{Concept} & \textbf{Equation or object} & \textbf{Interpretation} \\
+  \midrule
+  Cluster partition &
+  $\{\mathcal{C}_k\}_{k=1}^{K}$ &
+  Structured groups of neurons, usually excitatory in the baseline \\
+  Cluster activity &
+  $A_k=N_k^{-1}\sum_{i\in\mathcal{C}_k}s_i$, $r_k=\kappa_A*A_k$ &
+  Raw and filtered population output \\
+  E-only clustering &
+  $J_{ij}^{EE}=J_+J_{EE}$ within, $J_-J_{EE}$ between &
+  Recurrent excitation is concentrated inside clusters \\
+  Normalization &
+  $f_{\mathrm{in}}J_+ +(1-f_{\mathrm{in}})J_-=1$ &
+  Changes modularity without trivially changing total excitation \\
+  Self-gain &
+  $G_{kk}\approx K_{\mathrm{in}}w_{\mathrm{in}}$ &
+  Measures how self-sustaining a cluster can be \\
+  Up-state &
+  $r_k^*=\Phi(h_k+W_{kk}r_k^*+\cdots)$ &
+  High-rate self-consistent cluster state \\
+  Active set &
+  $\mathcal{S}=\{k:r_k>\theta_{\mathrm{up}}\}$ &
+  Discrete latent state of the clustered network \\
+  Finite-size switching &
+  $\dd r_k=f_k\dd t+N_k^{-1/2}g_k\dd W_k$ &
+  Population fluctuations can move clusters between states \\
+  Lifetime &
+  $S_L(\ell)=\mathbb{P}\{L>\ell\}$ &
+  Dwell-time statistic for metastability \\
+  Dimensionality &
+  $D_{\mathrm{PR}}=(\sum_q\lambda_q)^2/\sum_q\lambda_q^2$ &
+  Number of cluster-rate modes effectively used \\
+  \bottomrule
+\end{tabularx}
+\end{center}
+
+\end{chaptersummary}
+
+\begin{conceptquestions}
+  \item Why is a cluster first a connectivity object rather than merely a group of neurons with correlated activity?
+  \item What is the difference between excitatory-only clustering and E/I clustering?
+  \item Why is it useful to decrease between-cluster excitation when within-cluster excitation is increased?
+  \item Compare $J_+$, $\Gamma_w$, $\Gamma_p$, and $\Gamma_{\mathrm{eff}}$. Which is closest to the mesoscopic self-gain?
+  \item In the cluster-rate equation, identify the leak, self-excitation, cross-cluster excitation, inhibition, and external drive terms.
+  \item Why does a high value of $r_k(t)$ not by itself prove that an up-state is an attractor?
+  \item How would you define cluster lifetimes from a noisy rate trace without hand-tuning every event?
+  \item What finite-size scaling of lifetimes would support noise-driven escape?
+  \item Why can two states with the same number of active clusters have different downstream effects?
+  \item What does the cluster autocorrelation time measure that the membrane time constant does not?
+  \item How can participation-ratio dimensionality help distinguish broad state exploration from a single dominant switching mode?
+  \item List the minimum observables a mesoscopic clustered model should match before it is trusted.
+\end{conceptquestions}
+
+\clearpage

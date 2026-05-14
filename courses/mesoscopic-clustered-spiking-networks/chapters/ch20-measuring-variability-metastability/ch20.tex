@@ -1,0 +1,282 @@
+\chapter{Measuring Variability and Metastability}
+\label{ch:measuring-variability-metastability}
+
+\textit{A theory of clustered spiking networks is only useful if its variables reproduce measured signatures: spike-count variability, irregularity, slow autocorrelations, cluster dwell times, transition paths, dimensionality, correlations, and spectra. This chapter defines those measurements and the main traps in estimating them.}
+
+% ============================================================
+\section{Spike-count variance}
+\label{sec:spike-count-variance}
+% ============================================================
+
+Let $N_i^{(q)}(T)$ be the number of spikes from neuron or population $i$ in trial $q$ during a counting window of duration $T$. The sample mean and variance across $R$ trials are
+%
+\begin{equation}
+  \bar N_i(T)=\frac{1}{R}\sum_{q=1}^R N_i^{(q)}(T),
+  \qquad
+  s_i^2(T)=\frac{1}{R-1}\sum_{q=1}^R
+  \left(N_i^{(q)}(T)-\bar N_i(T)\right)^2.
+  \label{eq:sample-count-variance}
+\end{equation}
+%
+The mean measures response magnitude; the variance measures trial-to-trial reliability at that window size.
+
+For spontaneous simulations with no trial structure, one often uses non-overlapping windows as pseudo-trials. That is valid only if the process is approximately stationary over the analyzed period. Slow drift can masquerade as high count variance.
+
+% ============================================================
+\section{Fano factor}
+\label{sec:fano-factor-measurement}
+% ============================================================
+
+The Fano factor normalizes count variance by count mean:
+%
+\begin{equation}
+  F_i(T)=\frac{\Var[N_i(T)]}{\E[N_i(T)]}.
+  \label{eq:fano-measurement}
+\end{equation}
+%
+For a Poisson process, $F_i(T)=1$. Values below one indicate counts more regular than Poisson; values above one indicate overdispersion from bursting, slow rate fluctuations, shared latent state, or mixtures of response modes.
+
+The window duration $T$ is part of the definition. Short windows emphasize spike-generation irregularity. Long windows include slow cluster-state fluctuations. In clustered networks, $F(T)$ increasing with $T$ is often a signature that slow mesoscopic dynamics are contributing to variability.
+
+% ============================================================
+\section{CV and local CV}
+\label{sec:cv-local-cv}
+% ============================================================
+
+For interspike intervals $T_m=t^{m+1}-t^m$, the coefficient of variation is
+%
+\begin{equation}
+  \mathrm{CV} =
+  \frac{\sqrt{\Var[T_m]}}{\E[T_m]}.
+  \label{eq:isi-cv-measurement}
+\end{equation}
+%
+Near-periodic firing has $\mathrm{CV}<1$, Poisson firing has $\mathrm{CV}=1$, and bursty or heavy-tailed firing has $\mathrm{CV}>1$.
+
+The local CV reduces sensitivity to slow rate changes by comparing adjacent intervals:
+%
+\begin{equation}
+  \mathrm{CV}_{\mathrm{local}}
+  =
+  \frac{3}{M-1}\sum_{m=1}^{M-1}
+  \left(
+  \frac{T_{m+1}-T_m}{T_{m+1}+T_m}
+  \right)^2.
+  \label{eq:local-cv}
+\end{equation}
+%
+The numerator measures local interval contrast; the denominator normalizes by local firing scale. This statistic helps separate fast spike-time irregularity from slow gain modulation.
+
+In E/I clustered attractor models, an important possibility is high spike irregularity within each state but reduced slow count variability after stimulus onset. CV and Fano factor therefore answer different questions.
+
+% ============================================================
+\section{Mean-matched Fano factor}
+\label{sec:mean-matched-fano}
+% ============================================================
+
+Fano factors can change simply because mean rates change. Mean matching controls this confound by comparing conditions using only time bins, neurons, or trials with matched mean-count distributions.
+
+A practical procedure is:
+\begin{enumerate}[leftmargin=*]
+  \item estimate mean count for every neuron/time bin/condition unit;
+  \item choose a common mean-count range shared by the compared conditions;
+  \item subsample or weight units so the mean-count histograms match;
+  \item compute Fano factors on the matched set.
+\end{enumerate}
+
+Mean matching is essential for variability quenching. If stimulus onset increases firing rates and the Fano factor drops, the drop should not be interpreted as reduced latent variability until rate-related sampling effects are controlled.
+
+% ============================================================
+\section{Autocorrelation functions}
+\label{sec:autocorrelation-functions}
+% ============================================================
+
+For a stationary scalar signal $x(t)$, the normalized autocorrelation is
+%
+\begin{equation}
+  \rho_x(\tau)=
+  \frac{\E[(x(t)-\mu_x)(x(t+\tau)-\mu_x)]}{\Var[x(t)]}.
+  \label{eq:autocorrelation}
+\end{equation}
+%
+It measures how much the present predicts the future after lag $\tau$. The signal might be a smoothed population rate, a cluster activation indicator, or a low-dimensional latent variable.
+
+Fast irregular spiking produces short autocorrelation. Metastable cluster switching produces slow tails because the current state remains predictive for the dwell time of that state. A useful summary is the integrated autocorrelation time,
+%
+\begin{equation}
+  \tau_{\mathrm{int}}=\int_0^\infty \rho_x(\tau)\,\dd\tau,
+  \label{eq:integrated-autocorrelation-time}
+\end{equation}
+%
+provided the integral is well estimated and the process is stationary.
+
+% ============================================================
+\section{Cluster lifetime distributions}
+\label{sec:cluster-lifetime-distributions}
+% ============================================================
+
+Define a cluster as active when its rate or activity exceeds a threshold for at least a minimal duration. The lifetime $L$ is the contiguous time spent in that active state.
+
+The survival function
+%
+\begin{equation}
+  S_L(t)=\mathbb{P}\{L>t\}
+  \label{eq:lifetime-survival}
+\end{equation}
+%
+is often more stable to plot than a histogram. Exponential survival suggests approximately memoryless escape from a state. Heavy tails suggest heterogeneous barriers, slow adaptation, latent inputs, or a mixture of state types.
+
+Lifetime estimates depend on smoothing, thresholds, and merging rules for brief interruptions. Report those choices. A cluster-state claim is weak if it disappears under small changes in detection parameters.
+
+% ============================================================
+\section{Transition-triggered averages}
+\label{sec:transition-triggered-averages}
+% ============================================================
+
+A transition-triggered average aligns trajectories at detected switch times. If $t_m$ is the time of transition $m$, then
+%
+\begin{equation}
+  \bar x_{\mathrm{TTA}}(\tau)
+  =
+  \frac{1}{M}\sum_{m=1}^M x(t_m+\tau).
+  \label{eq:transition-triggered-average}
+\end{equation}
+%
+The average can be computed for source cluster rate, target cluster rate, inhibitory activity, adaptation, synaptic current, or a low-dimensional order parameter.
+
+The goal is to see the route through state space. Does inhibition drop before a cluster turns on? Does the target cluster ramp gradually or jump abruptly? Do transitions pass through a common saddle-like region? These questions connect measured switching to the dynamical-systems picture in \cref{ch:dynamical-systems-essentials}.
+
+Avoid circular interpretation: if transitions are detected from $x(t)$ itself, the aligned average of $x$ will necessarily show a crossing. More informative variables are those not used for detection.
+
+% ============================================================
+\section{Dimensionality of cluster activity}
+\label{sec:dimensionality-cluster-activity}
+% ============================================================
+
+Let $\Sigma$ be the covariance matrix of cluster activities across time or trials. If $\lambda_1,\ldots,\lambda_K$ are its eigenvalues, the participation-ratio dimensionality is
+%
+\begin{equation}
+  d_{\mathrm{PR}}
+  =
+  \frac{\left(\sum_{k=1}^K \lambda_k\right)^2}
+       {\sum_{k=1}^K \lambda_k^2}.
+  \label{eq:participation-ratio}
+\end{equation}
+%
+If one mode dominates, $d_{\mathrm{PR}}\approx 1$. If many modes contribute equally, $d_{\mathrm{PR}}$ is large.
+
+In clustered networks, dimensionality measures how many independent cluster combinations are explored. A stimulus that biases the network into fewer states should reduce dimensionality even if within-state spiking remains irregular.
+
+The covariance should be computed on variables that match the theoretical claim: binary cluster activity indicators for attractor occupancy, smoothed rates for population dynamics, or residuals after subtracting stimulus-locked means for trial-to-trial variability.
+
+% ============================================================
+\section{Pairwise correlations}
+\label{sec:pairwise-correlations}
+% ============================================================
+
+For spike counts $N_i$ and $N_j$ in the same window, the noise correlation is
+%
+\begin{equation}
+  c_{ij}=
+  \frac{\operatorname{Cov}(N_i,N_j)}
+       {\sqrt{\Var[N_i]\Var[N_j]}}.
+  \label{eq:pairwise-count-correlation}
+\end{equation}
+%
+Correlations should usually be computed after subtracting condition means, otherwise stimulus tuning can create signal correlations that are not noise correlations.
+
+Clustered networks predict structure in correlations: neurons in the same active cluster should share slow fluctuations, while neurons in competing clusters may be anticorrelated when only a few clusters can be active at once. Inhibitory clustering can change this pattern by stabilizing local E/I balance and reducing shared runaway excursions.
+
+Small pairwise correlations can still have large population effects when many neuron pairs share the same sign. Always ask whether correlations are independent pair facts or signatures of a low-dimensional shared state.
+
+% ============================================================
+\section{Power spectra}
+\label{sec:power-spectra}
+% ============================================================
+
+The power spectrum of a zero-mean signal $x(t)$ is the Fourier transform of its autocovariance:
+%
+\begin{equation}
+  S_x(f)=\int_{-\infty}^{\infty}
+  C_x(\tau)e^{-2\pi i f\tau}\,\dd\tau.
+  \label{eq:power-spectrum-definition}
+\end{equation}
+%
+Slow switching produces excess low-frequency power. Oscillations produce peaks at nonzero frequencies. White noise gives a flat spectrum over the frequency range where the approximation holds.
+
+For simulations, spectra are useful because they separate mechanisms by time scale. A clustered attractor model should show power at dwell-time frequencies; an E/I oscillatory instability should show a sharper peak; independent spike noise should dominate high frequencies.
+
+Use consistent preprocessing: bin width, smoothing, detrending, tapering, and total recording duration all affect the estimate.
+
+% ============================================================
+\section{Practical pitfalls in estimating these quantities}
+\label{sec:estimation-pitfalls}
+% ============================================================
+
+The common pitfalls are statistical rather than philosophical:
+\begin{enumerate}[leftmargin=*]
+  \item \textbf{Nonstationarity}: slow drift inflates variance, autocorrelation, and low-frequency power.
+  \item \textbf{Window choice}: Fano factors and correlations change with bin size.
+  \item \textbf{Rate confounds}: variability measures must often be mean-matched.
+  \item \textbf{Threshold dependence}: cluster lifetimes depend on smoothing and active-state criteria.
+  \item \textbf{Pooling heterogeneous neurons}: mixing cells with different rates or tuning can create artificial overdispersion.
+  \item \textbf{Too few transitions}: lifetime tails and transition-triggered averages need enough detected switches.
+  \item \textbf{Autocorrelated samples}: overlapping windows are not independent trials.
+  \item \textbf{Detection circularity}: do not validate a transition using only the variable that defined it.
+  \item \textbf{Finite simulation length}: rare escapes and low-frequency spectra require long runs.
+  \item \textbf{Unreported preprocessing}: smoothing, filtering, and detrending must be stated.
+\end{enumerate}
+
+A good measurement section in a rotation artifact should specify the observable, window, conditioning, estimator, uncertainty estimate, and robustness checks.
+
+\begin{chaptersummary}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.5}
+\begin{tabularx}{\textwidth}{@{}l X X@{}}
+  \toprule
+  \textbf{Measurement} & \textbf{Formula} & \textbf{What it diagnoses} \\
+  \midrule
+  Count variance &
+  $\Var[N(T)]$ &
+  Trial-to-trial reliability in a chosen window \\
+  Fano factor &
+  $F=\Var[N]/\E[N]$ &
+  Overdispersion or quenching beyond mean rate \\
+  ISI CV &
+  $\sqrt{\Var[T]}/\E[T]$ &
+  Spike-time irregularity \\
+  Local CV &
+  $\frac{3}{M-1}\sum((T_{m+1}-T_m)/(T_{m+1}+T_m))^2$ &
+  Local irregularity less sensitive to slow rate drift \\
+  Autocorrelation &
+  $\rho_x(\tau)$ &
+  Persistence of rates, states, or latent variables \\
+  Lifetime survival &
+  $S_L(t)=\mathbb{P}\{L>t\}$ &
+  Dwell-time statistics of active clusters \\
+  Dimensionality &
+  $d_{\mathrm{PR}}=(\sum\lambda_k)^2/\sum\lambda_k^2$ &
+  Number of activity modes explored \\
+  Correlation &
+  $c_{ij}=\operatorname{Cov}(N_i,N_j)/(\sigma_i\sigma_j)$ &
+  Shared variability within or across clusters \\
+  Spectrum &
+  $S_x(f)=\mathcal{F}\{C_x(\tau)\}$ &
+  Time scales: slow switching, oscillations, or fast noise \\
+  \bottomrule
+\end{tabularx}
+\end{center}
+
+\end{chaptersummary}
+
+\begin{conceptquestions}
+  \item Why is the counting-window duration part of the definition of a Fano factor?
+  \item How can CV remain high while stimulus onset reduces Fano factor?
+  \item What does mean matching control for in variability-quenching analyses?
+  \item Why are cluster lifetime distributions more informative than just the mean lifetime?
+  \item What variable would you use for a transition-triggered average if the transition was detected from cluster rate?
+  \item How would you distinguish low-frequency power from slow nonstationary drift?
+\end{conceptquestions}
+
+\clearpage

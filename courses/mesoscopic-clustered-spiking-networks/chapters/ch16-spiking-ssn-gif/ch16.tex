@@ -1,0 +1,364 @@
+\chapter{Spiking SSN with Generalized Integrate-and-Fire Neurons}
+\label{ch:spiking-ssn-gif}
+
+\textit{A spiking SSN asks whether the stabilized supralinear mechanism survives when rate units are replaced by explicit neurons with voltage, thresholds, refractoriness, and finite-size population noise. The useful target is not a detailed simulator alone. It is a bridge: fit or derive a supralinear population transfer from generalized integrate-and-fire neurons, write the infinite-size population equations, then add finite-size stochastic activity in a way that can be compared with rate SSN predictions.}
+
+\noindent\textbf{Citation TODO.} The phrase ``Tilo's ssn\_spiking.pdf direction'' refers to a project-specific source that is not included in this worker context. The coordinator should verify its exact assumptions, notation, and intended model class before removing this note.
+
+\noindent\textbf{Learning objectives.} After this chapter, the reader should be able to describe how a GIF population can approximate an SSN power law, write an age-structured infinite-size equation for spiking activity, identify the finite-size noise term, and explain why a spiking SSN may be a separate rotation branch from clustered attractor networks.
+
+\noindent\textbf{Notation.} Population type is $X\in\{E,I\}$. A population activity is $A_X(t)$, a filtered synaptic activity is $s_X(t)$, and an input drive is $H_X(t)$. The population size is $N_X$. In ring models, $-\pi \le \theta < \pi$ denotes preferred stimulus angle.
+
+% ============================================================
+\section{Tilo's ssn\_spiking.pdf Direction}
+\label{sec:tilos-ssn-spiking-direction}
+% ============================================================
+
+The apparent direction is to connect SSN theory to a spiking population model. The rate SSN begins with a chosen power-law transfer function. A spiking SSN should explain where that transfer comes from and how finite populations fluctuate around it.
+
+The project can be organized around three layers:
+%
+\begin{enumerate}[leftmargin=*]
+  \item \textbf{Single-neuron layer}: choose a GIF neuron with voltage, reset, refractoriness, adaptation, and escape-noise spiking.
+  \item \textbf{Population layer}: derive or fit a transfer function from input statistics to population activity.
+  \item \textbf{Network layer}: couple E and I populations so that the effective transfer is supralinear but stabilized by inhibition.
+\end{enumerate}
+
+The desired outcome is a model that can be placed beside the rate SSN:
+%
+\begin{equation}
+  \mat T\dot{\vec r}
+  =
+  -\vec r+\Phi(\vec h+\mat W\vec r)
+  \qquad
+  \longrightarrow
+  \qquad
+  \text{GIF population equations with comparable SSN gain.}
+  \label{eq:rate-ssn-to-gif-ssn}
+\end{equation}
+%
+The arrow is the research problem. It is not automatic, because a GIF population has memory and spike-history effects that a static rate nonlinearity hides.
+
+The safe interpretation is therefore methodological: build a spiking circuit whose measured population transfer behaves like an SSN over the stimulus range of interest, then ask whether its finite-size variability quenches for the same linear-response reason as the rate SSN.
+
+% ============================================================
+\section{Matching GIF Neurons to SSN Power-Law Transfer Functions}
+\label{sec:matching-gif-to-ssn-power-laws}
+% ============================================================
+
+A GIF neuron can be written schematically as
+%
+\begin{align}
+  C\dot V_i
+  &=
+  -g_L(V_i-E_L)
+  +
+  I_i^{\mathrm{syn}}(t)
+  -
+  a_i(t),
+  \label{eq:gif-voltage-ch16}\\
+  \lambda_i(t)
+  &=
+  f_{\mathrm{esc}}\!\left(V_i(t)-\vartheta_i(t)\right).
+  \label{eq:gif-hazard-ch16}
+\end{align}
+%
+$V_i$ is membrane voltage, $a_i$ is an adaptation current, $\vartheta_i$ is a possibly dynamic threshold, and $\lambda_i$ is the conditional spiking intensity. A common escape form is exponential, but the exact form should be chosen from the intended GIF model.
+
+For stationary fluctuating input, summarize the synaptic drive by a mean $\mu$ and fluctuation scale $\sigma$. The measured population transfer is
+%
+\begin{equation}
+  r
+  =
+  \Phi_{\mathrm{GIF}}(\mu,\sigma)
+  =
+  \lim_{T\to\infty}
+  \frac{1}{NT}
+  \sum_{i=1}^{N}N_i([0,T])
+  \label{eq:gif-measured-transfer}
+\end{equation}
+%
+for a homogeneous population. This object measures the long-run spikes per neuron per unit time under fixed input statistics.
+
+To match an SSN, choose a target operating range and fit
+%
+\begin{equation}
+  \Phi_{\mathrm{GIF}}(\mu,\sigma_0)
+  \approx
+  k[\mu-\mu_0]_{+}^{n}
+  \label{eq:gif-power-law-fit}
+\end{equation}
+%
+over that range. The offset $\mu_0$ plays the role of an effective threshold, $k$ sets scale, and $n$ measures supralinearity. The fit should not be extrapolated blindly. A GIF transfer can saturate, adapt, or change shape when input variance changes.
+
+This matching step is the first place where the spiking SSN can depart from a rate SSN\@. The rate SSN treats $n$ as a modeling choice. The spiking SSN must explain whether a particular GIF parameter set actually produces a stable supralinear regime.
+
+% ============================================================
+\section{Infinite-Size Population Equations}
+\label{sec:spiking-ssn-infinite-size-population-equations}
+% ============================================================
+
+In the infinite-size limit, finite sampling noise disappears but refractory and voltage-history structure remain. A common mesoscopic representation uses age $a$, the time since the last spike. Let $p_X(a,t)$ be the density of neurons in population $X$ with age $a$ at time $t$.
+
+The refractory-density equation is
+%
+\begin{keyequation}[Age-Structured GIF Population]
+\begin{align}
+  \partial_t p_X(a,t)+\partial_a p_X(a,t)
+  &=
+  -\lambda_X(a,t)\,p_X(a,t),
+  \label{eq:gif-age-density}\\
+  A_X(t)
+  =
+  p_X(0,t)
+  &=
+  \int_0^\infty \lambda_X(a,t)p_X(a,t)\,\dd a.
+  \label{eq:gif-boundary-activity}
+\end{align}
+\tcblower
+$p_X$ is the age density, $\lambda_X$ is the hazard conditioned on age and input history, and $A_X$ is the population activity emitted at age zero.
+\end{keyequation}
+%
+The first equation says that neurons flow toward older ages unless they spike. The hazard removes neurons from age $a$. The boundary condition says that all spiking neurons re-enter at age zero.
+
+Synaptic filtering converts activity into recurrent input:
+%
+\begin{equation}
+  \tau_s\dot s_X
+  =
+  -s_X+A_X.
+  \label{eq:gif-synaptic-filter}
+\end{equation}
+%
+For a two-population E/I SSN, the input to population $X$ is
+%
+\begin{equation}
+  H_X(t)
+  =
+  h_X(t)
+  +
+  \sum_{Y\in\{E,I\}} W_{XY}s_Y(t),
+  \label{eq:gif-ssn-population-input}
+\end{equation}
+%
+where $W_{EI}$ and $W_{II}$ are signed as inhibitory in the matrix convention. The hazard $\lambda_X(a,t)$ depends on $H_X(t)$ and on age-dependent reset, threshold, or adaptation variables.
+
+The infinite-size model is deterministic. It can still have transients, oscillations, or multiple fixed points, but it does not have finite-population sampling noise. That makes it the correct baseline for asking what survives as $N_E,N_I\to\infty$.
+
+% ============================================================
+\section{Finite-Size Stochastic Population Activity}
+\label{sec:spiking-ssn-finite-size-population-activity}
+% ============================================================
+
+For finite $N_X$, the realized activity differs from the infinite-size activity. In a small time bin, write the population count as
+%
+\begin{equation}
+  K_X(t,\Delta t)
+  =
+  \sum_{i=1}^{N_X}
+  N_i(t,\Delta t),
+  \qquad
+  \widehat A_X(t;\Delta t)
+  =
+  \frac{K_X(t,\Delta t)}{N_X\Delta t}.
+  \label{eq:gif-finite-pop-activity}
+\end{equation}
+%
+The estimate $\widehat A_X$ has fluctuations of order $N_X^{-1/2}$. In a diffusion approximation,
+%
+\begin{equation}
+  \dd s_X
+  =
+  \frac{-s_X+A_X}{\tau_s}\,\dd t
+  +
+  \frac{1}{\sqrt{N_X}}\,
+  \sigma_X(\text{state})\,\dd W_X(t).
+  \label{eq:gif-finite-size-synaptic-sde}
+\end{equation}
+%
+The first term is the deterministic synaptic filter. The second term is intrinsic population noise. Its amplitude depends on activity, refractoriness, and history, so it need not equal the simple Poisson value $\sqrt{A_X}/\tau_s$.
+
+The finite-size correction matters for variability quenching. If the network is large, output variability may be dominated by external or shared input noise. If the population is small, intrinsic activity noise can contribute directly to spike-count variance. A spiking SSN should therefore report how quenching changes with $N_E$ and $N_I$.
+
+This is the mesoscopic analogue of the cluster-size scaling test in clustered networks. In an SSN, the scaling asks whether quenching is a deterministic stabilization effect, an intrinsic finite-size effect, or a mixture.
+
+% ============================================================
+\section{Step Responses and Transient Dynamics}
+\label{sec:spiking-ssn-step-responses-transient-dynamics}
+% ============================================================
+
+Step responses are a simple way to compare rate and spiking SSNs. Apply an input step
+%
+\begin{equation}
+  h_X(t)
+  =
+  h_X^0+\Delta h_X\,\mathbf{1}_{t\ge 0}.
+  \label{eq:ssn-step-input}
+\end{equation}
+%
+Then measure the population activity $A_X(t)$, filtered activity $s_X(t)$, and spike-count covariance across trials.
+
+Near an operating point, collect the retained mesoscopic variables into $\vec z$. For a rate SSN, $\vec z=(r_E,r_I)$. For a GIF population, $\vec z$ may include filtered activity, adaptation, and a discretized age density. The linearized step response is
+%
+\begin{equation}
+  \delta\dot{\vec z}
+  =
+  \mat L\delta\vec z+\mat B_h\Delta\vec h\,\mathbf{1}_{t\ge 0}.
+  \label{eq:gif-ssn-step-linearization}
+\end{equation}
+%
+The eigenvalues of $\mat L$ set the transient time scales. Complex eigenvalues produce damped oscillatory responses. Strong negative real parts produce rapid quenching of perturbations.
+
+The useful measurements are peak response, settling time, overshoot, and post-step covariance. If the spiking SSN is a faithful mechanistic version of the rate SSN, the stimulus should shift the operating point and change these transient quantities in a way predicted by the linearized effective connectivity.
+
+% ============================================================
+\section{Ring-Model Extension}
+\label{sec:spiking-ssn-ring-model-extension}
+% ============================================================
+
+A ring model adds stimulus preference. Let $-\pi \le \theta < \pi$ index preferred orientation or direction. The rate SSN becomes
+%
+\begin{equation}
+  \tau_X\partial_t r_X(\theta,t)
+  =
+  -r_X(\theta,t)
+  +
+  \Phi_X\!\left(
+    h_X(\theta,t)
+    +
+    \sum_Y
+    \int_{-\pi}^{\pi}
+    W_{XY}(\theta-\theta')r_Y(\theta',t)\,\dd\theta'
+  \right).
+  \label{eq:ring-rate-ssn}
+\end{equation}
+%
+The kernel $W_{XY}(\theta-\theta')$ says how strongly a presynaptic population with preference $\theta'$ affects a postsynaptic population with preference $\theta$.
+
+For a spiking GIF ring, each small preference bin has its own age density:
+%
+\begin{equation}
+  p_X(a,\theta,t),
+  \qquad
+  A_X(\theta,t)
+  =
+  \int_0^\infty
+  \lambda_X(a,\theta,t)p_X(a,\theta,t)\,\dd a.
+  \label{eq:gif-ring-density}
+\end{equation}
+%
+The recurrent input is a convolution over preference:
+%
+\begin{equation}
+  H_X(\theta,t)
+  =
+  h_X(\theta,t)
+  +
+  \sum_Y
+  \int_{-\pi}^{\pi}
+  W_{XY}(\theta-\theta')s_Y(\theta',t)\,\dd\theta'.
+  \label{eq:gif-ring-input}
+\end{equation}
+%
+Fourier modes give a clean analysis route. The uniform mode controls global gain and stability. The first few nonuniform modes control bump formation, tuning width, and stimulus-specific covariance. A stimulus-centered bump can quench variability globally, locally, or only in particular modes.
+
+This extension is useful for SSN theory because variability quenching is often measured in stimulus-tuned populations. It is less directly connected to the clustered attractor project unless clusters are interpreted as discrete samples of a ring.
+
+% ============================================================
+\section{Comparing Rate SSN vs Spiking/GIF SSN}
+\label{sec:comparing-rate-ssn-vs-spiking-gif-ssn}
+% ============================================================
+
+The rate SSN and spiking/GIF SSN should be compared by which objects are primitive and which are derived.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabularx}{\textwidth}{@{}l X X@{}}
+  \toprule
+  \textbf{Question} & \textbf{Rate SSN} & \textbf{Spiking/GIF SSN} \\
+  \midrule
+  Unit state &
+  Population rate $r_X$ &
+  Voltage, threshold, refractory age, adaptation, and population activity \\
+  Transfer function &
+  Chosen power law $\Phi_X(u)=k_X[u]_{+}^{n_X}$ &
+  Measured or derived $\Phi_{\mathrm{GIF}}(\mu,\sigma,\text{history})$ \\
+  Noise source &
+  Added rate or input noise &
+  Finite spike counts, refractory history, synaptic filtering, external noise \\
+  Count statistics &
+  Usually added through a Poisson observation model &
+  Produced by the spiking process itself \\
+  Linearization &
+  Small matrix around $(r_E,r_I)$ &
+  Larger operator including age and history variables \\
+  Main advantage &
+  Transparent gain and stability analysis &
+  Direct link to spike trains, CV, Fano factor, and finite-size scaling \\
+  \bottomrule
+\end{tabularx}
+\end{center}
+
+The rate SSN is better for deriving the core stabilization mechanism. The spiking SSN is better for testing whether that mechanism survives realistic spike generation. Neither automatically replaces the other.
+
+The comparison should include matched observables: mean rate, step response, covariance quenching, Fano factor, CV, and scaling with population size. If only the mean rates match, the spiking model has not yet reproduced the stochastic SSN.
+
+% ============================================================
+\section{Why This May Be a Separate Project from Clustered Networks}
+\label{sec:why-spiking-ssn-separate-from-clustered-networks}
+% ============================================================
+
+The SSN and clustered-network projects explain overlapping data with different state variables. The SSN state is usually a small number of E/I population rates or a continuous ring of tuned rates. Variability changes because stimulus drive changes gain, stability, and covariance. Clustered attractor networks keep explicit cluster identities and explain slow variability through occupancy of metastable states.
+
+The central SSN question is:
+%
+\begin{equation}
+  \text{Does stimulus drive move the E/I circuit to a more stabilizing operating point?}
+  \label{eq:ssn-central-question}
+\end{equation}
+%
+The central clustered-network question is:
+%
+\begin{equation}
+  \text{Does stimulus drive restrict or reorganize the set of active cluster states?}
+  \label{eq:cluster-central-question}
+\end{equation}
+%
+Both can reduce Fano factors. But they predict different hidden variables. The SSN predicts changes in effective connectivity and response covariance around a continuous operating point. Clustered networks predict changes in state occupancy, dwell times, and transition structure.
+
+For a rotation, this separation is useful. A spiking SSN with GIF neurons could be an independent project on variability quenching and mesoscopic population theory. The clustered-network project can remain focused on finite-size switching, E/I clustered attractors, and the multistability-versus-chaos distinction.
+
+\begin{chaptersummary}
+\begin{center}
+\renewcommand{\arraystretch}{1.5}
+\begin{tabularx}{\textwidth}{@{}l X X@{}}
+  \toprule
+  \textbf{Layer} & \textbf{Object} & \textbf{What to check} \\
+  \midrule
+  GIF neuron &
+  $V_i$, $\vartheta_i$, $a_i$, $\lambda_i(t)$ &
+  Does the single-neuron model produce a supralinear transfer range? \\
+  Infinite population &
+  $p_X(a,t)$ and $A_X(t)$ &
+  What deterministic SSN-like dynamics remain as $N\to\infty$? \\
+  Finite population &
+  $\widehat A_X=A_X+O(N_X^{-1/2})$ &
+  How much quenching depends on intrinsic finite-size noise? \\
+  Ring extension &
+  $A_X(\theta,t)$ and convolution kernels &
+  Which stimulus-tuned modes are stabilized or amplified? \\
+  Project boundary &
+  SSN gain versus cluster occupancy &
+  Which hidden variables explain the variability data? \\
+  \bottomrule
+\end{tabularx}
+\end{center}
+\end{chaptersummary}
+
+\begin{conceptquestions}
+  \item Why is fitting a GIF transfer function only meaningful over a specified input range?
+  \item In the age-density equation, what does the boundary condition $p_X(0,t)=A_X(t)$ represent?
+  \item Why can finite-size noise in a GIF population differ from simple Poisson noise?
+  \item Which measurements would convince you that a spiking GIF network reproduces a rate SSN mechanism?
+  \item Why should the SSN side branch not be merged automatically with the clustered-attractor project?
+\end{conceptquestions}

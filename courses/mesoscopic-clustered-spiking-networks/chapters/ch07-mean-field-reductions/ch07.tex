@@ -1,0 +1,475 @@
+\chapter{Mean-Field Reductions of Spiking Networks}
+\label{ch:mean-field-reductions}
+
+\textit{Mean-field theory replaces many fluctuating microscopic inputs by a smaller number of population averages. For clustered networks, the central question is not whether the average rate can be computed, but whether the average theory preserves the fixed points and stability structure that generate cluster up-states.}
+
+% ============================================================
+\section{The basic mean-field idea}
+\label{sec:basic-mean-field-idea}
+% ============================================================
+
+The mean-field idea is a controlled act of forgetting. Instead of tracking every presynaptic spike train entering neuron $i$, we replace the sum of many inputs by its population-level statistics: a mean input, sometimes a variance, and sometimes a correlation structure.
+
+Start from the microscopic synaptic drive
+%
+\begin{equation}
+  h_i(t)
+  =
+  I_i^{\mathrm{ext}}(t)
+  +
+  \sum_{j=1}^N J_{ij}(\kappa_{ij}*X_j)(t).
+  \label{eq:mf-microscopic-drive}
+\end{equation}
+%
+If neurons are grouped into populations $\alpha,\beta\in\{1,\ldots,P\}$, and if neuron $i$ belongs to population $\alpha$, then the sum can be decomposed by presynaptic population:
+%
+\begin{equation}
+  h_i(t)
+  =
+  I_\alpha(t)
+  +
+  \sum_{\beta=1}^P
+  \sum_{j\in\beta}
+  J_{ij}(\kappa_{\alpha\beta}*X_j)(t).
+  \label{eq:mf-population-decomposition}
+\end{equation}
+%
+Mean-field theory replaces the inner sum over $j\in\beta$ by an effective population input. The simplest replacement is
+%
+\begin{equation}
+  \sum_{j\in\beta}
+  J_{ij}(\kappa_{\alpha\beta}*X_j)(t)
+  \approx
+  W_{\alpha\beta} R_\beta(t),
+  \label{eq:mf-replacement}
+\end{equation}
+%
+where $R_\beta$ is the filtered activity of population $\beta$ and $W_{\alpha\beta}$ is the mean total coupling from population $\beta$ to population $\alpha$.
+
+The approximation becomes plausible when each neuron receives many weak inputs and no single presynaptic neuron dominates the total. In clustered networks the same logic is applied at the cluster level: each cluster is a population, and the mean-field input to a cluster depends on the activity of all other clusters.
+
+The danger is that cluster structure makes the average nontrivial. Replacing all excitatory neurons by one mean rate erases the very degree of freedom that generates metastability. A useful mean-field reduction for this project must average within clusters, not across them.
+
+% ============================================================
+\section{From many neurons to a population rate}
+\label{sec:from-many-neurons-to-population-rate}
+% ============================================================
+
+Let population $\alpha$ contain $N_\alpha$ neurons. Its empirical activity and filtered rate are
+%
+\begin{equation}
+  A_\alpha(t)=\frac{1}{N_\alpha}\sum_{i\in\alpha}X_i(t),
+  \qquad
+  R_\alpha(t)=(\kappa_A*A_\alpha)(t).
+  \label{eq:mf-activity-rate}
+\end{equation}
+%
+The empirical activity $A_\alpha$ is a random measure. The rate $R_\alpha$ is a smoothed state variable. A mean-field equation predicts how $R_\alpha$ changes as a function of the population input
+%
+\begin{equation}
+  H_\alpha(t)
+  =
+  I_\alpha(t)
+  +
+  \sum_{\beta=1}^P W_{\alpha\beta} R_\beta(t).
+  \label{eq:mf-population-input}
+\end{equation}
+%
+Here $I_\alpha$ is external drive and $W_{\alpha\beta}R_\beta$ is the average recurrent drive from population $\beta$.
+
+A first-order rate approximation is
+%
+\begin{keyequation}[Mean-Field Population Dynamics]
+\begin{equation}
+  \tau_\alpha \dot R_\alpha
+  =
+  -R_\alpha
+  +
+  \Phi_\alpha(H_\alpha),
+  \qquad
+  H_\alpha=I_\alpha+\sum_\beta W_{\alpha\beta}R_\beta .
+  \label{eq:mean-field-rate-dynamics}
+\end{equation}
+\tcblower
+$R_\alpha$: population rate; \quad
+$\tau_\alpha$: rate relaxation time; \quad
+$\Phi_\alpha$: transfer function; \quad
+$H_\alpha$: mean input current or drive; \quad
+$W_{\alpha\beta}$: effective coupling.
+\end{keyequation}
+
+\noindent The leak term $-R_\alpha$ says the current population rate relaxes away without input. The transfer-function term $\Phi_\alpha(H_\alpha)$ is the rate that population $\alpha$ would tend toward under the current mean input. The time constant $\tau_\alpha$ sets how fast the population follows that target.
+
+This equation is not yet a spiking theory. It becomes connected to the microscopic network only when $\Phi_\alpha$, $W_{\alpha\beta}$, and any noise terms are derived or calibrated from the underlying spiking model.
+
+% ============================================================
+\section{Transfer functions and self-consistency}
+\label{sec:transfer-functions-self-consistency}
+% ============================================================
+
+The transfer function $\Phi_\alpha$ maps input statistics to expected firing rate. In the simplest deterministic rate model it depends only on a scalar mean drive $H_\alpha$. For spiking neurons in fluctuating balanced networks, it often depends on both the mean and variance of input:
+%
+\begin{equation}
+  r_\alpha
+  =
+  \Phi_\alpha(\mu_\alpha,\sigma_\alpha^2),
+  \label{eq:transfer-mean-variance}
+\end{equation}
+%
+where $\mu_\alpha$ is the mean input and $\sigma_\alpha^2$ is the input variance. For a leaky integrate-and-fire population, $\Phi_\alpha$ may be obtained from a first-passage-time calculation or numerical simulation of a representative neuron.
+
+In a recurrent network, the inputs depend on the rates, so the rates must satisfy self-consistency:
+%
+\begin{equation}
+  r_\alpha
+  =
+  \Phi_\alpha\!\left(
+    I_\alpha
+    +
+    \sum_{\beta=1}^P W_{\alpha\beta}r_\beta
+  \right),
+  \qquad
+  \alpha=1,\ldots,P.
+  \label{eq:mf-self-consistency}
+\end{equation}
+%
+This equation says: if population $\alpha$ fires at rate $r_\alpha$, the recurrent network creates input $I_\alpha+\sum_\beta W_{\alpha\beta}r_\beta$, and the spiking population under that input should indeed fire at rate $r_\alpha$.
+
+For balanced spiking networks it is often more accurate to keep mean and variance equations:
+%
+\begin{align}
+  \mu_\alpha
+  &=
+  I_\alpha
+  +
+  \sum_{\beta=1}^P K_{\alpha\beta}J_{\alpha\beta} r_\beta,
+  \label{eq:mean-input-balanced}
+  \\
+  \sigma_\alpha^2
+  &=
+  \sum_{\beta=1}^P
+  K_{\alpha\beta}J_{\alpha\beta}^2 r_\beta
+  \int_0^\infty \kappa_{\alpha\beta}^2(s)\,\dd s .
+  \label{eq:variance-input-balanced}
+\end{align}
+%
+Here $K_{\alpha\beta}$ is the typical number of presynaptic neurons from population $\beta$ to a neuron in population $\alpha$, and $J_{\alpha\beta}$ is the synaptic amplitude. The mean input depends on signed weights $J_{\alpha\beta}$, so excitation and inhibition can cancel. The variance depends on squared weights $J_{\alpha\beta}^2$, so excitation and inhibition both contribute positive fluctuations.
+
+The self-consistency problem then becomes
+%
+\begin{equation}
+  r_\alpha
+  =
+  \Phi_\alpha(\mu_\alpha(\vec r),\sigma_\alpha^2(\vec r)).
+  \label{eq:self-consistency-mean-variance}
+\end{equation}
+%
+This form is important for clustered balanced networks because a cluster up-state changes both the mean recurrent excitation and the fluctuation level seen by other populations.
+
+% ============================================================
+\section{Fixed points of population dynamics}
+\label{sec:fixed-points-population-dynamics}
+% ============================================================
+
+A fixed point is a population state $\vec R^*$ that does not move under the deterministic mean-field dynamics:
+%
+\begin{equation}
+  0
+  =
+  -R_\alpha^*
+  +
+  \Phi_\alpha\!\left(
+    I_\alpha
+    +
+    \sum_\beta W_{\alpha\beta}R_\beta^*
+  \right),
+  \qquad
+  \alpha=1,\ldots,P.
+  \label{eq:mf-fixed-point}
+\end{equation}
+%
+Equivalently, $\vec R^*$ solves the self-consistency equation. The fixed point is the deterministic counterpart of a recurrent state observed in simulation.
+
+For a clustered network, fixed points can be indexed by which clusters are active. If $\mathcal{S}$ is the set of active clusters, an idealized fixed point has
+%
+\begin{equation}
+  R_\alpha^*
+  \approx
+  \begin{cases}
+    r_{\mathrm{up}}, & \alpha\in\mathcal{S},\\
+    r_{\mathrm{down}}, & \alpha\notin\mathcal{S}.
+  \end{cases}
+  \label{eq:cluster-fixed-point-pattern}
+\end{equation}
+%
+The number of active clusters $|\mathcal{S}|$ is then a coarse state variable. Stimuli can bias the network by making some active sets deeper or more stable than others.
+
+The existence of many fixed points is the deterministic skeleton of multistability. Metastability arises when finite-size fluctuations, adaptation, or slow input variations cause the system to leave the neighborhood of one stable fixed point and enter another.
+
+% ============================================================
+\section{Linear stability analysis}
+\label{sec:linear-stability-analysis-mean-field}
+% ============================================================
+
+Linear stability asks whether small perturbations around a fixed point grow or decay. Write
+%
+\begin{equation}
+  R_\alpha(t)=R_\alpha^*+\delta R_\alpha(t).
+  \label{eq:linear-perturbation}
+\end{equation}
+%
+Substitute into \cref{eq:mean-field-rate-dynamics} and keep only first-order terms:
+%
+\begin{equation}
+  \delta \dot R_\alpha
+  =
+  \sum_{\beta=1}^P
+  L_{\alpha\beta}\,\delta R_\beta,
+  \label{eq:linearized-population-dynamics}
+\end{equation}
+%
+with stability matrix
+%
+\begin{keyequation}[Mean-Field Stability Matrix]
+\begin{equation}
+  L_{\alpha\beta}
+  =
+  \frac{1}{\tau_\alpha}
+  \left[
+    -\delta_{\alpha\beta}
+    +
+    \Phi_\alpha'(H_\alpha^*)\,W_{\alpha\beta}
+  \right],
+  \qquad
+  H_\alpha^*=I_\alpha+\sum_\gamma W_{\alpha\gamma}R_\gamma^* .
+  \label{eq:mf-stability-matrix}
+\end{equation}
+\tcblower
+$-\delta_{\alpha\beta}$: rate relaxation; \quad
+$\Phi_\alpha'(H_\alpha^*)$: gain at the fixed point; \quad
+$W_{\alpha\beta}$: recurrent feedback; \quad
+$\tau_\alpha^{-1}$: speed of population $\alpha$.
+\end{keyequation}
+
+\noindent If every eigenvalue of $\mat L$ has negative real part, the fixed point is locally stable. If one eigenvalue has positive real part, perturbations grow along the corresponding eigenvector. If the largest real part is close to zero but negative, perturbations decay slowly and the network has a long autocorrelation time.
+
+The term $\Phi_\alpha'(H_\alpha^*)W_{\alpha\beta}$ is the effective recurrent gain. A cluster is near an up-state instability when recurrent excitation within the cluster almost cancels the leak. This is the same mathematical idea as an eigenvalue near one in a linear recurrent network, but now evaluated at a nonlinear operating point.
+
+% ============================================================
+\section{Bifurcations and emergence of up-states}
+\label{sec:bifurcations-emergence-up-states}
+% ============================================================
+
+Bifurcations occur when changing a parameter changes the number or stability of fixed points. The simplest up-state mechanism appears in a one-population excitatory model:
+%
+\begin{equation}
+  \tau \dot R
+  =
+  -R+\Phi(wR+I).
+  \label{eq:one-pop-upstate-model}
+\end{equation}
+%
+Fixed points solve
+%
+\begin{equation}
+  R^*=\Phi(wR^*+I).
+  \label{eq:one-pop-fixed-point}
+\end{equation}
+%
+A saddle-node bifurcation occurs when the graph of $R$ becomes tangent to the graph of $\Phi(wR+I)$. The two conditions are
+%
+\begin{equation}
+  R^*=\Phi(wR^*+I),
+  \qquad
+  1=w\,\Phi'(wR^*+I).
+  \label{eq:saddle-node-conditions}
+\end{equation}
+%
+The first equation says the point is a fixed point. The second says the recurrent gain exactly matches the leak. On one side of the bifurcation there may be one low-rate state; on the other side there can be a low-rate state, an unstable middle state, and a high-rate up-state.
+
+In a cluster model, the within-cluster coupling $w_{\mathrm{in}}$ plays the role of $w$. Increasing cluster strength steepens the recurrent feedback curve for that cluster. Once feedback is strong enough, high activity becomes self-sustaining:
+%
+\begin{equation}
+  \text{stronger within-cluster excitation}
+  \quad\Rightarrow\quad
+  w_{\mathrm{in}}\Phi'(H^*) \uparrow
+  \quad\Rightarrow\quad
+  \text{up-state fixed points appear}.
+  \label{eq:cluster-strength-upstates}
+\end{equation}
+%
+Inhibition and competition determine whether many clusters can be active together. If active clusters strongly inhibit inactive clusters, the phase diagram can contain winner-take-all states. If inhibition is weaker, multiple clusters can coexist in up-states.
+
+% ============================================================
+\section{Population-level noise terms}
+\label{sec:population-level-noise-terms}
+% ============================================================
+
+Mean-field equations describe the deterministic drift. Finite populations require fluctuations around that drift. A generic stochastic extension is
+%
+\begin{equation}
+  \dd R_\alpha
+  =
+  f_\alpha(\vec R)\,\dd t
+  +
+  \sum_{\ell=1}^P
+  G_{\alpha\ell}(\vec R)\,\dd W_\ell(t),
+  \label{eq:mf-stochastic-extension}
+\end{equation}
+%
+where
+%
+\begin{equation}
+  f_\alpha(\vec R)
+  =
+  \frac{1}{\tau_\alpha}
+  \left[
+    -R_\alpha
+    +
+    \Phi_\alpha\!\left(I_\alpha+\sum_\beta W_{\alpha\beta}R_\beta\right)
+  \right].
+  \label{eq:mf-drift}
+\end{equation}
+%
+The drift $f_\alpha$ is the deterministic mean-field velocity. The matrix $\mat G$ sets the amplitude and covariance of stochastic population fluctuations. If each population contains $N_\alpha$ neurons and fluctuations are dominated by private spiking noise, a diagonal approximation is
+%
+\begin{equation}
+  G_{\alpha\ell}(\vec R)
+  =
+  \frac{1}{\sqrt{N_\alpha}}\,
+  g_\alpha(\vec R)\,
+  \delta_{\alpha\ell}.
+  \label{eq:diagonal-population-noise}
+\end{equation}
+%
+The factor $N_\alpha^{-1/2}$ is the finite-size scaling. The function $g_\alpha$ may depend on the current rate because spike-count variance depends on firing intensity. This is why population noise is usually multiplicative rather than constant.
+
+Noise terms can also be correlated across populations. Shared input, common inhibition, and synaptic fluctuations make $G_{\alpha\ell}$ non-diagonal. In clustered networks, coherent noise can push several clusters together, while independent noise perturbs each cluster separately. These two cases have different consequences for switching.
+
+% ============================================================
+\section{Finite-size corrections}
+\label{sec:finite-size-corrections-mean-field}
+% ============================================================
+
+The infinite-size mean-field limit assumes population averages equal expectations. At finite size, there are several corrections.
+
+The first correction is sampling noise:
+%
+\begin{equation}
+  \widehat A_\alpha(t;\Delta t)
+  =
+  r_\alpha(t)
+  +
+  O_{\mathrm{rms}}\!\left(
+    \sqrt{\frac{r_\alpha(t)}{N_\alpha\Delta t}}
+  \right).
+  \label{eq:finite-size-sampling-correction}
+\end{equation}
+%
+This is dynamic noise: it changes from trial to trial and from time bin to time bin.
+
+The second correction is quenched connectivity disorder. A finite random connectivity matrix has block averages that deviate from their expected values:
+%
+\begin{equation}
+  W_{\alpha\beta}^{\mathrm{eff}}
+  =
+  \bar W_{\alpha\beta}
+  +
+  \Delta W_{\alpha\beta},
+  \qquad
+  \Delta W_{\alpha\beta}=O(N_\beta^{-1/2})
+  \label{eq:quenched-weight-correction}
+\end{equation}
+%
+under simple independent wiring assumptions. Unlike dynamic noise, $\Delta W_{\alpha\beta}$ is fixed for one network realization. It can make one cluster more excitable than another even when the intended architecture is symmetric.
+
+The third correction is heterogeneity in transfer functions. If neurons in population $\alpha$ have a static random offset $\eta_i$ in their input, then the population transfer function is an average:
+%
+\begin{equation}
+  \bar\Phi_\alpha(H)
+  =
+  \E_\eta[\Phi_\alpha(H+\eta)].
+  \label{eq:heterogeneous-transfer-average}
+\end{equation}
+%
+For small zero-mean heterogeneity with variance $\sigma_\eta^2$, Taylor expansion gives
+%
+\begin{equation}
+  \bar\Phi_\alpha(H)
+  \approx
+  \Phi_\alpha(H)
+  +
+  \frac{\sigma_\eta^2}{2}\Phi_\alpha''(H).
+  \label{eq:transfer-heterogeneity-taylor}
+\end{equation}
+%
+This correction can shift bifurcation points because it changes the effective gain. Near an up-state threshold, a small change in $\Phi'$ can have a large effect on stability.
+
+% ============================================================
+\section{Limits of classical mean-field theory for clustered networks}
+\label{sec:limits-classical-mean-field-clustered}
+% ============================================================
+
+Classical mean-field theory is most reliable when the network is large, homogeneous within populations, weakly correlated, and close to an asynchronous state. Clustered networks are designed to violate some of these assumptions.
+
+First, clusters create multiple structured rates. A single excitatory rate averages over active and inactive clusters:
+%
+\begin{equation}
+  R_E
+  =
+  \frac{1}{C}\sum_{\alpha=1}^C R_{\alpha E}.
+  \label{eq:global-rate-averages-clusters}
+\end{equation}
+%
+The same global rate can correspond to many different cluster states. For example, one very active cluster and several moderately active clusters can have similar $R_E$ but different future dynamics.
+
+Second, metastable switching is a rare-event problem. The mean drift near a stable fixed point does not by itself predict escape times. One needs the noise covariance, the basin geometry, and the saddle or transition region separating states.
+
+Third, recurrent clustering can create coherent fluctuations. If an up-state consists of many neurons rising together, the independent-neuron central limit argument underestimates population variability.
+
+Fourth, finite-size and quenched effects can be the signal rather than the nuisance. In a symmetric deterministic cluster model, several active-cluster states may be equivalent. A finite realization breaks the symmetry and changes dwell times across those states.
+
+The correct use of mean-field theory in this project is therefore selective. Use it to locate candidate fixed points, gains, and bifurcations. Then add mesoscopic finite-size terms and compare scaling predictions to microscopic simulations.
+
+\begin{chaptersummary}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.55}
+\begin{tabularx}{\textwidth}{@{}l X X@{}}
+  \toprule
+  \textbf{Concept} & \textbf{Equation} & \textbf{Interpretation} \\
+  \midrule
+  Mean-field replacement &
+  $\sum_{j\in\beta}J_{ij}\kappa*X_j \approx W_{\alpha\beta}R_\beta$ &
+  Many microscopic inputs become one population drive \\
+  Self-consistency &
+  $r_\alpha=\Phi_\alpha(I_\alpha+\sum_\beta W_{\alpha\beta}r_\beta)$ &
+  Rates must reproduce the inputs they generate \\
+  Stability matrix &
+  $L_{\alpha\beta}=\tau_\alpha^{-1}[-\delta_{\alpha\beta}+\Phi_\alpha'W_{\alpha\beta}]$ &
+  Leak competes with recurrent gain \\
+  Up-state bifurcation &
+  $R^*=\Phi(wR^*+I)$, $1=w\Phi'(wR^*+I)$ &
+  A high-rate state appears when feedback matches leak \\
+  Finite-size noise &
+  $G_{\alpha\alpha}\propto N_\alpha^{-1/2}$ &
+  Population fluctuations shrink with cluster size \\
+  Quenched correction &
+  $W^{\mathrm{eff}}=\bar W+\Delta W$ &
+  One finite network has fixed deviations from the intended mean \\
+  \bottomrule
+\end{tabularx}
+\end{center}
+
+\end{chaptersummary}
+
+\begin{conceptquestions}
+  \item Why should a clustered network be averaged within clusters rather than over all excitatory neurons?
+  \item In \cref{eq:mean-input-balanced} and \cref{eq:variance-input-balanced}, why can excitation and inhibition cancel in the mean but not in the variance?
+  \item For the one-population model $\tau\dot R=-R+\Phi(wR+I)$, explain geometrically why the condition $1=w\Phi'$ marks a saddle-node bifurcation.
+  \item What does an eigenvalue of the stability matrix with real part close to zero imply about autocorrelation time?
+  \item Give an example of dynamic finite-size noise and an example of quenched disorder in a clustered spiking network.
+  \item Why can two microscopic cluster states have the same global excitatory rate but different future dynamics?
+  \item Which mean-field predictions would you compare first against a microscopic Litwin-Kumar--Doiron-style clustered simulation?
+\end{conceptquestions}
+

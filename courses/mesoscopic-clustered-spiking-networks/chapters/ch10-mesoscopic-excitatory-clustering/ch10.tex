@@ -1,0 +1,559 @@
+\chapter{Mesoscopic Model of Excitatory Clustering}
+\label{ch:mesoscopic-excitatory-clustering}
+
+\textit{A clustered spiking network becomes mathematically useful when each cluster can be treated as a noisy population with its own activity variable. This chapter builds the minimal mesoscopic description for excitatory clustering: recurrent self-excitation creates up-states, shared inhibition creates competition, and finite cluster size turns deterministic attractors into metastable switching.}
+
+% ============================================================
+\section{Treating Each Cluster as a Population}
+\label{sec:treating-each-cluster-as-population}
+% ============================================================
+
+Start with $Q$ excitatory clusters. Cluster $\alpha$ contains a set of excitatory neurons
+%
+\begin{equation}
+  \mathcal{C}_{\alpha} \subset \{1,\ldots,N_E\},
+  \qquad
+  n_{\alpha} = |\mathcal{C}_{\alpha}|,
+  \qquad
+  \sum_{\alpha=1}^{Q} n_{\alpha} = N_E .
+  \label{eq:cluster-sets}
+\end{equation}
+%
+The index $\alpha$ labels a mesoscopic unit, not a single neuron. The size $n_{\alpha}$ controls how much intrinsic population noise remains after averaging over neurons. Large clusters have smoother activity; small clusters switch more easily.
+
+For neuron $i$, write its spike train as
+%
+\begin{equation}
+  x_i(t)=\sum_k \delta(t-t_i^k).
+  \label{eq:neuron-spike-train-ch10}
+\end{equation}
+%
+The raw population activity of cluster $\alpha$ is the spike train average
+%
+\begin{equation}
+  A_{\alpha}(t)
+  =
+  \frac{1}{n_{\alpha}}
+  \sum_{i\in \mathcal{C}_{\alpha}} x_i(t).
+  \label{eq:raw-cluster-activity}
+\end{equation}
+%
+$A_{\alpha}(t)$ has units of spikes per neuron per unit time. It measures the instantaneous output of the cluster, but it is too singular for ordinary differential equations because it is a sum of impulses.
+
+The filtered cluster rate $r_{\alpha}(t)$ is a smoother state variable:
+%
+\begin{keyequation}[Cluster Rate as Filtered Population Activity]
+\begin{equation}
+  \tau_s \frac{\dd r_{\alpha}}{\dd t}
+  =
+  -r_{\alpha} + A_{\alpha}(t).
+  \label{eq:filtered-cluster-rate}
+\end{equation}
+\tcblower
+$A_{\alpha}$ is the raw spike output of the cluster, $r_{\alpha}$ is the synaptically filtered activity seen by downstream neurons, and $\tau_s$ is the filtering time scale.
+\end{keyequation}
+
+\noindent Increasing $r_{\alpha}$ means that cluster $\alpha$ is contributing more recurrent excitation and more drive to inhibition. Increasing $n_{\alpha}$ at fixed mean rate does not change the deterministic mean, but it reduces the relative fluctuations around that mean.
+
+This is the central mesoscopic move: keep the cluster identity, discard individual neuron identities inside the cluster, and represent the cluster by a small number of population variables. The learner should check whether observables of interest, such as cluster lifetimes, number of active clusters, and slow autocorrelation, can be computed from $r_{\alpha}(t)$ without reconstructing every spike.
+
+% ============================================================
+\section{Cluster-Level Rate Equations}
+\label{sec:cluster-level-rate-equations}
+% ============================================================
+
+A deterministic mesoscopic rate model has the form
+%
+\begin{equation}
+  \tau_E \dot r_{\alpha}
+  =
+  -r_{\alpha}
+  +
+  \Phi_E(u_{\alpha}),
+  \qquad
+  \alpha=1,\ldots,Q .
+  \label{eq:e-cluster-rate-equation}
+\end{equation}
+%
+The transfer function $\Phi_E$ maps total input $u_{\alpha}$ to the firing rate that the cluster would express if the input were held fixed. It is a mesoscopic surrogate for the single-neuron spiking model plus synaptic bombardment. Its slope is a gain: high slope means small input changes produce large rate changes.
+
+The input to cluster $\alpha$ is
+%
+\begin{equation}
+  u_{\alpha}
+  =
+  h_{\alpha}
+  +
+  \sum_{\beta=1}^{Q} J_{\alpha\beta} r_{\beta}
+  -
+  J_{EI} r_I .
+  \label{eq:e-cluster-input}
+\end{equation}
+%
+Here $h_{\alpha}$ is external drive to the cluster, $J_{\alpha\beta}$ is effective excitation from cluster $\beta$ to cluster $\alpha$, $r_I$ is the activity of the inhibitory pool, and $J_{EI}>0$ is the strength of inhibitory input onto excitatory clusters.
+
+The simplest inhibitory pool is one shared population:
+%
+\begin{equation}
+  \tau_I \dot r_I
+  =
+  -r_I
+  +
+  \Phi_I\!\left(
+    h_I + J_{IE}\sum_{\beta=1}^{Q} q_{\beta} r_{\beta}
+  \right),
+  \qquad
+  q_{\beta}=\frac{n_{\beta}}{N_E}.
+  \label{eq:shared-inhibition}
+\end{equation}
+%
+The weights $q_{\beta}$ convert cluster rates into the mean excitatory activity seen by the inhibitory pool. If all clusters have equal size, then $q_{\beta}=1/Q$.
+
+Equations \eqref{eq:e-cluster-rate-equation}--\eqref{eq:shared-inhibition} are not yet a microscopic derivation. They are a controlled bookkeeping layer: each term has a direct circuit meaning, and each parameter can be matched to a spiking simulation or varied in a phase diagram.
+
+% ============================================================
+\section{Effective Recurrent Excitation Within Clusters}
+\label{sec:effective-recurrent-excitation-within-clusters}
+% ============================================================
+
+Excitatory clustering means that neurons inside the same cluster excite each other more strongly, or more frequently, than neurons in different clusters. At the mesoscopic level this becomes a structured coupling matrix:
+%
+\begin{equation}
+  J_{\alpha\beta}
+  =
+  \begin{cases}
+    J_{EE}^{+}, & \alpha=\beta,\\
+    J_{EE}^{-}, & \alpha\ne\beta.
+  \end{cases}
+  \label{eq:e-cluster-coupling}
+\end{equation}
+%
+$J_{EE}^{+}$ is the within-cluster recurrent excitation. $J_{EE}^{-}$ is the between-cluster excitation. The difference $J_{EE}^{+}-J_{EE}^{-}$ is the strength of clustering.
+
+Often the total expected excitatory input is held approximately fixed while clustering is varied. For equal-sized clusters, a convenient normalization is
+%
+\begin{equation}
+  p_{\mathrm{in}} J_{EE}^{+}
+  +
+  (1-p_{\mathrm{in}})J_{EE}^{-}
+  =
+  J_{EE}^{0},
+  \label{eq:fixed-mean-excitation}
+\end{equation}
+%
+where $p_{\mathrm{in}}$ is the fraction of an excitatory neuron's recurrent excitatory input that comes from its own cluster, and $J_{EE}^{0}$ is the baseline unclustered coupling. Solving for the between-cluster coupling gives
+%
+\begin{equation}
+  J_{EE}^{-}
+  =
+  \frac{J_{EE}^{0}-p_{\mathrm{in}}J_{EE}^{+}}{1-p_{\mathrm{in}}}.
+  \label{eq:jminus-normalization}
+\end{equation}
+%
+Increasing $J_{EE}^{+}$ while enforcing \eqref{eq:jminus-normalization} concentrates excitation inside clusters and weakens excitation across clusters.
+
+The effect on dynamics is immediate. A cluster that becomes slightly more active receives extra self-excitation through $J_{EE}^{+}r_{\alpha}$. If the transfer gain $\Phi_E'(u_{\alpha})$ is large enough, that small increase can be amplified into an up-state. The learner should compute how the fixed points of a single cluster change as $J_{EE}^{+}$ rises while the mean input constraint is kept fixed.
+
+% ============================================================
+\section{Inter-Cluster Inhibition and Competition}
+\label{sec:inter-cluster-inhibition-competition}
+% ============================================================
+
+In an excitatory-clustered network, clusters do not usually inhibit each other directly. They compete indirectly through the shared inhibitory pool. When cluster $\beta$ goes up, it drives $r_I$ upward; the increased inhibition then suppresses every excitatory cluster, including cluster $\alpha$.
+
+This can be made explicit by eliminating fast inhibition. Suppose inhibition is faster than the excitatory cluster dynamics and linearize the inhibitory transfer around an operating point:
+%
+\begin{equation}
+  r_I
+  \approx
+  r_I^0
+  +
+  G_I J_{IE}
+  \sum_{\beta=1}^{Q} q_{\beta}(r_{\beta}-r_{\beta}^0),
+  \qquad
+  G_I=\Phi_I'(u_I^0).
+  \label{eq:linearized-fast-inhibition}
+\end{equation}
+%
+$G_I$ is the inhibitory gain. It tells us how strongly the inhibitory population reacts to a change in excitatory drive.
+
+Substituting \eqref{eq:linearized-fast-inhibition} into \eqref{eq:e-cluster-input} gives an effective excitatory coupling
+%
+\begin{keyequation}[Effective Competition Matrix]
+\begin{equation}
+  K_{\alpha\beta}
+  =
+  J_{\alpha\beta}
+  -
+  J_{EI}G_I J_{IE}q_{\beta}.
+  \label{eq:effective-competition-matrix}
+\end{equation}
+\tcblower
+$J_{\alpha\beta}$ is direct recurrent excitation, while $J_{EI}G_I J_{IE}q_{\beta}$ is the indirect inhibitory feedback caused by activity in cluster $\beta$.
+\end{keyequation}
+
+\noindent Off-diagonal competition is strong when the indirect inhibitory term exceeds the between-cluster excitation:
+%
+\begin{equation}
+  J_{EI}G_I J_{IE}q_{\beta} > J_{EE}^{-}.
+  \label{eq:competition-condition}
+\end{equation}
+%
+In that regime, raising $r_{\beta}$ decreases the net input to cluster $\alpha\ne\beta$. This is the mesoscopic origin of winner-take-more dynamics: clusters excite themselves but inhibit competitors through a shared inhibitory pathway.
+
+% ============================================================
+\section{Fixed Points: No Active, One Active, and Many Active Clusters}
+\label{sec:fixed-points-cluster-count}
+% ============================================================
+
+A fixed point is a vector $(r_1^*,\ldots,r_Q^*,r_I^*)$ satisfying $\dot r_{\alpha}=0$ and $\dot r_I=0$. Fixed points are candidate network states. In clustered networks, the most useful classification is by the number $k$ of active clusters.
+
+Assume equal cluster sizes and symmetric coupling. A $k$-active state has
+%
+\begin{equation}
+  r_{\alpha}^*
+  =
+  \begin{cases}
+    r_U, & \alpha \in \mathcal{A},\\
+    r_D, & \alpha \notin \mathcal{A},
+  \end{cases}
+  \qquad
+  |\mathcal{A}|=k ,
+  \label{eq:k-active-ansatz}
+\end{equation}
+%
+where $r_U$ is the up-state rate and $r_D$ is the down-state rate. The set $\mathcal{A}$ identifies which clusters are active; symmetry means that only its size $k$ matters for the fixed-point equations.
+
+The fixed-point equations are
+%
+\begin{align}
+  r_U
+  &=
+  \Phi_E\!\left(
+    h
+    +
+    J_{EE}^{+}r_U
+    +
+    (k-1)J_{EE}^{-}r_U
+    +
+    (Q-k)J_{EE}^{-}r_D
+    -
+    J_{EI}r_I
+  \right),
+  \label{eq:k-active-up}\\
+  r_D
+  &=
+  \Phi_E\!\left(
+    h
+    +
+    kJ_{EE}^{-}r_U
+    +
+    J_{EE}^{+}r_D
+    +
+    (Q-k-1)J_{EE}^{-}r_D
+    -
+    J_{EI}r_I
+  \right),
+  \label{eq:k-active-down}\\
+  r_I
+  &=
+  \Phi_I\!\left(
+    h_I + \frac{J_{IE}}{Q}\bigl(kr_U+(Q-k)r_D\bigr)
+  \right).
+  \label{eq:k-active-inhibition}
+\end{align}
+%
+The first equation says an active cluster must be self-consistent as an up-state. The second says inactive clusters must remain down despite excitation from active clusters. The third says inhibition tracks the average excitatory activity.
+
+Three cases organize the phase diagram:
+%
+\begin{enumerate}[leftmargin=*]
+  \item \textbf{No active clusters} ($k=0$): all clusters sit near the low-rate state $r_D$. This can represent spontaneous asynchronous activity before a cluster escapes upward.
+  \item \textbf{One active cluster} ($k=1$): one cluster is up and suppresses the others. This is the cleanest attractor-selection state.
+  \item \textbf{Many active clusters} ($k>1$): several clusters are co-active. This can represent a multi-item state, a broad metastable state, or an unstable intermediate depending on parameters.
+\end{enumerate}
+
+The practical computation is to solve \eqref{eq:k-active-up}--\eqref{eq:k-active-inhibition} for each $k$ and then test stability. The number of mathematically possible fixed points can be large because every subset $\mathcal{A}$ of size $k$ is a symmetry-related state.
+
+% ============================================================
+\section{Stability of Cluster Up-States}
+\label{sec:stability-of-cluster-upstates}
+% ============================================================
+
+Fixed points only matter dynamically if perturbations behave predictably near them. Linearize the excitatory subsystem around a fixed point. With fast inhibition already folded into $K_{\alpha\beta}$, the Jacobian is
+%
+\begin{equation}
+  \mathcal{J}_{\alpha\beta}
+  =
+  \frac{1}{\tau_E}
+  \left[
+    -\delta_{\alpha\beta}
+    +
+    \Phi_E'(u_{\alpha}^*)K_{\alpha\beta}
+  \right].
+  \label{eq:e-cluster-jacobian}
+\end{equation}
+%
+$-\delta_{\alpha\beta}/\tau_E$ is the leak of the rate variable. The term $\Phi_E'(u_{\alpha}^*)K_{\alpha\beta}/\tau_E$ is recurrent feedback: coupling multiplied by gain. A fixed point is linearly stable if every eigenvalue of $\mathcal{J}$ has negative real part.
+
+For a single isolated cluster coordinate, the scalar stability condition is
+%
+\begin{equation}
+  \Phi_E'(u^*)K_{\mathrm{self}} < 1 .
+  \label{eq:scalar-upstate-stability}
+\end{equation}
+%
+This inequality can look surprising: strong self-excitation is needed to create the up-state, but at the stable up-state the local feedback slope must be less than the leak. Bistability is created by nonlinear shape, not by making the stable point locally explosive.
+
+For a symmetric $k$-active state, two perturbation types are especially informative. Let $U$ denote the active block and $D$ denote the inactive block. In the contrast-mode shortcut below,
+%
+\begin{equation}
+  K_{UU}=K_{\alpha\alpha}\ \text{for}\ \alpha\in\mathcal{A},
+  \qquad
+  K_{UB}=K_{\alpha\beta}\ \text{for}\ \alpha,\beta\in\mathcal{A},\ \alpha\ne\beta,
+  \label{eq:active-block-couplings}
+\end{equation}
+%
+and
+%
+\begin{equation}
+  K_{DD}=K_{\alpha\alpha}\ \text{for}\ \alpha\notin\mathcal{A},
+  \qquad
+  K_{DB}=K_{\alpha\beta}\ \text{for}\ \alpha,\beta\notin\mathcal{A},\ \alpha\ne\beta.
+  \label{eq:inactive-block-couplings}
+\end{equation}
+%
+Here the second subscript $B$ means ``between two clusters inside the same activity block,'' not a new population. Thus $K_{UU}$ and $K_{DD}$ are diagonal effective self-couplings, while $K_{UB}$ and $K_{DB}$ are off-diagonal effective couplings within the active and inactive blocks. For equal-size clusters with the competition matrix in \eqref{eq:effective-competition-matrix}, these reduce to the corresponding diagonal and off-diagonal entries of $K_{\alpha\beta}$.
+%
+\begin{align}
+  \lambda_{\mathrm{active},c}
+  &\approx
+  \frac{-1+\Phi_E'(u_U)(K_{UU}-K_{UB})}{\tau_E},
+  \label{eq:active-contrast-eigenvalue}\\
+  \lambda_{\mathrm{inactive},c}
+  &\approx
+  \frac{-1+\Phi_E'(u_D)(K_{DD}-K_{DB})}{\tau_E}.
+  \label{eq:inactive-contrast-eigenvalue}
+\end{align}
+%
+The active-contrast mode raises one active cluster while lowering another. If it is unstable, equal co-activation breaks into a more selective state. The inactive-contrast mode tests whether a down cluster can separate from the inactive pool and begin an escape.
+
+The learner should not only ask whether an up-state exists. The sharper question is which perturbation destroys it: amplitude decay, competition among active clusters, or escape of an inactive cluster.
+
+% ============================================================
+\section{Bistability at the Mesoscopic Level}
+\label{sec:bistability-at-mesoscopic-level}
+% ============================================================
+
+Bistability means that the same input supports both a low-rate and a high-rate stable state. A single cluster embedded in a slowly varying background can be reduced to
+%
+\begin{equation}
+  \tau_E \dot r
+  =
+  -r
+  +
+  \Phi_E\!\left(h_{\mathrm{eff}}+J_{\mathrm{eff}}r\right),
+  \label{eq:single-cluster-bistability}
+\end{equation}
+%
+where $h_{\mathrm{eff}}$ includes external drive, background excitation, and baseline inhibition, while $J_{\mathrm{eff}}$ is the net recurrent feedback of the cluster after inhibition is accounted for.
+
+Define
+%
+\begin{equation}
+  G(r)
+  =
+  \Phi_E(h_{\mathrm{eff}}+J_{\mathrm{eff}}r)-r .
+  \label{eq:bistability-nullcline-function}
+\end{equation}
+%
+Fixed points are zeros of $G(r)$. A stable fixed point has $G'(r)<0$; an unstable fixed point has $G'(r)>0$. A bistable cluster has three zeros:
+%
+\begin{equation}
+  r_D < r_S < r_U ,
+  \label{eq:down-saddle-up}
+\end{equation}
+%
+where $r_D$ is the down-state, $r_U$ is the up-state, and $r_S$ is the saddle threshold separating their basins in the one-dimensional reduction.
+
+At a saddle-node bifurcation, two fixed points merge. The defining conditions are
+%
+\begin{equation}
+  G(r^*)=0,
+  \qquad
+  G'(r^*)=\Phi_E'(h_{\mathrm{eff}}+J_{\mathrm{eff}}r^*)J_{\mathrm{eff}}-1=0 .
+  \label{eq:ch10-saddle-node-conditions}
+\end{equation}
+%
+The first condition says the rate is self-consistent. The second says recurrent gain exactly balances leak. These equations locate the boundary of the bistable region in a phase diagram.
+
+At the network level, cluster bistability becomes combinatorial multistability. If many subsets of clusters can be active, the deterministic system has many attractors or long-lived states. Finite-size fluctuations then move the network between them.
+
+% ============================================================
+\section{Finite-Size Noise and Metastable Transitions}
+\label{sec:finite-size-noise-metastable-transitions}
+% ============================================================
+
+The deterministic equation gives the mean drift of a large cluster. A finite cluster has noisy spike counts. In a short window $\Delta t$, a near-Poisson approximation gives
+%
+\begin{equation}
+  \E[\Delta N_{\alpha}]
+  \approx
+  n_{\alpha}r_{\alpha}\Delta t,
+  \qquad
+  \Var[\Delta N_{\alpha}]
+  \approx
+  n_{\alpha}r_{\alpha}\Delta t .
+  \label{eq:cluster-count-moments}
+\end{equation}
+%
+After dividing by $n_{\alpha}$, the relative size of the fluctuation scales like $1/\sqrt{n_{\alpha}}$. This is the basic finite-size law: larger clusters are less noisy.
+
+A Langevin-level mesoscopic model writes
+%
+\begin{keyequation}[Finite-Size Cluster Dynamics]
+\begin{equation}
+  \dd r_{\alpha}
+  =
+  f_{\alpha}(\vec r)\,\dd t
+  +
+  \frac{1}{\sqrt{n_{\alpha}}}
+  \sum_{\mu} B_{\alpha\mu}(\vec r)\,\dd W_{\mu}(t),
+  \label{eq:cluster-langevin}
+\end{equation}
+\tcblower
+$f_{\alpha}$ is deterministic drift, $B_{\alpha\mu}$ sets noise amplitude and correlations, $W_{\mu}$ are independent Wiener processes, and $n_{\alpha}^{-1/2}$ is the finite-size scaling.
+\end{keyequation}
+
+\noindent In the simplest diagonal approximation, $B_{\alpha\alpha}^2(\vec r)$ is proportional to the instantaneous activity of cluster $\alpha$. More refined mesoscopic theories include refractoriness, synaptic filtering, and shared input, which make $B$ state-dependent and non-diagonal.
+
+Metastable switching is noise-driven escape from one basin of attraction to another. For a one-dimensional reduction with an effective potential $U(r)$, the mean escape time has the qualitative Kramers form
+%
+\begin{equation}
+  T_{\mathrm{escape}}
+  \approx
+  C
+  \exp\!\left(n_{\alpha}\Delta U\right),
+  \label{eq:kramers-cluster-scaling}
+\end{equation}
+%
+where $\Delta U$ is the barrier between the stable state and the saddle. The exact prefactor and barrier are model-dependent, but the scaling is the key point: if switching is finite-size driven, cluster lifetime should grow rapidly with cluster size.
+
+% ============================================================
+\section{Reproducing the E-Clustered Baseline}
+\label{sec:reproducing-e-clustered-baseline}
+% ============================================================
+
+A mesoscopic E-clustered model should not merely show interesting dynamics. It should reproduce the specific observables that made the microscopic clustered network useful.
+
+The minimal target list is:
+%
+\begin{enumerate}[leftmargin=*]
+  \item \textbf{Cluster up- and down-states}: the distribution of $r_{\alpha}(t)$ should be bimodal or at least strongly skewed toward low and high activity regimes.
+  \item \textbf{Slow cluster autocorrelation}: the autocorrelation of $r_{\alpha}(t)$ should decay on the scale of cluster lifetimes, not only synaptic time constants.
+  \item \textbf{Occupancy distribution}: the model should match the distribution of the number of active clusters $k(t)$.
+  \item \textbf{Switching statistics}: cluster lifetime distributions should be comparable to microscopic simulations at the same effective cluster size.
+  \item \textbf{Stimulus bias}: external input to a subset of clusters should change occupancy and lifetimes in the expected direction.
+\end{enumerate}
+
+The occupancy variable is
+%
+\begin{equation}
+  k(t)
+  =
+  \sum_{\alpha=1}^{Q}
+  \mathbf{1}\{r_{\alpha}(t)>\theta_{\mathrm{up}}\},
+  \label{eq:occupancy-variable}
+\end{equation}
+%
+where $\theta_{\mathrm{up}}$ is a threshold chosen between down- and up-state rates. $k(t)$ is a coarse but powerful observable because it compresses the high-dimensional state into the number of active attractor-like clusters.
+
+The mesoscopic model is successful only if its parameters have interpretable roles. $J_{EE}^{+}$ should deepen up-states, shared inhibition should control competition, $n_{\alpha}$ should control switching noise, and stimulus drive $h_{\alpha}$ should bias the occupancy distribution.
+
+% ============================================================
+\section{Minimal Simulation Tasks for Reproduction}
+\label{sec:minimal-simulation-tasks-reproduction}
+% ============================================================
+
+The most efficient reproduction plan starts with the mesoscopic equations before returning to microscopic simulations.
+
+First, sweep $J_{EE}^{+}$ and external drive $h$ in the deterministic system. For each point, solve the fixed-point equations and classify the stable states by $k$. This produces a deterministic phase diagram with asynchronous, bistable, and multi-active regions.
+
+Second, add finite-size noise using \eqref{eq:cluster-langevin}. At fixed deterministic parameters, vary $n_{\alpha}$. If switching is finite-size driven, the mean lifetime should increase strongly with $n_{\alpha}$ while the locations of deterministic fixed points remain almost unchanged.
+
+Third, compare mesoscopic and microscopic observables using the same definitions. For example,
+%
+\begin{equation}
+  C_{\alpha}(\tau)
+  =
+  \frac{
+    \E[(r_{\alpha}(t)-\bar r_{\alpha})(r_{\alpha}(t+\tau)-\bar r_{\alpha})]
+  }{
+    \Var[r_{\alpha}(t)]
+  }
+  \label{eq:ch10-cluster-autocorrelation}
+\end{equation}
+%
+measures the normalized cluster autocorrelation. Its decay time should track cluster switching, not merely the synaptic filter.
+
+Fourth, add a stimulus as a structured drive
+%
+\begin{equation}
+  h_{\alpha}(t)
+  =
+  h_0 + s(t)m_{\alpha},
+  \label{eq:structured-stimulus-drive}
+\end{equation}
+%
+where $m_{\alpha}$ marks stimulus-targeted clusters. The computation is to compare $P(k)$, lifetimes, and variability before and after stimulus onset.
+
+This minimal program separates three questions: where attractors exist, how finite-size noise moves between them, and how stimuli reshape the occupancy landscape.
+
+\begin{chaptersummary}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.45}
+\begin{tabularx}{\textwidth}{@{}l X X@{}}
+  \toprule
+  \textbf{Concept} & \textbf{Equation} & \textbf{Key Insight} \\
+  \midrule
+  Cluster activity &
+  $A_{\alpha}=n_{\alpha}^{-1}\sum_{i\in\mathcal{C}_{\alpha}}x_i$ &
+  Average spikes inside one cluster \\
+  Filtered rate &
+  $\tau_s\dot r_{\alpha}=-r_{\alpha}+A_{\alpha}$ &
+  Synaptic-scale population variable \\
+  E-cluster dynamics &
+  $\tau_E\dot r_{\alpha}=-r_{\alpha}+\Phi_E(u_{\alpha})$ &
+  Leak plus nonlinear input-output map \\
+  Clustered excitation &
+  $J_{\alpha\alpha}=J_{EE}^{+}$, $J_{\alpha\beta}=J_{EE}^{-}$ &
+  Self-excitation creates up-state candidates \\
+  Competition &
+  $K_{\alpha\beta}=J_{\alpha\beta}-J_{EI}G_I J_{IE}q_{\beta}$ &
+  Shared inhibition turns activity in one cluster into suppression of others \\
+  Bistability &
+  $G(r)=0$, $G'(r)=0$ at saddle-node &
+  Up- and down-states appear through nonlinear self-consistency \\
+  Finite-size switching &
+  $\dd r=f\,\dd t+n^{-1/2}B\,\dd W$ &
+  Cluster size controls stochastic escape \\
+  \bottomrule
+\end{tabularx}
+\end{center}
+
+\end{chaptersummary}
+
+\begin{conceptquestions}
+  \item What information is retained when a cluster is replaced by $r_{\alpha}(t)$? What information about individual neurons is discarded?
+
+  \item Why does increasing $J_{EE}^{+}$ while preserving mean recurrent input make clusters more likely to have up-states?
+
+  \item In the effective coupling $K_{\alpha\beta}=J_{\alpha\beta}-J_{EI}G_I J_{IE}q_{\beta}$, which term is responsible for competition? How would increasing inhibitory gain change the phase diagram?
+
+  \item For a $k$-active fixed point, why must both the active-rate equation and inactive-rate equation be checked?
+
+  \item Explain why stable up-states require local feedback slope less than leak even though strong recurrent excitation is needed to create the up-state.
+
+  \item If cluster lifetimes do not increase when $n_{\alpha}$ is increased, what does that suggest about the switching mechanism?
+\end{conceptquestions}

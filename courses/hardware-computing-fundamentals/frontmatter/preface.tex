@@ -1,0 +1,23 @@
+\section*{Preface}
+\addcontentsline{toc}{section}{Preface}
+
+These notes collect the hardware concepts needed to reason about modern AI systems without treating chips as magic boxes. The emphasis is on accelerators, memory movement, profiling, distributed placement, spiking systems, physical graph constraints, and the assumptions that connect model architecture to real execution.
+
+The notes are organized so that conceptual exposition, rough calculations, profiler diagnostics, and architectural failure modes stay in the same place. Code and benchmarks can reproduce examples, but the notes state the definitions, conventions, and interpretation rules that make those measurements meaningful.
+
+The first chapters set the workflow: start from the computation, estimate data movement, identify the memory hierarchy involved, and only then compare accelerators or write custom kernels. This order is intentional. In hardware-aware AI, a poorly defined workload cannot be rescued by an impressive device name.
+
+\begin{aside}[Core habit]
+For every model, ask four questions. What mathematical operations does it perform? Where do the tensors live? How often must data move? Which hardware path makes those operations cheap?
+\end{aside}
+
+AI hardware discussions often over-focus on peak FLOPs. Peak FLOPs are real, but they are a ceiling. Real performance is usually set by memory traffic, launch overhead, synchronization, communication, batching, precision, compiler decisions, and load balance. A model can be mathematically elegant and hardware-hostile at the same time.
+
+The images in this course are Codex image-generated raster teaching plates. They are not SVG diagrams. Some plates include short generated labels, but the captions and surrounding text carry the exact terminology. Treat each figure as an intuition map, not as a source of numerical specifications.
+
+Read Chapters 1--3 first. They define the vocabulary: FLOPs, bytes, bandwidth, latency, arithmetic intensity, batching, utilization, and memory hierarchy. Chapters 4--5 connect that vocabulary to neural network implementation and distributed systems. Chapters 6--8 broaden the frame to spiking systems, network science, and algorithm-hardware co-design.
+
+After each chapter, try to name the mathematical object introduced, the empirical diagnostic that estimates it, and the failure mode to check before trusting it. If you can explain where time and memory go in a model, you are already thinking more clearly than someone who only memorizes chip names.
+
+\bigskip
+\noindent\textit{Berlin, May 2026}

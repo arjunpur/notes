@@ -1,0 +1,550 @@
+\chapter{Single-Neuron Models Needed for This Project}
+\label{ch:single-neuron-models}
+
+\textit{Clustered-network theory starts with spikes, but the mesoscopic variables are population activities. This chapter fixes the single-neuron and point-process objects that sit between membrane voltage, spike timing, synaptic filtering, and population rate.}
+
+% Figure idea for coordinator: a raster-to-intensity-to-filtered-rate panel comparing Poisson, LIF, and GIF neurons. Exact equations should remain in LaTeX.
+
+% ============================================================
+\section{Poisson neurons}
+\label{sec:poisson-neurons}
+% ============================================================
+
+A Poisson neuron is the cleanest null model for stochastic spiking. It does not keep a membrane voltage. It keeps only an instantaneous firing intensity $\lambda(t)$, measured in spikes per unit time.
+
+In a small time bin $\dd t$, the counting process $N(t)$ obeys
+%
+\begin{keyequation}[Poisson Spiking Rule]
+\begin{equation}
+  \mathbb{P}\{N(t+\dd t)-N(t)=1\mid \lambda(t)\}
+  =
+  \lambda(t)\,\dd t+o(\dd t),
+  \qquad
+  \mathbb{P}\{N(t+\dd t)-N(t)\geq 2\}=o(\dd t).
+  \label{eq:poisson-spiking-rule}
+\end{equation}
+\tcblower
+$N(t)$ counts spikes up to time $t$; $\lambda(t)$ is the instantaneous rate; $o(\dd t)$ collects terms negligible relative to $\dd t$.
+\end{keyequation}
+
+\noindent For an inhomogeneous Poisson process, counts in an interval $[a,b]$ are distributed as
+%
+\begin{equation}
+  N(a,b) \sim \operatorname{Poisson}\!\left(\Lambda(a,b)\right),
+  \qquad
+  \Lambda(a,b)=\int_a^b \lambda(t)\,\dd t .
+  \label{eq:inhomogeneous-poisson-count}
+\end{equation}
+%
+The integrated intensity $\Lambda(a,b)$ is the expected number of spikes in the interval. If $\lambda$ is doubled throughout the interval, both the mean count and the count variance double.
+
+For a homogeneous Poisson process with constant rate $r$, the interspike intervals are exponential,
+%
+\begin{equation}
+  p_{\mathrm{ISI}}(T)=r e^{-rT},
+  \qquad
+  \mathbb{E}[T]=\frac{1}{r},
+  \qquad
+  \operatorname{CV}=1 .
+  \label{eq:poisson-isi}
+\end{equation}
+%
+The spike-count Fano factor is also one:
+%
+\begin{equation}
+  F(T)
+  =
+  \frac{\operatorname{Var}[N(t,t+T)]}{\mathbb{E}[N(t,t+T)]}
+  =
+  1 .
+  \label{eq:poisson-fano-one}
+\end{equation}
+%
+This is why Poisson spiking is a useful baseline. Any sub-Poisson regularity, super-Poisson count variability, refractory dip in the autocorrelation, or slow modulation must come from something beyond a memoryless Poisson process.
+
+For clustered networks, the key use of the Poisson approximation is finite-size scaling. If $N_k$ independent neurons in cluster $k$ fire with common rate $r_k$, then the binned population activity
+%
+\begin{equation}
+  \widehat A_k(t;\Delta t)
+  =
+  \frac{1}{N_k\Delta t}
+  \sum_{i\in\mathcal{C}_k}N_i(t,t+\Delta t)
+  \label{eq:poisson-population-activity}
+\end{equation}
+%
+satisfies
+%
+\begin{equation}
+  \mathbb{E}[\widehat A_k]=r_k,
+  \qquad
+  \operatorname{Var}[\widehat A_k]
+  =
+  \frac{r_k}{N_k\Delta t}.
+  \label{eq:poisson-population-variance}
+\end{equation}
+%
+The standard deviation scales like $N_k^{-1/2}$. That scaling is the starting point for mesoscopic noise terms, even though real spiking neurons are not independent Poisson clocks.
+
+The practical question after fitting or simulating a Poisson neuron is therefore simple: does the observed variability look like memoryless sampling around a rate, or does it require refractoriness, voltage dynamics, adaptation, shared input, or latent state switching?
+
+% ============================================================
+\section{Leaky integrate-and-fire neurons}
+\label{sec:lif-neurons-project}
+% ============================================================
+
+The leaky integrate-and-fire neuron adds the missing state variable: membrane voltage. Between spikes, the voltage relaxes toward a leak reversal potential and is driven by input current. Spiking is imposed by a threshold-and-reset rule.
+
+\begin{keyequation}[Current-Based LIF Neuron]
+\begin{equation}
+  \tau_m\frac{\dd V_i}{\dd t}
+  =
+  -\bigl(V_i-E_L\bigr)
+  +
+  R_m I_i(t),
+  \qquad
+  V_i(t^-)\geq V_{\mathrm{th}}
+  \Rightarrow
+  \begin{cases}
+    \text{record a spike at }t,\\
+    V_i(t^+)=V_{\mathrm{reset}},\\
+    V_i\text{ is held refractory for }\tau_{\mathrm{ref}} .
+  \end{cases}
+  \label{eq:project-lif}
+\end{equation}
+\tcblower
+$V_i$: membrane potential; $\tau_m$: membrane time constant; $E_L$: leak reversal level; $R_m$: membrane resistance; $I_i(t)$: total input current.
+\end{keyequation}
+
+\noindent The leak term $-(V_i-E_L)$ pulls voltage back toward rest. The current term $R_m I_i$ moves the voltage toward threshold. The threshold/reset rule converts continuous voltage dynamics into discrete spike times.
+
+For constant current $I_0$, the subthreshold fixed voltage is
+%
+\begin{equation}
+  V_\infty=E_L+R_m I_0 .
+  \label{eq:lif-v-infty-project}
+\end{equation}
+%
+If $V_\infty\leq V_{\mathrm{th}}$, the deterministic LIF neuron never reaches threshold. If $V_\infty>V_{\mathrm{th}}$, the interspike interval is
+%
+\begin{equation}
+  T_{\mathrm{ISI}}
+  =
+  \tau_{\mathrm{ref}}
+  +
+  \tau_m
+  \ln\!\left(
+    \frac{R_m I_0-(V_{\mathrm{reset}}-E_L)}
+         {R_m I_0-(V_{\mathrm{th}}-E_L)}
+  \right),
+  \qquad
+  r(I_0)=\frac{1}{T_{\mathrm{ISI}}}.
+  \label{eq:lif-rate-project}
+\end{equation}
+%
+The numerator measures the distance from reset to the current-dependent fixed point. The denominator measures the distance from threshold to that fixed point. As the denominator approaches zero from above, the time to threshold becomes large and the firing rate approaches zero.
+
+In a recurrent network, $I_i(t)$ is usually not constant. A current-based model writes
+%
+\begin{equation}
+  I_i(t)
+  =
+  I_i^{\mathrm{ext}}(t)
+  +
+  \sum_j J_{ij}x_j(t),
+  \qquad
+  \tau_s\dot x_j=-x_j+s_j(t),
+  \label{eq:lif-network-current-input}
+\end{equation}
+%
+where $J_{ij}$ is the signed synaptic weight from neuron $j$ to neuron $i$, $x_j$ is the filtered presynaptic spike train, and $s_j(t)=\sum_m\delta(t-t_j^m)$ is the raw spike train.
+
+The LIF model is useful here because it separates two problems. The voltage equation tells us how filtered input becomes threshold crossings. The network architecture tells us how spikes from other neurons create that filtered input.
+
+% ============================================================
+\section{Generalized integrate-and-fire neurons}
+\label{sec:gif-neurons}
+% ============================================================
+
+The phrase generalized integrate-and-fire (GIF) does not name one unique model. It names a family of point-neuron models that keep the computational simplicity of integrate-and-fire while adding spike-history and subthreshold state variables needed to match real spike trains.
+
+A useful template is
+%
+\begin{keyequation}[GIF Template]
+\begin{align}
+  C_m\dot V_i
+  &=
+  -g_L(V_i-E_L)
+  + I_i^{\mathrm{syn}}(t)
+  + I_i^{\mathrm{ext}}(t)
+  - w_i(t),
+  \label{eq:gif-voltage}
+  \\
+  \dot w_i
+  &=
+  -\frac{w_i}{\tau_w}
+  +
+  b\,s_i(t),
+  \label{eq:gif-adaptation}
+  \\
+  \theta_i(t)
+  &=
+  \theta_0
+  +
+  \int_{-\infty}^{t}\eta(t-t')\,s_i(t')\,\dd t' .
+  \label{eq:gif-threshold}
+\end{align}
+\tcblower
+$w_i$: adaptation current; $b$: spike-triggered adaptation size; $\theta_i$: dynamic threshold; $\eta$: spike-history kernel.
+\end{keyequation}
+
+\noindent The voltage equation is still a leaky membrane equation, but it includes an adaptation current $w_i$. The adaptation equation says that $w_i$ decays between spikes and jumps by $b$ at each delta-function spike. The threshold equation says that recent spikes can transiently raise the threshold, implementing relative refractoriness.
+
+The spike rule can be deterministic,
+%
+\begin{equation}
+  V_i(t^-)\geq \theta_i(t)
+  \quad\Rightarrow\quad
+  \text{spike and reset},
+  \label{eq:gif-deterministic-rule}
+\end{equation}
+%
+or stochastic, through a conditional intensity
+%
+\begin{equation}
+  \lambda_i(t)
+  =
+  \phi\!\left(V_i(t)-\theta_i(t)\right).
+  \label{eq:gif-intensity}
+\end{equation}
+%
+The function $\phi$ maps distance-to-threshold into instantaneous spike probability. Increasing $V_i$ raises the intensity. Increasing $\theta_i$ lowers it. Strong adaptation $w_i$ hyperpolarizes the effective membrane drive and therefore also lowers intensity.
+
+The GIF model matters for this rotation because mesoscopic population theory often wants a neuron model with a well-defined hazard rate and renewal or quasi-renewal structure. A deterministic LIF neuron has a sharp threshold. A Poisson neuron has no voltage or refractoriness. A GIF neuron can keep voltage-dependent input-output behavior, refractory effects, and stochastic spike timing in one compact description.
+
+% ============================================================
+\section{Hazard-rate / escape-noise spiking}
+\label{sec:hazard-escape-noise}
+% ============================================================
+
+Hazard-rate spiking replaces a hard threshold by a probability of firing per unit time. Conditional on the neuron's history $\mathcal{H}_t$, the hazard or conditional intensity is
+%
+\begin{equation}
+  \lambda_i(t\mid\mathcal{H}_t)
+  =
+  \phi\!\left(u_i(t)\right),
+  \qquad
+  u_i(t)=V_i(t)-\theta_i(t).
+  \label{eq:hazard-distance-threshold}
+\end{equation}
+%
+The variable $u_i$ is distance to threshold. The nonlinearity $\phi$ is positive and increasing. A common escape-noise choice is exponential,
+%
+\begin{equation}
+  \phi(u)
+  =
+  \lambda_0\exp\!\left(\frac{u}{\Delta_u}\right).
+  \label{eq:exponential-escape-rate}
+\end{equation}
+%
+Here $\lambda_0$ sets the baseline hazard at $u=0$, and $\Delta_u$ sets threshold softness. Small $\Delta_u$ makes the spike rule nearly deterministic: intensity changes sharply when voltage approaches threshold. Large $\Delta_u$ makes spiking more graded and more noise driven.
+
+The survival probability over an interval $[a,b]$ with no spike is
+%
+\begin{keyequation}[Survival Under a Hazard]
+\begin{equation}
+  S(a,b)
+  =
+  \exp\!\left(
+    -\int_a^b \lambda_i(t\mid\mathcal{H}_t)\,\dd t
+  \right).
+  \label{eq:hazard-survival}
+\end{equation}
+\tcblower
+$S(a,b)$ is the probability that no spike occurs; the integral is accumulated instantaneous risk.
+\end{keyequation}
+
+\noindent This equation is the bridge to age-structured population theory. If a neuron has survived without spiking for a long time, its age since last spike has changed, its refractory variables have relaxed, and its hazard may be different from a recently reset neuron.
+
+Escape noise is not merely a numerical trick. It gives a differentiable relationship between state and spiking probability. That smoothness is useful when deriving transfer functions, refractory-density equations, and finite-size stochastic population equations.
+
+% ============================================================
+\section{Refractoriness and adaptation}
+\label{sec:refractoriness-adaptation}
+% ============================================================
+
+Refractoriness is the short-timescale memory left by a spike. Absolute refractoriness means the neuron cannot fire for a fixed time after a spike. Relative refractoriness means the neuron can fire, but its probability is temporarily reduced.
+
+In intensity form, a compact model is
+%
+\begin{equation}
+  \lambda_i(t)
+  =
+  \phi\!\left(
+    V_i(t)-\theta_0
+    -\int_{-\infty}^{t} \eta_{\theta}(t-t')\,s_i(t')\,\dd t'
+    -a_i(t)
+  \right),
+  \label{eq:refractory-intensity}
+\end{equation}
+%
+where $\eta_{\theta}$ is a spike-history threshold kernel and $a_i$ is a slower adaptation variable. The kernel is usually large immediately after a spike and decays over milliseconds to tens of milliseconds. Adaptation can persist longer.
+
+A simple adaptation current obeys
+%
+\begin{equation}
+  \dot a_i
+  =
+  -\frac{a_i}{\tau_a}
+  +
+  q_a s_i(t).
+  \label{eq:adaptation-current-project}
+\end{equation}
+%
+The parameter $q_a$ is the size of the spike-triggered adaptation jump. The time constant $\tau_a$ controls how long that jump influences future spikes.
+
+Refractoriness and adaptation change the statistics of spike trains. Absolute refractoriness prevents arbitrarily short interspike intervals and tends to make spike timing more regular than a Poisson process at short times. Slow adaptation creates negative feedback: a burst of spikes raises $a_i$, reducing the chance of continued high firing.
+
+In clustered networks, these variables can either stabilize or destabilize up-states. Strong adaptation inside an active cluster can terminate an up-state. Short refractoriness regularizes high-rate spiking without necessarily destroying slow cluster switching. The distinction matters when deciding whether slow variability is caused by network-level attractors or by single-cell history currents.
+
+% ============================================================
+\section{Spike trains as point processes}
+\label{sec:spike-trains-point-processes-project}
+% ============================================================
+
+For network theory, a spike train is written as a point process:
+%
+\begin{equation}
+  s_i(t)
+  =
+  \sum_m\delta(t-t_i^m).
+  \label{eq:project-spike-train}
+\end{equation}
+%
+The spike times $t_i^m$ are the events. The delta functions make the events usable in differential equations and convolutions.
+
+Counts are integrals of spike trains:
+%
+\begin{equation}
+  N_i(a,b)
+  =
+  \int_a^b s_i(t)\,\dd t.
+  \label{eq:spike-count-integral}
+\end{equation}
+%
+The conditional intensity is defined by
+%
+\begin{equation}
+  \mathbb{E}[\dd N_i(t)\mid\mathcal{H}_t]
+  =
+  \lambda_i(t\mid\mathcal{H}_t)\,\dd t .
+  \label{eq:conditional-intensity-definition}
+\end{equation}
+%
+This equation says that $\lambda_i$ is the expected spike count per unit time, given everything the model knows at time $t$.
+
+For a cluster $\mathcal{C}_k$, the raw population activity is
+%
+\begin{equation}
+  A_k(t)
+  =
+  \frac{1}{N_k}\sum_{i\in\mathcal{C}_k}s_i(t),
+  \label{eq:raw-cluster-activity-ch03}
+\end{equation}
+%
+and a filtered population rate is
+%
+\begin{equation}
+  r_k(t)
+  =
+  (\kappa_A*A_k)(t)
+  =
+  \int_{-\infty}^{t}\kappa_A(t-t')A_k(t')\,\dd t' .
+  \label{eq:filtered-cluster-rate-ch03}
+\end{equation}
+%
+$A_k$ is still spiky because it is a sum of impulses. $r_k$ is smooth enough to plot, threshold, and use in reduced equations.
+
+The operational lesson is that a spike train, a spike count, a conditional intensity, a raw population activity, and a filtered rate are different objects. Confusing them is a common source of wrong mesoscopic equations.
+
+% ============================================================
+\section{Synaptic filtering}
+\label{sec:synaptic-filtering-project}
+% ============================================================
+
+Spikes affect postsynaptic neurons through synaptic filters. A presynaptic impulse is not a constant current forever; it produces a transient postsynaptic waveform.
+
+The simplest filter is exponential:
+%
+\begin{keyequation}[Exponential Synaptic Filter]
+\begin{equation}
+  \tau_s\dot x_j(t)
+  =
+  -x_j(t)+s_j(t),
+  \qquad
+  x_j(t)
+  =
+  \sum_m
+  \frac{1}{\tau_s}e^{-(t-t_j^m)/\tau_s}\mathbf{1}_{t\geq t_j^m}.
+  \label{eq:exponential-synaptic-filter-project}
+\end{equation}
+\tcblower
+$s_j$: raw presynaptic spike train; $x_j$: filtered synaptic trace; $\tau_s$: synaptic decay time.
+\end{keyequation}
+
+\noindent In a current-based network, the recurrent input is
+%
+\begin{equation}
+  I_i^{\mathrm{rec}}(t)
+  =
+  \sum_j J_{ij}x_j(t).
+  \label{eq:current-based-recurrent-input-ch03}
+\end{equation}
+%
+The sign and size of $J_{ij}$ determine whether the filtered spike is excitatory or inhibitory and how strongly it moves the postsynaptic voltage.
+
+In a conductance-based network, synapses change conductances:
+%
+\begin{equation}
+  C_m\dot V_i
+  =
+  -g_L(V_i-E_L)
+  -
+  \sum_j g_{ij}x_j(t)\bigl(V_i-E_{ij}\bigr)
+  +
+  I_i^{\mathrm{ext}}(t).
+  \label{eq:conductance-synaptic-input-ch03}
+\end{equation}
+%
+The reversal potential $E_{ij}$ sets the direction of the synaptic drive. The factor $(V_i-E_{ij})$ makes the current depend on the postsynaptic voltage, so conductance-based synapses change both mean input and effective membrane time constant.
+
+Synaptic filtering sets one of the fastest relevant network timescales. AMPA-like excitation and GABA-like inhibition are often millisecond-scale. Slow metastability in clustered networks therefore cannot be explained by synaptic filtering alone unless slow synapses or slow plasticity variables are explicitly added.
+
+% ============================================================
+\section{From membrane potential to firing intensity}
+\label{sec:membrane-to-intensity}
+% ============================================================
+
+Mesoscopic theory needs a map from input to expected spiking. For a deterministic LIF neuron this map can be the steady $f$--$I$ curve. For noisy or GIF neurons it is more naturally an expected intensity.
+
+A general microscopic form is
+%
+\begin{equation}
+  \lambda_i(t)
+  =
+  \phi_i\!\left(
+    V_i(t),
+    \theta_i(t),
+    z_i(t)
+  \right),
+  \label{eq:general-membrane-to-intensity}
+\end{equation}
+%
+where $z_i$ denotes other retained variables such as adaptation, refractory state, synaptic conductance, or age since last spike. The function $\phi_i$ is the spike-generation nonlinearity.
+
+At the population level, a transfer function compresses this mapping:
+%
+\begin{equation}
+  r_a
+  =
+  \Phi_a(\mu_a,\sigma_a,\text{history parameters}).
+  \label{eq:population-transfer-function-ch03}
+\end{equation}
+%
+Here $a$ may be $E$ or $I$, or a specific cluster type. The mean input $\mu_a$ shifts the operating point. The input variance $\sigma_a^2$ controls fluctuation-driven threshold crossings. History parameters summarize refractoriness and adaptation.
+
+This is the bridge from microscopic spiking to mesoscopic equations. A cluster-rate equation does not need every voltage trace, but it does need to know how the distribution of voltage and history variables turns input into population activity.
+
+The next computation is therefore to identify the transfer function appropriate to the neuron model. For Poisson neurons, $\Phi$ is usually imposed directly. For LIF neurons, $\Phi$ comes from threshold-crossing dynamics. For GIF neurons, $\Phi$ depends on hazard, refractoriness, and adaptation.
+
+% ============================================================
+\section{What changes when we move from Poisson to GIF neurons?}
+\label{sec:poisson-to-gif}
+% ============================================================
+
+Moving from Poisson to GIF neurons changes what the mesoscopic theory must remember.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.45}
+\begin{tabularx}{\textwidth}{@{}l X X@{}}
+  \toprule
+  \textbf{Feature} & \textbf{Poisson neuron} & \textbf{GIF neuron} \\
+  \midrule
+  State variable &
+  Usually only an imposed rate $\lambda(t)$ &
+  Voltage, threshold/history, adaptation, synaptic state \\
+  Spike probability &
+  Memoryless given $\lambda(t)$ &
+  Conditional on voltage and spike history \\
+  ISI statistics &
+  Exponential for constant rate; $\operatorname{CV}=1$ &
+  Refractory and adaptation effects can make $\operatorname{CV}<1$ or create bursting/slow recovery \\
+  Count variability &
+  $F=1$ for homogeneous independent spiking &
+  Can be sub-Poisson at short windows and history-dependent at longer windows \\
+  Transfer function &
+  Chosen directly by the modeler &
+  Derived or fitted from voltage dynamics and hazard \\
+  Mesoscopic variables needed &
+  Population activity may be enough &
+  Age, refractory density, or adaptation moments may be needed \\
+  \bottomrule
+\end{tabularx}
+\end{center}
+
+The advantage of Poisson neurons is analytic simplicity. Independent Poisson populations give immediate $N^{-1/2}$ finite-size noise and simple likelihoods.
+
+The advantage of GIF neurons is mechanistic realism at the level relevant for population theory. They can express refractoriness, adaptation, voltage-dependent gain, and escape noise without simulating detailed ionic currents.
+
+For this course, the right attitude is comparative. Use Poisson neurons to understand the baseline scaling and null variability. Use LIF or GIF neurons when the question depends on the mechanism by which recurrent input becomes spikes. In clustered networks, that distinction matters because slow up-state switching can coexist with fast, locally regularized spike generation.
+
+\begin{chaptersummary}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.55}
+\begin{tabularx}{\textwidth}{@{}l X X@{}}
+  \toprule
+  \textbf{Object} & \textbf{Equation} & \textbf{Interpretation} \\
+  \midrule
+  Poisson intensity &
+  $\mathbb{P}\{\dd N=1\}=\lambda(t)\dd t+o(\dd t)$ &
+  Spiking probability per unit time \\
+  LIF voltage &
+  $\tau_m\dot V=-(V-E_L)+R_m I$ &
+  Leaky integration plus threshold/reset \\
+  GIF history &
+  $\dot w=-w/\tau_w+bs(t)$, $\theta=\theta_0+\eta*s$ &
+  Spikes leave refractory and adaptive memory \\
+  Escape hazard &
+  $\lambda=\lambda_0\exp((V-\theta)/\Delta_u)$ &
+  Soft threshold controlled by distance to threshold \\
+  Spike train &
+  $s_i(t)=\sum_m\delta(t-t_i^m)$ &
+  Event times as a signal \\
+  Cluster activity &
+  $A_k=N_k^{-1}\sum_{i\in\mathcal{C}_k}s_i$ &
+  Raw mesoscopic population output \\
+  Synaptic filter &
+  $\tau_s\dot x=-x+s$ &
+  Spikes become postsynaptic waveforms \\
+  Transfer function &
+  $r_a=\Phi_a(\mu_a,\sigma_a,\text{history})$ &
+  Population input-output map \\
+  \bottomrule
+\end{tabularx}
+\end{center}
+
+\end{chaptersummary}
+
+\begin{conceptquestions}
+  \item What statistical assumption makes a Poisson neuron memoryless? Which observed spike-train features immediately violate that assumption?
+  \item In the LIF model, what does the leak term do, and why is threshold/reset not part of the subthreshold differential equation?
+  \item How does an escape-noise hazard differ from a hard threshold? What does the softness parameter $\Delta_u$ control?
+  \item Why can refractory effects make short-window spike counts less variable than a Poisson process?
+  \item Write the difference between a raw spike train $s_i(t)$, a count $N_i(a,b)$, a raw cluster activity $A_k(t)$, and a filtered cluster rate $r_k(t)$.
+  \item Why does independent Poisson population noise scale like $N_k^{-1/2}$? What network effect can weaken that averaging?
+  \item In a conductance-based synapse, why does the same presynaptic spike have a voltage-dependent postsynaptic effect?
+  \item What information is lost when a GIF population is compressed to a static transfer function $\Phi$?
+  \item For the rotation, when would a Poisson neuron be sufficient, and when would a GIF neuron be necessary?
+\end{conceptquestions}
+
+\clearpage

@@ -1,0 +1,643 @@
+{
+  "course": {
+    "title": "Mesoscopic Theory of Clustered Spiking Networks",
+    "subtitle": "Foundations for a Rotation with Tilo Schwalger",
+    "slug": "mesoscopic-clustered-spiking-networks",
+    "course_dir": "courses/mesoscopic-clustered-spiking-networks",
+    "pdf_target": "courses/mesoscopic-clustered-spiking-networks/mesoscopic-clustered-spiking-networks-lecture-notes.pdf",
+    "style_reference": "courses/models-of-neural-systems",
+    "build_command": ["make", "all"]
+  },
+  "shared_files_for_final_coordinator": [
+    "main.tex",
+    "Makefile",
+    "latexmkrc",
+    "coursenotes.cls",
+    "coursenotes-macros.sty",
+    "coursenotes-environments.sty",
+    "frontmatter/titlepage.tex",
+    "frontmatter/preface.tex",
+    "frontmatter/notation.tex",
+    "backmatter/mathematical-synthesis.tex",
+    "backmatter/references.bib",
+    "backmatter/lecture-chapter-map.json"
+  ],
+  "parts": [
+    {
+      "number": "I",
+      "title": "The scientific problem",
+      "chapters": [
+        {
+          "number": 1,
+          "title": "What are we trying to explain?",
+          "path": "chapters/ch01-scientific-problem/ch01.tex",
+          "priority": "core-context",
+          "suggested_worker": "scientific-problem-and-lk-doiron-worker",
+          "sections": [
+            "Trial-to-trial neural variability",
+            "Fano factor, CV, and super-Poisson spiking",
+            "Slow fluctuations vs fast irregular spiking",
+            "Spontaneous vs stimulus-evoked variability",
+            "Variability quenching after stimulus onset",
+            "Why clustered networks are a candidate mechanism",
+            "The core rotation question: microscopic simulation or mesoscopic theory?"
+          ],
+          "suggested_figures": [
+            "figures/meso-variability-decomposition.png"
+          ]
+        },
+        {
+          "number": 2,
+          "title": "The Litwin-Kumar & Doiron baseline",
+          "path": "chapters/ch02-litwin-kumar-doiron-baseline/ch02.tex",
+          "priority": "highest",
+          "suggested_worker": "scientific-problem-and-lk-doiron-worker",
+          "sections": [
+            "Balanced E/I networks as the starting point",
+            "Random balanced networks and asynchronous irregular activity",
+            "Adding clustered excitatory connectivity",
+            "Cluster up-states and down-states",
+            "Bistability and metastability",
+            "Finite-size noise as a switching mechanism",
+            "Why clustered networks produce slow dynamics",
+            "How stimuli bias the network into fewer states",
+            "What the 2012 model explains well",
+            "What it leaves open"
+          ],
+          "suggested_figures": [
+            "figures/meso-lkdoiron-clustered-balanced-network.png"
+          ],
+          "citation_status": "verify exact Litwin-Kumar and Doiron paper metadata before citing"
+        }
+      ]
+    },
+    {
+      "number": "II",
+      "title": "Spiking-network foundations",
+      "chapters": [
+        {
+          "number": 3,
+          "title": "Single-neuron models needed for this project",
+          "path": "chapters/ch03-single-neuron-models/ch03.tex",
+          "priority": "support",
+          "suggested_worker": "spiking-network-foundations-worker",
+          "sections": [
+            "Poisson neurons",
+            "Leaky integrate-and-fire neurons",
+            "Generalized integrate-and-fire neurons",
+            "Hazard-rate / escape-noise spiking",
+            "Refractoriness and adaptation",
+            "Spike trains as point processes",
+            "Synaptic filtering",
+            "From membrane potential to firing intensity",
+            "What changes when we move from Poisson to GIF neurons?"
+          ]
+        },
+        {
+          "number": 4,
+          "title": "Balanced networks",
+          "path": "chapters/ch04-balanced-networks/ch04.tex",
+          "priority": "highest",
+          "suggested_worker": "spiking-network-foundations-worker",
+          "sections": [
+            "Excitation-inhibition balance",
+            "Current-based vs conductance-based models",
+            "Strong coupling and cancellation of large inputs",
+            "Asynchronous irregular states",
+            "Mean firing rate vs spike-count variability",
+            "Pairwise correlations in balanced networks",
+            "Why balanced networks naturally produce irregular spiking",
+            "Why balanced networks alone do not give slow metastable dynamics"
+          ],
+          "suggested_figures": [
+            "figures/meso-ei-balance-cancellation.png"
+          ]
+        },
+        {
+          "number": 5,
+          "title": "Clustered spiking networks",
+          "path": "chapters/ch05-clustered-spiking-networks/ch05.tex",
+          "priority": "core-context",
+          "suggested_worker": "spiking-network-foundations-worker",
+          "sections": [
+            "What is a cluster?",
+            "Excitatory-only clustering",
+            "Within-cluster vs between-cluster connectivity",
+            "Cluster strength parameters",
+            "Up-states as attractors",
+            "Transitions between cluster states",
+            "Cluster lifetime",
+            "Number of active clusters",
+            "Cluster autocorrelation timescale",
+            "Cluster-level dimensionality",
+            "What observables should be reproduced?"
+          ],
+          "suggested_figures": [
+            "figures/meso-lkdoiron-clustered-balanced-network.png"
+          ]
+        }
+      ]
+    },
+    {
+      "number": "III",
+      "title": "Mesoscopic population theory",
+      "chapters": [
+        {
+          "number": 6,
+          "title": "Why mesoscopic theory?",
+          "path": "chapters/ch06-why-mesoscopic-theory/ch06.tex",
+          "priority": "core-context",
+          "suggested_worker": "mesoscopic-theory-worker",
+          "sections": [
+            "Microscopic models: accurate but high-dimensional",
+            "Macroscopic rate models: simple but often phenomenological",
+            "Mesoscopic models as the middle layer",
+            "What should a mesoscopic variable represent?",
+            "Population rate, population activity, and finite-size noise",
+            "When can a cluster be treated as a population?",
+            "What is lost in the mesoscopic reduction?",
+            "What is gained?"
+          ],
+          "suggested_figures": [
+            "figures/meso-micro-to-meso-reduction.png"
+          ]
+        },
+        {
+          "number": 7,
+          "title": "Mean-field reductions of spiking networks",
+          "path": "chapters/ch07-mean-field-reductions/ch07.tex",
+          "priority": "highest",
+          "suggested_worker": "mesoscopic-theory-worker",
+          "sections": [
+            "The basic mean-field idea",
+            "From many neurons to a population rate",
+            "Transfer functions and self-consistency",
+            "Fixed points of population dynamics",
+            "Linear stability analysis",
+            "Bifurcations and emergence of up-states",
+            "Population-level noise terms",
+            "Finite-size corrections",
+            "Limits of classical mean-field theory for clustered networks"
+          ]
+        },
+        {
+          "number": 8,
+          "title": "Refractory-density and age-structured population methods",
+          "path": "chapters/ch08-refractory-density-age-structured/ch08.tex",
+          "priority": "core-context",
+          "suggested_worker": "mesoscopic-theory-worker",
+          "sections": [
+            "Age as time since last spike",
+            "Refractory-density equations",
+            "Survival functions and hazard rates",
+            "Renewal equations for population activity",
+            "Finite-size refractory-density models",
+            "Connection to Schwalger, Deger & Gerstner 2017",
+            "Why this framework is relevant to clustered networks",
+            "How to read Tilo's mesoscopic equations"
+          ],
+          "suggested_figures": [
+            "figures/meso-refractory-density-flow.png"
+          ],
+          "citation_status": "verify exact Schwalger, Deger, and Gerstner bibliography entry before citing"
+        },
+        {
+          "number": 9,
+          "title": "Stochastic mesoscopic equations",
+          "path": "chapters/ch09-stochastic-mesoscopic-equations/ch09.tex",
+          "priority": "highest",
+          "suggested_worker": "mesoscopic-theory-worker",
+          "sections": [
+            "Langevin descriptions of population activity",
+            "Intrinsic noise from finite population size",
+            "Multiplicative noise in spiking populations",
+            "Quenched disorder vs dynamic noise",
+            "Annealed approximations",
+            "Coherent vs incoherent fluctuations",
+            "Noise-induced switching between attractors",
+            "How to distinguish finite-size switching from deterministic/chaotic switching"
+          ],
+          "suggested_figures": [
+            "figures/meso-noise-escape-vs-chaos.png"
+          ]
+        }
+      ]
+    },
+    {
+      "number": "IV",
+      "title": "Clustered networks at the mesoscopic level",
+      "chapters": [
+        {
+          "number": 10,
+          "title": "Mesoscopic model of excitatory clustering",
+          "path": "chapters/ch10-mesoscopic-excitatory-clustering/ch10.tex",
+          "priority": "core-context",
+          "suggested_worker": "clustered-mesoscopic-e-only-ei-worker",
+          "sections": [
+            "Treating each cluster as a population",
+            "Cluster-level rate equations",
+            "Effective recurrent excitation within clusters",
+            "Inter-cluster inhibition / competition",
+            "Fixed points: no active clusters, one active cluster, many active clusters",
+            "Stability of cluster up-states",
+            "Bistability at the mesoscopic level",
+            "Finite-size noise and metastable transitions",
+            "Reproducing the E-clustered baseline",
+            "Minimal simulation tasks for reproduction"
+          ],
+          "suggested_figures": [
+            "figures/meso-micro-to-meso-reduction.png",
+            "figures/meso-lkdoiron-clustered-balanced-network.png"
+          ]
+        },
+        {
+          "number": 11,
+          "title": "From E-clustered to E/I-clustered networks",
+          "path": "chapters/ch11-e-to-ei-clustered-networks/ch11.tex",
+          "priority": "highest",
+          "suggested_worker": "clustered-mesoscopic-e-only-ei-worker",
+          "sections": [
+            "Why add inhibitory clusters?",
+            "Blanket inhibition vs structured inhibition",
+            "Local E/I balance inside a cluster",
+            "Paired E/I clusters in Rostami et al. 2024",
+            "How inhibitory clustering changes cluster up-states",
+            "Why E/I clustering may regularize within-cluster spiking",
+            "Why E/I clustering may make metastability more robust",
+            "What changes in the mesoscopic equations?",
+            "New fixed points and stability conditions",
+            "Comparing E-only and E/I-clustered phase diagrams"
+          ],
+          "suggested_figures": [
+            "figures/meso-rostami-paired-ei-clusters.png"
+          ],
+          "citation_status": "verify exact Rostami et al. paper metadata and year before citing"
+        },
+        {
+          "number": 12,
+          "title": "The main theory question: multistability or mesoscopic chaos?",
+          "path": "chapters/ch12-multistability-or-mesoscopic-chaos/ch12.tex",
+          "priority": "highest",
+          "suggested_worker": "clustered-mesoscopic-e-only-ei-worker",
+          "sections": [
+            "Stable attractors plus finite-size noise",
+            "Metastable switching as noise-driven escape",
+            "Mesoscopic chaos as a different mechanism",
+            "What would persist as network size goes to infinity?",
+            "Scaling cluster size while holding cluster number fixed",
+            "Scaling cluster number and cluster size together",
+            "Lyapunov exponents and sensitivity to perturbations",
+            "Autocorrelation signatures of noise-driven vs chaotic switching",
+            "Perturbation-response tests",
+            "The core theoretical distinction for the rotation"
+          ],
+          "suggested_figures": [
+            "figures/meso-noise-escape-vs-chaos.png"
+          ]
+        }
+      ]
+    },
+    {
+      "number": "V",
+      "title": "The Rostami / E-I clustered attractor paper",
+      "chapters": [
+        {
+          "number": 13,
+          "title": "Spiking attractor model of motor cortex",
+          "path": "chapters/ch13-spiking-attractor-motor-cortex/ch13.tex",
+          "priority": "highest",
+          "suggested_worker": "rostami-ei-attractor-worker",
+          "sections": [
+            "Behavioral problem: target uncertainty and reaction time",
+            "Motor cortex variability during delayed reaching",
+            "Metastable attractor dynamics as action-selection mechanism",
+            "Excitatory-inhibitory clustered architecture",
+            "Local balance in E/I clusters",
+            "Why E/I clustering expands the robust parameter regime",
+            "Explaining task-dependent Fano factor changes",
+            "Why spiking irregularity can remain roughly constant",
+            "What the model explains mechanistically",
+            "What a mesoscopic version should preserve"
+          ],
+          "suggested_figures": [
+            "figures/meso-rostami-paired-ei-clusters.png"
+          ],
+          "citation_status": "verify exact Rostami et al. paper metadata and model claims before citing"
+        },
+        {
+          "number": 14,
+          "title": "Relating Rostami et al. to Litwin-Kumar & Doiron",
+          "path": "chapters/ch14-rostami-to-litwin-kumar-doiron/ch14.tex",
+          "priority": "core-context",
+          "suggested_worker": "rostami-ei-attractor-worker",
+          "sections": [
+            "Same family: clustered attractor networks",
+            "Difference 1: E-only vs E/I clusters",
+            "Difference 2: fragile vs robust metastability",
+            "Difference 3: cognitive/motor task interpretation",
+            "Difference 4: local inhibitory balance",
+            "What needs to be reduced mesoscopically",
+            "What observables should match across models"
+          ],
+          "suggested_figures": [
+            "figures/meso-lkdoiron-clustered-balanced-network.png",
+            "figures/meso-rostami-paired-ei-clusters.png"
+          ]
+        }
+      ]
+    },
+    {
+      "number": "VI",
+      "title": "The SSN side branch",
+      "chapters": [
+        {
+          "number": 15,
+          "title": "Stabilized supralinear networks",
+          "path": "chapters/ch15-stabilized-supralinear-networks/ch15.tex",
+          "priority": "scaffold",
+          "suggested_worker": "ssn-variability-quenching-side-branch-worker",
+          "sections": [
+            "The original SSN idea",
+            "Power-law input-output functions",
+            "Supralinear response at weak input",
+            "Stabilization by inhibition at strong input",
+            "Two-population E/I SSN",
+            "Linearization and effective connectivity",
+            "Stimulus-induced variability quenching in SSNs",
+            "Hennequin / Miller stochastic SSN picture",
+            "Why Poisson neurons are mathematically convenient",
+            "What changes when replacing Poisson/rate units with GIF neurons?"
+          ],
+          "citation_status": "verify SSN and Hennequin/Miller bibliography before citing"
+        },
+        {
+          "number": 16,
+          "title": "Spiking SSN with generalized integrate-and-fire neurons",
+          "path": "chapters/ch16-spiking-ssn-gif-neurons/ch16.tex",
+          "priority": "scaffold",
+          "suggested_worker": "ssn-variability-quenching-side-branch-worker",
+          "sections": [
+            "Tilo's ssn_spiking.pdf direction",
+            "Matching GIF neurons to SSN power-law transfer functions",
+            "Infinite-size population equations",
+            "Finite-size stochastic population activity",
+            "Step responses and transient dynamics",
+            "Ring-model extension",
+            "Comparing rate SSN vs spiking/GIF SSN",
+            "Why this may be a separate project from clustered networks"
+          ]
+        },
+        {
+          "number": 17,
+          "title": "Variability quenching and conductance shunting",
+          "path": "chapters/ch17-variability-quenching-conductance-shunting/ch17.tex",
+          "priority": "scaffold",
+          "suggested_worker": "ssn-variability-quenching-side-branch-worker",
+          "sections": [
+            "Classical interpretation: quenching means reduced rate variability",
+            "Doubly stochastic Poisson model",
+            "Fano factor decomposition",
+            "Why current-based models predict reduced input variability",
+            "The Huang/Sit/Schwalger/Abbott/Miller/Doiron manuscript",
+            "Experimental finding: membrane potential variability decreases while synaptic current variability increases",
+            "Conductance-based shunting as an alternative mechanism",
+            "Why cellular biophysics can decouple current variability from voltage variability",
+            "How this relates to SSN and clustered-network theories"
+          ],
+          "suggested_figures": [
+            "figures/meso-variability-decomposition.png"
+          ],
+          "citation_status": "verify manuscript/paper status and claims before citing"
+        }
+      ]
+    },
+    {
+      "number": "VII",
+      "title": "Mathematical toolkit",
+      "chapters": [
+        {
+          "number": 18,
+          "title": "Dynamical systems essentials",
+          "path": "chapters/ch18-dynamical-systems-essentials/ch18.tex",
+          "priority": "support",
+          "suggested_worker": "mathematical-toolkit-worker",
+          "sections": [
+            "Fixed points",
+            "Linearization",
+            "Eigenvalues and stability",
+            "Nullclines",
+            "Bifurcations",
+            "Saddle-node bifurcations and bistability",
+            "Hopf bifurcations and oscillations",
+            "Attractor basins",
+            "Noise-driven escape",
+            "Phase diagrams"
+          ]
+        },
+        {
+          "number": 19,
+          "title": "Stochastic processes for neural population models",
+          "path": "chapters/ch19-stochastic-processes/ch19.tex",
+          "priority": "support",
+          "suggested_worker": "mathematical-toolkit-worker",
+          "sections": [
+            "Poisson processes",
+            "Inhomogeneous Poisson processes",
+            "Doubly stochastic Poisson processes",
+            "Renewal processes",
+            "White noise and colored noise",
+            "Ornstein-Uhlenbeck processes",
+            "Langevin equations",
+            "Fokker-Planck intuition",
+            "Diffusion approximations",
+            "Finite-size scaling of fluctuations"
+          ]
+        },
+        {
+          "number": 20,
+          "title": "Measuring variability and metastability",
+          "path": "chapters/ch20-measuring-variability-metastability/ch20.tex",
+          "priority": "support",
+          "suggested_worker": "mathematical-toolkit-worker",
+          "sections": [
+            "Spike-count variance",
+            "Fano factor",
+            "CV and local CV",
+            "Mean-matched Fano factor",
+            "Autocorrelation functions",
+            "Cluster lifetime distributions",
+            "Transition-triggered averages",
+            "Dimensionality of cluster activity",
+            "Pairwise correlations",
+            "Power spectra",
+            "Practical pitfalls in estimating these quantities"
+          ],
+          "suggested_figures": [
+            "figures/meso-variability-decomposition.png"
+          ]
+        }
+      ]
+    },
+    {
+      "number": "VIII",
+      "title": "Practical project execution",
+      "chapters": [
+        {
+          "number": 21,
+          "title": "Reproducing the baseline models",
+          "path": "chapters/ch21-reproducing-baselines/ch21.tex",
+          "priority": "support",
+          "suggested_worker": "practical-project-execution-appendices-worker",
+          "sections": [
+            "Minimal E-cluster microscopic model",
+            "Minimal E-cluster mesoscopic model",
+            "Parameter choices from Litwin-Kumar / Tilo notes",
+            "Reproducing bistability",
+            "Reproducing metastable switching",
+            "Reproducing super-Poisson variability",
+            "Sanity checks",
+            "Expected failure modes"
+          ],
+          "suggested_figures": [
+            "figures/meso-lkdoiron-clustered-balanced-network.png"
+          ],
+          "citation_status": "verify parameter sources before citing or presenting numeric values as factual"
+        },
+        {
+          "number": 22,
+          "title": "Building the E/I mesoscopic extension",
+          "path": "chapters/ch22-building-ei-mesoscopic-extension/ch22.tex",
+          "priority": "support",
+          "suggested_worker": "practical-project-execution-appendices-worker",
+          "sections": [
+            "Defining E and I population variables per cluster",
+            "Choosing coupling matrices",
+            "Within-cluster E/I coupling",
+            "Between-cluster coupling",
+            "Local balance constraints",
+            "Deriving effective cluster equations",
+            "Stability analysis of one active cluster",
+            "Stability analysis of multiple active clusters",
+            "Numerical integration of mesoscopic equations",
+            "Comparison against microscopic simulations"
+          ],
+          "suggested_figures": [
+            "figures/meso-rostami-paired-ei-clusters.png"
+          ]
+        },
+        {
+          "number": 23,
+          "title": "Phase diagrams and theory deliverables",
+          "path": "chapters/ch23-phase-diagrams-theory-deliverables/ch23.tex",
+          "priority": "support",
+          "suggested_worker": "practical-project-execution-appendices-worker",
+          "sections": [
+            "What parameters to sweep",
+            "Cluster strength",
+            "Inhibitory-cluster strength",
+            "Network size",
+            "Cluster size",
+            "Quenched disorder",
+            "Finite-size noise",
+            "Identifying regions: asynchronous, bistable, metastable, chaotic",
+            "Plotting phase diagrams clearly",
+            "What counts as a convincing theory result?"
+          ],
+          "suggested_figures": [
+            "figures/meso-phase-diagram-roadmap.png"
+          ]
+        },
+        {
+          "number": 24,
+          "title": "Suggested final rotation artifact",
+          "path": "chapters/ch24-final-rotation-artifact/ch24.tex",
+          "priority": "scaffold",
+          "suggested_worker": "practical-project-execution-appendices-worker",
+          "sections": [
+            "A clean reproduction notebook",
+            "A derivation note",
+            "E-only mesoscopic model results",
+            "E/I mesoscopic extension",
+            "Microscopic vs mesoscopic comparison",
+            "Phase diagram",
+            "Summary of open questions",
+            "Possible next-paper contribution"
+          ],
+          "suggested_figures": [
+            "figures/meso-phase-diagram-roadmap.png"
+          ]
+        }
+      ]
+    }
+  ],
+  "appendices": [
+    {
+      "letter": "A",
+      "title": "Notation dictionary",
+      "path": "appendices/appA-notation-dictionary/appA.tex",
+      "suggested_worker": "practical-project-execution-appendices-worker"
+    },
+    {
+      "letter": "B",
+      "title": "Paper reading guide",
+      "path": "appendices/appB-paper-reading-guide/appB.tex",
+      "suggested_worker": "practical-project-execution-appendices-worker",
+      "citation_status": "keep citation TODOs until exact paper metadata is verified"
+    },
+    {
+      "letter": "C",
+      "title": "Minimal code recipes",
+      "path": "appendices/appC-minimal-code-recipes/appC.tex",
+      "suggested_worker": "practical-project-execution-appendices-worker"
+    }
+  ],
+  "figures": [
+    {
+      "path": "figures/meso-variability-decomposition.png",
+      "primary_chapters": [1, 17, 20],
+      "status": "generated"
+    },
+    {
+      "path": "figures/meso-lkdoiron-clustered-balanced-network.png",
+      "primary_chapters": [2, 5, 10, 14, 21],
+      "status": "generated"
+    },
+    {
+      "path": "figures/meso-ei-balance-cancellation.png",
+      "primary_chapters": [4],
+      "status": "generated"
+    },
+    {
+      "path": "figures/meso-micro-to-meso-reduction.png",
+      "primary_chapters": [6, 7, 10],
+      "status": "generated"
+    },
+    {
+      "path": "figures/meso-refractory-density-flow.png",
+      "primary_chapters": [8],
+      "status": "generated"
+    },
+    {
+      "path": "figures/meso-noise-escape-vs-chaos.png",
+      "primary_chapters": [9, 12, 23],
+      "status": "generated"
+    },
+    {
+      "path": "figures/meso-rostami-paired-ei-clusters.png",
+      "primary_chapters": [11, 13, 14, 22],
+      "status": "generated"
+    },
+    {
+      "path": "figures/meso-phase-diagram-roadmap.png",
+      "primary_chapters": [23, 24],
+      "status": "generated"
+    }
+  ],
+  "integration_notes": {
+    "main_tex_include_style": "Use \\include for chapter and appendix files, matching courses/models-of-neural-systems.",
+    "part_order_source": "Use the parts array in this JSON as the canonical integration order.",
+    "citation_policy": "Do not fabricate citations. Add BibTeX entries only after verifying exact papers.",
+    "figure_policy": "Use generated raster assets listed here or omit the figure slot; do not use SVG/TikZ/programmatic fallbacks.",
+    "notation_policy": "Normalize cluster count, cluster index, spike-train symbol, and activity variables during final integration."
+  }
+}

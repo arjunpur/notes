@@ -1,0 +1,161 @@
+\section{Lecture 3: Memory Hierarchy, Bandwidth, and the Roofline}
+
+\subsection{The Memory Ladder}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=\textwidth]{memory-hierarchy.png}
+  \caption{The memory hierarchy as a teaching plate. Close storage is small and fast; far storage is large and slow. Pipe thickness represents bandwidth. Distance represents latency. The red path repeatedly travels far and accumulates delay. The green path reuses data near compute and therefore spends more time doing arithmetic.}
+  \label{fig:memory-hierarchy}
+\end{figure}
+
+Hardware memory is not one pool. It is a ladder:
+
+\begin{enumerate}[leftmargin=*]
+  \item \textbf{Registers} hold values directly inside execution lanes.
+  \item \textbf{Shared memory or scratchpads} hold small blocks near a group of lanes.
+  \item \textbf{Cache or on-chip SRAM} holds recently used data.
+  \item \textbf{HBM} holds large tensors close to the accelerator package.
+  \item \textbf{Host DRAM} holds data on the CPU side.
+  \item \textbf{Storage and network} hold data far away.
+\end{enumerate}
+
+Every step away from compute usually increases capacity but decreases speed. The exact numbers vary by product generation, but the pattern is stable. Registers are tiny and extremely fast. HBM is much larger and high bandwidth, but still far slower than registers. Host DRAM and network storage are larger again, but crossing to them can destroy accelerator utilization.
+
+\begin{aside}[Memory object]
+The object to track is not just ``a tensor.'' It is a tensor at a location: registers, shared memory, cache, HBM, host memory, storage, or another device. Most hardware surprises come from silently changing that location.
+\end{aside}
+
+\subsection{Bandwidth Is Not Latency}
+
+Bandwidth is how much data per second can flow once transfer is underway. Latency is how long you wait before the first useful item arrives. You can have high bandwidth and high latency at the same time, just as a cargo ship can carry a lot but take a long time to arrive.
+
+This distinction matters for batching. If you transfer one small tensor, latency dominates. If you transfer a large batch, the fixed latency is amortized over many bytes. This is one reason training systems like large batches and inference systems use request batching where latency budgets allow it.
+
+\subsection{The Roofline Model}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=\textwidth]{roofline-model.png}
+  \caption{The roofline model as a raster teaching plate. The sloped region is memory-bound: adding more arithmetic units does not help until data reuse improves. The flat region is compute-bound: data arrives fast enough, and peak arithmetic becomes the ceiling. Tiling matrix multiplication moves work rightward by reusing bytes in fast memory.}
+  \label{fig:roofline}
+\end{figure}
+
+The roofline model is a simple performance model:
+\[
+  \text{attainable FLOP/s}
+  \le
+  \min\left(
+    \text{peak FLOP/s},
+    \text{bandwidth} \times \text{arithmetic intensity}
+  \right).
+\]
+
+This formula says a workload has two ceilings. One is the hardware's maximum arithmetic rate. The other is the rate at which memory can supply enough bytes to keep arithmetic busy. If arithmetic intensity is low, the memory ceiling is low. If arithmetic intensity is high, the workload can approach the compute ceiling.
+
+\begin{aside}[Why tiling matters]
+Tiling means loading a small block of data into fast memory and doing many operations with it before evicting it. Tiling does not change the mathematical answer. It changes where bytes travel.
+\end{aside}
+
+\subsection{A Transformer Example}
+
+For a transformer block, the major operations include:
+
+\begin{itemize}[leftmargin=*]
+  \item projections from hidden states to queries, keys, values, and output,
+  \item attention score computation,
+  \item softmax and masking,
+  \item attention-value multiplication,
+  \item feedforward matrix multiplications,
+  \item normalization and elementwise activations,
+  \item residual additions.
+\end{itemize}
+
+The large matrix multiplications can be compute-efficient when shapes are favorable. Layer normalization, softmax, masking, and residual operations often move data with fewer FLOPs per byte. Attention can be memory-heavy because the naive attention matrix grows with sequence length squared. FlashAttention-style kernels improve performance by avoiding materializing the full attention matrix in HBM, instead computing attention in blocks and keeping intermediate statistics near compute.
+
+The lesson is not that attention is always bad. The lesson is that a high-level operation can have multiple hardware implementations. The same equation can be memory-hostile or memory-aware depending on kernel design.
+
+\subsection{Sparsity and Skipping}
+
+Sparsity means some values or connections are zero or unused. Skipping means not doing work that will not affect the result. Sparsity helps only if the hardware and software can exploit it.
+
+Unstructured sparsity can be hard. A random pattern of zeros may save mathematical operations but create irregular memory access and indexing overhead. Structured sparsity, such as blocks, channels, experts, routes, or tokens, is usually easier for hardware. The key question is:
+
+\begin{aside}[Sparsity test]
+Does the sparse representation reduce real bytes moved and real operations executed after accounting for indices, routing, load imbalance, and communication?
+\end{aside}
+
+\subsection{Precision}
+
+Precision controls how many bits represent each number. FP32 uses 32 bits; FP16 and BF16 use 16 bits; FP8 uses 8 bits. Lower precision can reduce memory traffic and increase arithmetic throughput, but it can also create numerical problems.
+
+Hardware-aware precision choices depend on:
+
+\begin{itemize}[leftmargin=*]
+  \item whether the accelerator has fast units for that precision,
+  \item whether the model tolerates quantization or reduced mantissa bits,
+  \item whether accumulations need higher precision,
+  \item whether calibration and scaling are implemented correctly,
+  \item whether memory bandwidth or compute is the bottleneck.
+\end{itemize}
+
+Precision is not just a compression trick. It changes the roofline position because it changes bytes per tensor element and often changes available tensor-core throughput.
+
+\subsection{Two Useful Back-of-the-Envelope Estimates}
+
+The first estimate is activation memory. For an activation tensor with shape
+\[
+  [B, T, H],
+\]
+where \(B\) is batch size, \(T\) is sequence length, and \(H\) is hidden dimension, the storage in bytes is approximately
+\[
+  B \cdot T \cdot H \cdot \text{bytes per element}.
+\]
+This is only one tensor. Training stores many activations, and backward may require temporary buffers. The estimate is still useful because it shows how sequence length and batch size multiply.
+
+The second estimate is KV-cache memory during autoregressive inference. With \(L\) layers, \(B\) active requests, \(T\) cached tokens, \(H_{\text{kv}}\) key-value width per token, and two tensors for keys and values,
+\[
+  \text{KV bytes}
+  \approx
+  2 \cdot L \cdot B \cdot T \cdot H_{\text{kv}}
+  \cdot \text{bytes per element}.
+\]
+Long-context inference is therefore often a memory-capacity and memory-bandwidth problem before it is a raw-FLOP problem.
+
+\subsection{Diagnostics}
+
+The practical diagnostic is to put each operation into one of three bins:
+\begin{enumerate}
+  \item \textbf{reuse-heavy}: matrix multiplication, convolution, and tiled attention kernels;
+  \item \textbf{streaming}: normalization, elementwise activation, residual addition, and many reductions;
+  \item \textbf{irregular}: embedding lookup, sparse routing, graph traversal, and dynamic indexing.
+\end{enumerate}
+
+Reuse-heavy operations can approach compute ceilings. Streaming operations often care about bandwidth and fusion. Irregular operations care about layout, caching, indexing overhead, and whether batching creates locality.
+
+\subsection{Next steps}
+
+For this chapter, the mathematical object is arithmetic intensity at a named memory boundary. The empirical diagnostic is a roofline-style classification of each expensive operation. The failure mode is improving peak FLOPs while leaving the bytes on the same slow path.
+
+\begin{chaptersummary}
+\begin{itemize}[leftmargin=*]
+  \item Memory hierarchy is the map of where tensors can live.
+  \item Bandwidth is pipe width; latency is distance and waiting.
+  \item The roofline model separates memory-bound from compute-bound regimes.
+  \item Tiling and fusion improve performance by reducing expensive memory movement.
+  \item Sparsity helps only when the whole implementation can skip work cheaply.
+  \item Precision affects both memory traffic and arithmetic rate.
+\end{itemize}
+\end{chaptersummary}
+
+\begin{conceptquestions}
+\item In the roofline formula, what happens if arithmetic intensity doubles?
+\item Why can unstructured sparsity fail to speed up a workload?
+\item Why is FlashAttention a memory-hierarchy idea, not just an attention idea?
+\end{conceptquestions}
+
+\begin{exercises}
+\item Estimate the memory required for one FP16 activation tensor with \(B=8\), \(T=4096\), and \(H=4096\). Then explain why training memory can be much larger than this single number.
+\item Use the KV-cache formula for a model with \(L=32\), \(B=16\), \(T=8192\), \(H_{\text{kv}}=1024\), and FP16 elements. What does the result suggest about long-context serving?
+\item Classify embedding lookup, layer normalization, matrix multiplication, and all-to-all expert routing into the three diagnostic bins. For each, name the likely bottleneck.
+\end{exercises}

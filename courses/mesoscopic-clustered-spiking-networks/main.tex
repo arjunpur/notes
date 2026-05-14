@@ -1,0 +1,101 @@
+\documentclass{coursenotes}
+\usepackage{coursenotes-macros}
+\usepackage{coursenotes-environments}
+
+\usepackage[backend=biber, style=alphabetic, maxbibnames=99]{biblatex}
+\addbibresource{backmatter/references.bib}
+
+\providecommand{\index}[1]{}
+
+\title{Mesoscopic Theory of Clustered Spiking Networks\\[0.5em]
+  \large Foundations for a Rotation with Tilo Schwalger}
+\author{Arjun Puri}
+\date{Spring 2026}
+
+\begin{document}
+
+\frontmatter
+\pagenumbering{roman}
+\hypersetup{pageanchor=false}
+\input{frontmatter/titlepage}
+\hypersetup{pageanchor=true}
+\tableofcontents
+\input{frontmatter/preface}
+\input{frontmatter/notation}
+
+\mainmatter
+\clearpage
+\pagenumbering{arabic}
+
+% ---- Part I: The scientific problem ----
+\part{The scientific problem}
+\include{chapters/ch01-scientific-problem/ch01}
+\include{chapters/ch02-litwin-kumar-doiron-baseline/ch02}
+
+% ---- Part II: Spiking-network foundations ----
+\part{Spiking-network foundations}
+\include{chapters/ch03-single-neuron-models/ch03}
+\include{chapters/ch04-balanced-networks/ch04}
+\include{chapters/ch05-clustered-spiking-networks/ch05}
+
+% ---- Part III: Mesoscopic population theory ----
+\part{Mesoscopic population theory}
+\include{chapters/ch06-why-mesoscopic-theory/ch06}
+\include{chapters/ch07-mean-field-reductions/ch07}
+\include{chapters/ch08-refractory-density-age-structured/ch08}
+\include{chapters/ch09-stochastic-mesoscopic-equations/ch09}
+
+% ---- Part IV: Clustered networks at the mesoscopic level ----
+\part{Clustered networks at the mesoscopic level}
+\include{chapters/ch10-mesoscopic-excitatory-clustering/ch10}
+\include{chapters/ch11-e-to-ei-clustered-networks/ch11}
+\include{chapters/ch12-multistability-or-mesoscopic-chaos/ch12}
+
+% ---- Part V: The Rostami / E-I clustered attractor paper ----
+\part{The Rostami / E-I clustered attractor paper}
+\include{chapters/ch13-spiking-attractor-motor-cortex/ch13}
+\include{chapters/ch14-rostami-to-litwin-kumar-doiron/ch14}
+
+% ---- Part VI: The SSN side branch ----
+\part{The SSN side branch}
+\include{chapters/ch15-stabilized-supralinear-networks/ch15}
+\include{chapters/ch16-spiking-ssn-gif/ch16}
+\include{chapters/ch17-variability-quenching-conductance-shunting/ch17}
+
+% ---- Part VII: Mathematical toolkit ----
+\part{Mathematical toolkit}
+\include{chapters/ch18-dynamical-systems-essentials/ch18}
+\include{chapters/ch19-stochastic-processes/ch19}
+\include{chapters/ch20-measuring-variability-metastability/ch20}
+
+% ---- Part VIII: Practical project execution ----
+\part{Practical project execution}
+\include{chapters/ch21-reproducing-baselines/ch21}
+\include{chapters/ch22-building-ei-mesoscopic-extension/ch22}
+\include{chapters/ch23-phase-diagrams-theory-deliverables/ch23}
+\include{chapters/ch24-final-rotation-artifact/ch24}
+
+\backmatter
+\input{backmatter/mathematical-synthesis}
+\input{backmatter/citation-and-figure-todos}
+
+\setcounter{chapter}{0}
+\renewcommand{\thechapter}{\Alph{chapter}}
+\renewcommand{\theHchapter}{appendix.\thechapter}
+\RenewDocumentCommand{\chapter}{s m}{%
+  \IfBooleanTF{#1}{%
+    \CourseNotesSection*{#2}%
+  }{%
+    \refstepcounter{chapter}%
+    \CourseNotesSection{Appendix \thechapter: #2}%
+  }%
+}
+
+\part{Appendices}
+\include{appendices/appA-notation-dictionary/appA}
+\include{appendices/appB-paper-reading-guide/appB}
+\include{appendices/appC-minimal-code-recipes/appC}
+
+\printbibliography[heading=bibintoc]
+
+\end{document}

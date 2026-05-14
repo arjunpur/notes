@@ -1,0 +1,58 @@
+\chapter*{Mathematical Synthesis}
+\addcontentsline{toc}{chapter}{Mathematical Synthesis}
+
+The course uses many models, but the same reduction problem appears throughout. Start with a spiking network, choose the collective variables that should survive coarse-graining, and ask whether those variables preserve the mechanism.
+
+\section*{The central bridge}
+
+At the microscopic level, the network state contains spike trains, voltages, synaptic traces, and perhaps adaptation variables:
+\[
+  X_i(t)=\sum_m\delta(t-t_i^m),
+  \qquad
+  h_i(t)=I_i^{\mathrm{ext}}(t)+\sum_j J_{ij}(\kappa_{ij}*X_j)(t).
+\]
+At the mesoscopic level, the state is a finite collection of cluster variables:
+\[
+  A_k(t)=\frac{1}{N_k}\sum_{i\in\mathcal{C}_k}X_i(t),
+  \qquad
+  R_k(t)=(\kappa_A*A_k)(t).
+\]
+The first expression preserves individual event identities. The second preserves cluster identity and discards neuron labels inside the cluster. The research question is whether that discarded information is irrelevant to the phenomenon being explained.
+
+\section*{The core equation}
+
+A useful stochastic cluster theory usually has the schematic form
+\[
+  \dd \vec R
+  =
+  \vec f(\vec R;\theta)\,\dd t
+  +
+  \mat G(\vec R;\theta,N)\,\dd \vec W_t,
+  \qquad
+  \mat G=O(N^{-1/2}).
+\]
+The drift $\vec f$ says which cluster states exist and how stable they are. The noise matrix $\mat G$ says how finite spiking populations fluctuate around that drift. The parameter vector $\theta$ contains cluster strength, inhibitory structure, transfer-function parameters, external drive, and any slow history variables retained by the reduction.
+
+The rotation question lives in the scaling of this equation. If switching is finite-size escape, increasing cluster size while holding $\vec f$ fixed should suppress transitions. If irregular switching remains in the large-population limit, the deterministic drift, quenched disorder, or additional hidden variables must be responsible.
+
+\section*{What should be compared}
+
+Every proposed reduction should be judged by matched observables:
+\[
+  P(n_{\mathrm{act}}),
+  \qquad
+  \rho_k(\tau),
+  \qquad
+  P(L_k),
+  \qquad
+  F(T),
+  \qquad
+  \operatorname{CV2},
+  \qquad
+  \lambda_{\max}.
+\]
+The occupancy distribution tells us which cluster states are visited. Autocorrelation and lifetime distributions quantify slow metastability. Fano factor and CV2 separate trial-to-trial count variability from local spike irregularity. The largest Lyapunov exponent, or at least perturbation-growth tests, addresses the chaos alternative.
+
+\begin{aside}[Minimal success criterion]
+A mesoscopic model is useful when the same variables explain fixed points, switching statistics, finite-size scaling, and stimulus-dependent variability. Matching a raster by tuning noise amplitude is not enough.
+\end{aside}

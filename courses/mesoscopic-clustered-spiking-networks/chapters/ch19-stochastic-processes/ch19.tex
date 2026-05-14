@@ -1,0 +1,299 @@
+\chapter{Stochastic Processes for Neural Population Models}
+\label{ch:stochastic-processes}
+
+\textit{Spiking networks are random at the level of events and structured at the level of populations. This chapter collects the stochastic processes needed to move between spike trains, fluctuating rates, finite-size mesoscopic equations, and the scaling predictions that distinguish noise-driven switching from deterministic dynamics.}
+
+% ============================================================
+\section{Poisson processes}
+\label{sec:poisson-processes}
+% ============================================================
+
+A homogeneous Poisson process is a counting process $N(t)$ with constant rate $r$. Over a small interval $\dd t$,
+%
+\begin{equation}
+  \mathbb{P}\{N(t+\dd t)-N(t)=1\}=r\,\dd t+o(\dd t),
+  \qquad
+  \mathbb{P}\{\text{two or more spikes}\}=o(\dd t).
+  \label{eq:poisson-small-interval}
+\end{equation}
+%
+Counts in disjoint intervals are independent. In a window of length $T$,
+%
+\begin{equation}
+  N_T \sim \mathrm{Poisson}(rT),
+  \qquad
+  \E[N_T]=\Var[N_T]=rT.
+  \label{eq:poisson-count-moments}
+\end{equation}
+%
+The equality of mean and variance gives Fano factor $F=1$.
+
+The Poisson process is not a realistic neuron model by itself because it has no refractoriness, adaptation, or membrane memory. It is useful because it isolates event randomness from slower rate fluctuations. When a clustered network has $F>1$, the first question is whether the excess comes from non-Poisson spike generation or from a slowly varying population rate.
+
+% ============================================================
+\section{Inhomogeneous Poisson processes}
+\label{sec:inhomogeneous-poisson}
+% ============================================================
+
+An inhomogeneous Poisson process has a deterministic time-dependent intensity $\lambda(t)$. Its expected count in a window $[a,b]$ is
+%
+\begin{equation}
+  \E[N(a,b)] = \int_a^b \lambda(t)\,\dd t,
+  \qquad
+  \Var[N(a,b)] = \int_a^b \lambda(t)\,\dd t.
+  \label{eq:inhomogeneous-poisson-moments}
+\end{equation}
+%
+The intensity is the instantaneous expected event rate, conditional on the stimulus or known drive. A peri-stimulus time histogram estimates this intensity across repeated trials.
+
+This model can reproduce time-varying mean firing rates but not extra trial-to-trial variability beyond Poisson variability at a fixed intensity. If repeated trials share the same $\lambda(t)$, then count variance remains tied to the mean. Therefore, stimulus-locked rate modulation alone is not enough to explain robust super-Poisson variability.
+
+% ============================================================
+\section{Doubly stochastic Poisson processes}
+\label{sec:doubly-stochastic-poisson}
+% ============================================================
+
+A doubly stochastic Poisson process, also called a Cox process, makes the intensity itself random. Conditional on a rate path $\lambda(t)$, spikes are Poisson; across trials, $\lambda(t)$ varies.
+
+For a counting window $[0,T]$, define the integrated random intensity
+%
+\begin{equation}
+  \Lambda_T = \int_0^T \lambda(t)\,\dd t.
+  \label{eq:integrated-random-intensity}
+\end{equation}
+%
+The law of total variance gives
+%
+\begin{equation}
+  \Var[N_T]
+  =
+  \E[\Lambda_T] + \Var[\Lambda_T].
+  \label{eq:ch19-cox-total-variance}
+\end{equation}
+%
+The first term is point-process noise. The second term is slow rate variability. This decomposition is the cleanest mathematical explanation for super-Poisson counts: if the trial-to-trial integrated rate varies, then $F(T)>1$.
+
+Clustered networks naturally create Cox-like observations. A single neuron may spike conditionally near-Poisson inside a cluster state, while the cluster state itself switches slowly across trials and inflates spike-count variance.
+
+% ============================================================
+\section{Renewal processes}
+\label{sec:renewal-processes}
+% ============================================================
+
+A renewal process is defined by independent, identically distributed interspike intervals $T_1,T_2,\ldots$. The ISI density $p_{\mathrm{ISI}}(t)$ determines the firing statistics. The survival function
+%
+\begin{equation}
+  S(t)=\mathbb{P}\{T>t\}
+  =1-\int_0^t p_{\mathrm{ISI}}(s)\,\dd s
+  \label{eq:isi-survival}
+\end{equation}
+%
+is the probability that no spike has occurred by age $t$ since the last spike.
+
+The hazard rate is
+%
+\begin{equation}
+  h(t)=\frac{p_{\mathrm{ISI}}(t)}{S(t)}.
+  \label{eq:renewal-hazard}
+\end{equation}
+%
+It is the instantaneous spike probability per unit time given that the neuron has survived without spiking up to age $t$. Poisson spiking has constant hazard. Refractoriness gives low hazard immediately after a spike; adaptation or bursting changes the hazard over longer times.
+
+Renewal models separate spike-history effects from shared population-rate fluctuations. For long windows, the count Fano factor of a stationary renewal process approaches approximately $\mathrm{CV}^2$, so sub-Poisson counts can arise from regular ISIs even without network-level stabilization.
+
+% ============================================================
+\section{White noise and colored noise}
+\label{sec:white-colored-noise}
+% ============================================================
+
+White noise $\xi(t)$ is an idealized random signal with
+%
+\begin{equation}
+  \E[\xi(t)]=0,
+  \qquad
+  \E[\xi(t)\xi(t')]=\delta(t-t').
+  \label{eq:white-noise-definition}
+\end{equation}
+%
+It has no correlation time and is best understood as the formal derivative of Brownian motion. It is mathematically convenient, but physical synaptic and population fluctuations are filtered by membranes, synapses, and refractory dynamics.
+
+Colored noise has nonzero temporal correlation. If $C(\tau)=\E[\eta(t)\eta(t+\tau)]$ decays over a time $\tau_c$, then fluctuations persist for about $\tau_c$. Colored noise can push a cluster coherently toward a basin boundary, while very fast independent noise may average out at the population level.
+
+The practical question is not only ``how large is the noise?'' but also ``over what time scale is it coherent?''
+
+% ============================================================
+\section{Ornstein--Uhlenbeck processes}
+\label{sec:ou-processes}
+% ============================================================
+
+The Ornstein--Uhlenbeck (OU) process is the standard Gaussian colored-noise model:
+%
+\begin{equation}
+  \dd X_t =
+  -\frac{1}{\tau_c}(X_t-\mu)\,\dd t
+  + \sqrt{\frac{2\sigma^2}{\tau_c}}\,\dd W_t.
+  \label{eq:ou-process}
+\end{equation}
+%
+The drift pulls $X_t$ toward mean $\mu$, $\tau_c$ is the correlation time, $\sigma^2$ is the stationary variance, and $W_t$ is Brownian motion.
+
+At stationarity,
+%
+\begin{equation}
+  \operatorname{Cov}\!\left[X_t,X_{t+\tau}\right]
+  = \sigma^2 e^{-|\tau|/\tau_c}.
+  \label{eq:ou-autocovariance}
+\end{equation}
+%
+This exponential autocovariance makes the OU process a useful null model for slow shared drive, fluctuating background input, or low-dimensional latent gain. If measured cluster autocorrelations are much heavier-tailed than an OU fit, metastable switching or hidden state changes may be needed.
+
+% ============================================================
+\section{Langevin equations}
+\label{sec:langevin-equations}
+% ============================================================
+
+A Langevin equation combines deterministic drift and stochastic forcing:
+%
+\begin{equation}
+  \dd\vec{X}_t =
+  \vec{f}(\vec{X}_t)\,\dd t
+  + G(\vec{X}_t)\,\dd\vec{W}_t.
+  \label{eq:langevin-general}
+\end{equation}
+%
+The drift $\vec{f}$ is the mean motion. The noise-amplitude matrix $G$ determines the amplitude and direction of random fluctuations. The diffusion matrix, also the covariance rate, is
+%
+\begin{equation}
+  D(\vec{x}) = G(\vec{x})\,G^\top(\vec{x}).
+  \label{eq:ch19-diffusion-matrix}
+\end{equation}
+%
+Thus the conditional covariance of the stochastic increment $G(\vec{x})\,\dd\vec{W}_t$ is $D(\vec{x})\,\dd t$.
+%
+In mesoscopic population models, noise is often multiplicative: the variance depends on the current activity. A simple population-activity approximation has the form
+%
+\begin{equation}
+  \dd A_t = F(A_t)\,\dd t
+  + \frac{1}{\sqrt{N}}\sqrt{Q(A_t)}\,\dd W_t,
+  \label{eq:population-activity-langevin}
+\end{equation}
+%
+where $A_t$ is population activity, $N$ is population size, and $Q(A_t)$ is an activity-dependent variance term. The factor $1/\sqrt{N}$ is the finite-size scaling that connects mesoscopic noise to microscopic neuron count.
+
+% ============================================================
+\section{Fokker--Planck intuition}
+\label{sec:fokker-planck-intuition}
+% ============================================================
+
+The Langevin equation describes random trajectories. The Fokker--Planck equation describes the probability density $p(\vec{x},t)$ over those trajectories:
+%
+\begin{equation}
+  \pd{p}{t}
+  =
+  -\nabla\cdot(\vec{f}p)
+  + \frac{1}{2}\sum_{i,j}
+  \frac{\partial^2}{\partial x_i\partial x_j}
+  \left(D_{ij}p\right).
+  \label{eq:fokker-planck}
+\end{equation}
+%
+The first term transports probability along deterministic flow. The second term spreads probability by diffusion. Stable attractors become peaks of the density; saddle regions become narrow gates through which probability leaks during rare transitions.
+
+For cluster models, the Fokker--Planck view encourages a useful mental picture: metastability is not just a single noisy trajectory hopping around. It is probability mass accumulating near attractors and slowly flowing across basin boundaries.
+
+% ============================================================
+\section{Diffusion approximations}
+\label{sec:diffusion-approximations}
+% ============================================================
+
+Many mesoscopic equations come from approximating discrete population jumps by continuous diffusion. Suppose a population count $n(t)$ changes by $\pm 1$ due to spikes, refractory exits, or state transitions. The normalized activity $A(t)=n(t)/N$ changes in jumps of size $1/N$.
+
+If many small events occur in the time scale of interest, the first two jump moments give
+%
+\begin{equation}
+  \dd A_t
+  \approx b(A_t)\,\dd t
+  + \frac{1}{\sqrt{N}}\sqrt{a(A_t)}\,\dd W_t,
+  \label{eq:diffusion-approximation}
+\end{equation}
+%
+where $b$ is the mean drift and $a$ is the event-rate variance per neuron. This is the Kramers--Moyal or system-size logic behind finite-size Langevin models.
+
+The approximation is strongest when $N$ is large, jumps are small, and event rates are not too close to zero. It can fail for rare spikes, absorbing boundaries, highly synchronized events, or escape paths dominated by atypical large deviations rather than typical Gaussian fluctuations.
+
+% ============================================================
+\section{Finite-size scaling of fluctuations}
+\label{sec:finite-size-scaling}
+% ============================================================
+
+If $N$ weakly dependent neurons contribute to a population average, the central-limit scaling is
+%
+\begin{equation}
+  \operatorname{SD}[A_N] \propto \frac{1}{\sqrt{N}},
+  \qquad
+  \Var[A_N]\propto \frac{1}{N}.
+  \label{eq:central-limit-finite-size}
+\end{equation}
+%
+This scaling is the baseline expectation for incoherent finite-size noise. Correlations change the effective population size. If all neurons share a slow fluctuation, averaging does not remove that component.
+
+For metastable switching, finite-size scaling can be sharper than variance scaling. In many escape problems,
+%
+\begin{equation}
+  \mathbb{E}[T_{\mathrm{dwell}}]
+  \sim \exp\!\left(N\,\Delta S\right),
+  \label{eq:finite-size-dwell-scaling}
+\end{equation}
+%
+where $\Delta S$ is an effective action or barrier. Thus increasing cluster size should strongly lengthen dwell times if switching is noise-driven. If switching persists with similar statistics as $N$ grows, the mechanism is likely not ordinary finite-size escape.
+
+In clustered networks, be explicit about which size is scaled: neurons per cluster, number of clusters, total network size, or all together. These choices test different hypotheses.
+
+\begin{chaptersummary}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.5}
+\begin{tabularx}{\textwidth}{@{}l X X@{}}
+  \toprule
+  \textbf{Object} & \textbf{Key equation} & \textbf{Interpretation} \\
+  \midrule
+  Poisson count &
+  $\E[N_T]=\Var[N_T]=rT$ &
+  Baseline event noise with $F=1$ \\
+  Inhomogeneous Poisson &
+  $\E[N(a,b)]=\int_a^b\lambda(t)\,\dd t$ &
+  Deterministic rate modulation \\
+  Cox process &
+  $\Var[N_T]=\E[\Lambda_T]+\Var[\Lambda_T]$ &
+  Slow random rate fluctuations inflate counts \\
+  Renewal hazard &
+  $h(t)=p_{\mathrm{ISI}}(t)/S(t)$ &
+  Spike-history dependence through age \\
+  OU process &
+  $C(\tau)=\sigma^2e^{-|\tau|/\tau_c}$ &
+  Gaussian colored-noise null model \\
+  Langevin equation &
+  $\dd\vec{X}=\vec{f}\,\dd t+G\,\dd\vec{W}$ &
+  Drift plus state-dependent finite-size noise \\
+  Fokker--Planck &
+  $\partial_t p=-\nabla\cdot(\vec{f}p)+\frac12\partial_i\partial_j(D_{ij}p)$ &
+  Density transport and diffusion \\
+  Finite-size scaling &
+  $\operatorname{SD}\sim N^{-1/2}$ &
+  Incoherent population noise shrinks with size \\
+  \bottomrule
+\end{tabularx}
+\end{center}
+
+\end{chaptersummary}
+
+\begin{conceptquestions}
+  \item Why does a Poisson process have Fano factor one? Which assumptions are responsible?
+  \item How can a doubly stochastic Poisson process produce super-Poisson spike counts even if spikes are conditionally Poisson?
+  \item What does the renewal hazard measure, and how does refractoriness appear in it?
+  \item Why is colored noise more dangerous for basin crossing than independent fast noise of the same instantaneous variance?
+  \item What does the diffusion matrix in a Langevin equation measure?
+  \item Which finite-size scaling test would you run to separate noise-driven metastability from deterministic switching?
+\end{conceptquestions}
+
+\clearpage

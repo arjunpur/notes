@@ -1,0 +1,245 @@
+\chapter{Paper Reading Guide}
+\label{app:paper-reading-guide}
+
+\textit{This appendix is a workflow for reading the source papers as model-building documents. The goal is not to summarize every result. The goal is to extract the variables, assumptions, equations, parameters, and observables needed for a defensible mesoscopic theory project.}
+
+% ============================================================
+\section{How to Read Each Paper}
+\label{app:how-to-read-each-paper}
+% ============================================================
+
+Use the same pass structure for every paper.
+
+\begin{enumerate}[leftmargin=*]
+  \item \textbf{Mechanism pass.} Write one sentence for the proposed mechanism. Avoid equations on this pass.
+  \item \textbf{Object pass.} List the state variables, parameters, and measured observables. Mark whether each object is microscopic, mesoscopic, or macroscopic.
+  \item \textbf{Equation pass.} Copy the governing equations into a personal derivation note and explain every term.
+  \item \textbf{Parameter pass.} Extract parameter values only when they are explicitly specified. Record units and normalization conventions.
+  \item \textbf{Reproduction pass.} Identify the smallest figure or statistic that should be reproduced first.
+  \item \textbf{Bridge pass.} State what the paper contributes to the rotation question: finite-size metastability, mesoscopic population theory, E/I clustered robustness, SSN variability quenching, or conductance shunting.
+\end{enumerate}
+
+Every paper should produce a table with the following columns:
+%
+\begin{longtable}{@{}p{0.18\textwidth}p{0.25\textwidth}p{0.25\textwidth}p{0.22\textwidth}@{}}
+\toprule
+\textbf{Item} & \textbf{Definition} & \textbf{Where it appears} & \textbf{How it enters this project} \\
+\midrule
+State variable & What changes over time. & Equation, figure, or method section. & Candidate microscopic or mesoscopic variable. \\
+Control parameter & What is swept or tuned. & Parameter table or simulation methods. & Phase-diagram axis or fixed baseline. \\
+Observable & What is measured. & Results figure or analysis method. & Validation target. \\
+Assumption & What is simplified. & Model description or derivation. & Possible failure mode. \\
+Scaling claim & What changes with size or noise. & Theory or supplementary analysis. & Test of finite-size mechanism. \\
+\bottomrule
+\end{longtable}
+
+% ============================================================
+\section{Litwin-Kumar and Doiron Clustered Networks}
+\label{app:reading-litwin-kumar-doiron}
+% ============================================================
+
+\textbf{Citation TODO for coordinator.} Resolve the exact bibliography entry for the Litwin-Kumar and Doiron clustered balanced network paper used as the E-clustered baseline. Verify year, title, journal, and any supplementary parameter tables before adding a \texttt{\textbackslash cite} command.
+
+Read this paper first as the baseline mechanism paper. The mechanism sentence should be close to: structured excitatory clustering creates attractor-like cluster up-states inside an otherwise balanced spiking network, and finite-size fluctuations drive transitions among these states.
+
+Extract the architecture:
+%
+\begin{enumerate}[leftmargin=*]
+  \item number of excitatory and inhibitory neurons;
+  \item E/I ratio;
+  \item number and size of excitatory clusters;
+  \item within-cluster and between-cluster excitatory connectivity or weights;
+  \item whether total expected excitatory input is normalized as cluster strength changes;
+  \item inhibitory connectivity structure;
+  \item external input and synaptic time constants.
+\end{enumerate}
+
+Extract the observables:
+%
+\begin{equation}
+  \widehat r_k(t),
+  \qquad
+  n_{\mathrm{act}}(t),
+  \qquad
+  F(T),
+  \qquad
+  C_{kk}(\tau),
+  \qquad
+  L_k .
+  \label{eq:lk-reading-observables}
+\end{equation}
+%
+These are cluster rate, number of active clusters, Fano factor, autocorrelation, and cluster lifetime. They are the natural bridge to the mesoscopic chapters.
+
+The first reproduction target should be qualitative, not exhaustive: one raster plot, one cluster-rate trace, one distribution or survival curve of cluster lifetimes, and one variability statistic showing super-Poisson counts or slow fluctuations.
+
+% ============================================================
+\section{Schwalger, Deger, and Gerstner Mesoscopic Theory}
+\label{app:reading-schwalger-deger-gerstner}
+% ============================================================
+
+\textbf{Citation TODO for coordinator.} Resolve the exact Schwalger--Deger--Gerstner mesoscopic population paper and its bibliography key. Verify the form of the finite-size population equations before citing or quoting equation numbers.
+
+Read this paper as the theory engine. The central question is how a finite population of spiking neurons can be represented by population activity, refractory age density, hazard functions, and finite-size noise.
+
+For the equation pass, identify:
+%
+\begin{enumerate}[leftmargin=*]
+  \item the microscopic neuron or point-process model;
+  \item the age variable $a$ and refractory density $\rho(a,t)$;
+  \item the hazard rate $h(a,t)$;
+  \item the population activity $A(t)$;
+  \item the infinite-size population equation;
+  \item the finite-size correction or stochastic population equation;
+  \item the assumptions behind renewal or quasi-renewal approximations.
+\end{enumerate}
+
+The bridge to clustered networks is the population index. In the original population theory, the population may be one homogeneous group. In this course, each cluster or E/I cluster pair becomes a population:
+%
+\begin{equation}
+  A(t)
+  \quad\leadsto\quad
+  A_k^E(t),\ A_k^I(t),
+  \qquad
+  \rho(a,t)
+  \quad\leadsto\quad
+  \rho_k^E(a,t),\ \rho_k^I(a,t).
+  \label{eq:reading-population-to-cluster}
+\end{equation}
+%
+The reading task is to decide which parts of the full mesoscopic theory are needed for the rotation: a Langevin rate approximation, a refractory-density model, or a hybrid that uses transfer functions plus finite-size noise.
+
+% ============================================================
+\section{Rostami E/I Clustered Attractor Model}
+\label{app:reading-rostami}
+% ============================================================
+
+\textbf{Citation TODO for coordinator.} Resolve the exact Rostami et al.\ paper identified in the course outline as the E/I clustered attractor model of motor cortex. Verify the year, task, architecture, and parameter claims before adding citations.
+
+Read this paper as the E/I architecture and task-interpretation paper. The mechanism sentence should identify what paired or structured inhibitory clustering adds beyond E-only clustering.
+
+Extract the architecture carefully:
+%
+\begin{enumerate}[leftmargin=*]
+  \item whether excitatory and inhibitory clusters are paired one-to-one;
+  \item which connection blocks are clustered: $E\to E$, $E\to I$, $I\to E$, $I\to I$;
+  \item which blocks are strengthened within a pair and which are weakened between pairs;
+  \item whether local E/I balance is measured or imposed;
+  \item how task input biases the attractor landscape;
+  \item what observable is used to connect the model to reaction time or motor variability.
+\end{enumerate}
+
+The bridge equation for the rotation is the E/I input pair:
+%
+\begin{equation}
+  u_k^E
+  =
+  h_k^E+\sum_{\ell}W_{k\ell}^{EE}r_{\ell}^E
+  -
+  \sum_{\ell}W_{k\ell}^{EI}r_{\ell}^I,
+  \qquad
+  u_k^I
+  =
+  h_k^I+\sum_{\ell}W_{k\ell}^{IE}r_{\ell}^E
+  -
+  \sum_{\ell}W_{k\ell}^{II}r_{\ell}^I.
+  \label{eq:rostami-reading-bridge-equations}
+\end{equation}
+%
+Every architectural claim should map onto one of the four $W^{ab}$ blocks.
+
+The reproduction target should not begin with the full behavioral task. Begin with the spontaneous or delay-period clustered attractor dynamics, then add the task input only after the E/I cluster mechanism is understood.
+
+% ============================================================
+\section{Stabilized Supralinear Network Papers}
+\label{app:reading-ssn}
+% ============================================================
+
+\textbf{Citation TODO for coordinator.} Resolve the SSN bibliography entries used in the course, including the original stabilized supralinear network paper and the Hennequin/Miller stochastic SSN direction mentioned in the outline. Verify exact author lists and claims.
+
+Read the SSN papers as a side branch, not as the main clustered-network mechanism. The SSN question is how supralinear E/I rate dynamics and inhibitory stabilization can quench variability after stimulus onset.
+
+Extract the rate model:
+%
+\begin{equation}
+  \tau_a \dot r_a
+  =
+  -r_a
+  +
+  \bigl[
+  \sum_b W_{ab}r_b+h_a
+  \bigr]_{+}^{p},
+  \qquad
+  p>1,
+  \label{eq:ssn-reading-rate-model}
+\end{equation}
+%
+or the exact variant used in the paper. The exponent $p$ is the supralinear part. The E/I feedback that prevents runaway is the stabilization part.
+
+For this rotation, the important comparison is:
+%
+\begin{equation}
+  \text{SSN variability quenching}
+  \quad\text{versus}\quad
+  \text{clustered-attractor variability quenching}.
+  \label{eq:ssn-clustered-comparison}
+\end{equation}
+%
+The SSN may reduce variability through gain and inhibitory stabilization without discrete cluster-state switching. The clustered model may reduce variability by collapsing the accessible attractor set under stimulus. These mechanisms can produce similar Fano-factor signatures but different latent dynamics.
+
+If reading Tilo's spiking SSN direction, extract how generalized integrate-and-fire neurons are matched to the SSN transfer function and how finite-size population activity is represented. Keep this branch separate unless it directly informs the mesoscopic reduction method.
+
+% ============================================================
+\section{Variability Quenching and Conductance Shunting Papers}
+\label{app:reading-shunting}
+% ============================================================
+
+\textbf{Citation TODO for coordinator.} Resolve the Huang/Sit/Schwalger/Abbott/Miller/Doiron manuscript or paper named in the outline. Verify the experimental claim about membrane-potential variability, synaptic current variability, and conductance-based shunting before citing.
+
+Read the shunting paper as a warning against overinterpreting rate variability. The central distinction is between synaptic current variability and membrane potential variability. Conductance changes can reduce voltage fluctuations even when current fluctuations increase.
+
+The object pass should separate:
+%
+\begin{equation}
+  I_{\mathrm{syn}}(t),
+  \qquad
+  g_{\mathrm{syn}}(t),
+  \qquad
+  V(t),
+  \qquad
+  r(t),
+  \qquad
+  F(T).
+  \label{eq:shunting-reading-objects}
+\end{equation}
+%
+Current, conductance, voltage, rate, and count variability are not interchangeable.
+
+The bridge to this course is conceptual. Clustered-network and SSN theories often discuss variability at the level of population rates or spike counts. Conductance shunting reminds us that cellular biophysics can change voltage variability without the same change in synaptic-current variability. If the rotation stays with current-based models, this limitation should be acknowledged rather than hidden.
+
+% ============================================================
+\section{Reading Order and Deliverables}
+\label{app:reading-order-deliverables}
+% ============================================================
+
+The recommended order is:
+%
+\begin{enumerate}[leftmargin=*]
+  \item Litwin-Kumar--Doiron baseline: understand the E-clustered mechanism and reproduction target.
+  \item Schwalger--Deger--Gerstner mesoscopic theory: understand finite-size population variables.
+  \item Rostami E/I attractor model: understand the architecture to be reduced.
+  \item SSN papers: understand an alternative variability-quenching mechanism.
+  \item Shunting paper: understand the biophysical caveat about voltage and current variability.
+\end{enumerate}
+
+The deliverable after reading should be a two-page project memo:
+%
+\begin{enumerate}[leftmargin=*]
+  \item one model diagram in words: populations, variables, and couplings;
+  \item one equation ledger with every symbol defined;
+  \item one reproduction checklist;
+  \item one phase-diagram plan;
+  \item one list of claims that still require citation verification.
+\end{enumerate}
+
+This memo should be updated whenever a paper changes a modeling assumption. The main risk in this project is notation drift: using the same symbol for a microscopic spike train, a filtered rate, and an expected rate. The reading guide should prevent that drift before it reaches the derivation.

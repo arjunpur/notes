@@ -1,0 +1,416 @@
+\chapter{Variability Quenching and Conductance Shunting}
+\label{ch:variability-quenching-conductance-shunting}
+
+\textit{Variability quenching is often introduced as a drop in trial-to-trial firing-rate or spike-count variability after stimulus onset. Conductance-based neurons add a more cellular possibility: membrane-potential variability can decrease because the cell is shunted, even when synaptic conductance or current fluctuations increase. This chapter separates count variability, latent rate variability, synaptic-current variability, and voltage variability so that SSN and clustered-network explanations can be compared without conflating them.}
+
+\noindent\textbf{Citation TODO.} Verify the Huang/Sit/Schwalger/Abbott/Miller/Doiron manuscript before making paper-specific claims. The section below only states the cautious working issue: voltage variability, synaptic current variability, and spike-count variability need not move in the same direction after stimulus onset.
+
+\noindent\textbf{Learning objectives.} After this chapter, the reader should be able to derive the doubly stochastic Poisson Fano decomposition, explain how conductance shunting lowers voltage fluctuations, and distinguish rate-level quenching from cellular biophysical quenching.
+
+\noindent\textbf{Notation.} $N(T)$ is a spike count in a window of duration $T$. $M(T)=\int_0^T \lambda(t)\,\dd t$ is the conditional mean count. $g_E$ and $g_I$ are excitatory and inhibitory conductances. $V$ is membrane potential and $C$ is membrane capacitance.
+
+% ============================================================
+\section{Classical Interpretation: Quenching Means Reduced Rate Variability}
+\label{sec:classical-quenching-reduced-rate-variability}
+% ============================================================
+
+The classical population interpretation of variability quenching is that stimulus onset reduces trial-to-trial variability in the response. In spike-count data, this is often measured by a lower Fano factor:
+%
+\begin{equation}
+  F(T)
+  =
+  \frac{\Var[N(T)]}{\E[N(T)]}.
+  \label{eq:ch17-fano}
+\end{equation}
+%
+The numerator measures across-trial count variability. The denominator normalizes by the mean count. A drop in $F$ after stimulus onset is evidence that counts became more reliable relative to their mean.
+
+A rate-level interpretation assumes that each trial has a latent firing intensity $\lambda^{(q)}(t)$. Before stimulus onset, this intensity varies strongly across trials because of spontaneous network state, slow gain fluctuations, or attractor occupancy. After stimulus onset, the stimulus drives the network into a more reproducible state, so the latent intensity varies less.
+
+This interpretation is useful, but it is not the only possible meaning of quenching. A lower spike-count Fano factor does not automatically imply lower synaptic current variance, lower conductance variance, lower membrane-potential variance, or lower single-trial spike irregularity. Those are different variables.
+
+The practical rule is to name the level at which quenching is measured: spike counts, smoothed firing rates, latent rates, synaptic currents, conductances, or voltages.
+
+% ============================================================
+\section{Doubly Stochastic Poisson Model}
+\label{sec:doubly-stochastic-poisson-model}
+% ============================================================
+
+A doubly stochastic Poisson process, also called a Cox process, separates two sources of variability. Conditional on a latent intensity $\lambda(t)$, spikes are Poisson. Across trials, $\lambda(t)$ itself is random.
+
+For a counting window $[0,T]$, define
+%
+\begin{equation}
+  M(T)
+  =
+  \int_0^T \lambda(t)\,\dd t.
+  \label{eq:cox-conditional-mean}
+\end{equation}
+%
+Conditional on $M(T)$,
+%
+\begin{equation}
+  N(T)\mid M(T)
+  \sim
+  \operatorname{Poisson}(M(T)).
+  \label{eq:cox-conditional-poisson}
+\end{equation}
+%
+The law of total expectation gives
+%
+\begin{equation}
+  \E[N(T)]
+  =
+  \E[M(T)].
+  \label{eq:cox-total-mean}
+\end{equation}
+%
+The law of total variance gives
+%
+\begin{align}
+  \Var[N(T)]
+  &=
+  \E[\Var(N(T)\mid M(T))]
+  +
+  \Var(\E[N(T)\mid M(T)])
+  \nonumber\\
+  &=
+  \E[M(T)]
+  +
+  \Var[M(T)].
+  \label{eq:cox-total-variance}
+\end{align}
+%
+The first term is Poisson spiking noise. The second term is latent rate variability across trials.
+
+Therefore
+%
+\begin{keyequation}[Doubly Stochastic Fano Factor]
+\begin{equation}
+  F(T)
+  =
+  1
+  +
+  \frac{\Var[M(T)]}{\E[M(T)]}.
+  \label{eq:cox-fano}
+\end{equation}
+\tcblower
+The baseline value $1$ is conditional Poisson variability. The excess term is slow or trial-to-trial variability in the integrated latent rate.
+\end{keyequation}
+
+Stimulus-induced quenching in this model means that $\Var[M(T)]$ decreases relative to $\E[M(T)]$. The model is intentionally simple, but it clarifies why slow network fluctuations inflate Fano factors beyond one.
+
+% ============================================================
+\section{Fano Factor Decomposition}
+\label{sec:fano-factor-decomposition-ch17}
+% ============================================================
+
+The Poisson assumption can be relaxed. Let $M(T)$ still be the conditional expected count, but let the conditional count variance be
+%
+\begin{equation}
+  \Var(N(T)\mid M(T))
+  =
+  F_{\mathrm{cond}}(T)M(T).
+  \label{eq:conditional-fano-general}
+\end{equation}
+%
+The factor $F_{\mathrm{cond}}$ captures spike-generation variability after the latent rate is fixed. Refractoriness can make it less than one for some windows. Bursting can make it greater than one.
+
+Then
+%
+\begin{equation}
+  F(T)
+  =
+  F_{\mathrm{cond}}(T)
+  +
+  \frac{\Var[M(T)]}{\E[M(T)]},
+  \label{eq:general-fano-decomposition}
+\end{equation}
+%
+assuming $F_{\mathrm{cond}}$ is approximately constant across the trials being pooled. The two terms answer different questions. $F_{\mathrm{cond}}$ measures conditional spike-train irregularity. The second term measures variability of the latent drive.
+
+For clustered networks, $M(T)$ changes when the network occupies different cluster states. For an SSN, $M(T)$ changes when input noise is amplified or suppressed by the E/I operating point. For conductance-based shunting, the spike-count Fano factor may change because voltage fluctuations change even if conductance fluctuations do not decrease.
+
+This decomposition is also a warning about mean matching. If the stimulus changes $\E[M(T)]$, the same absolute latent variance produces a different Fano factor. Comparing conditions requires checking both variance and mean count.
+
+% ============================================================
+\section{Why Current-Based Models Predict Reduced Input Variability}
+\label{sec:why-current-based-models-predict-reduced-input-variability}
+% ============================================================
+
+In a current-based synapse model, synaptic input adds a current that is independent of the postsynaptic voltage:
+%
+\begin{equation}
+  C\dot V
+  =
+  -g_L(V-E_L)
+  +
+  I_{\mathrm{syn}}(t).
+  \label{eq:current-based-voltage}
+\end{equation}
+%
+If the membrane equation is linearized around a fixed operating point, voltage fluctuations are filtered current fluctuations:
+%
+\begin{equation}
+  \delta V(\omega)
+  =
+  \frac{1}{g_L+i\omega C}\,
+  \delta I_{\mathrm{syn}}(\omega).
+  \label{eq:current-based-impedance}
+\end{equation}
+%
+Here $\omega$ is angular frequency. The factor $(g_L+i\omega C)^{-1}$ is the membrane impedance.
+
+If stimulus onset reduces variability in presynaptic rates or correlations, then a current-based model naturally predicts reduced synaptic-current variability:
+%
+\begin{equation}
+  I_{\mathrm{syn}}(t)
+  =
+  \sum_j J_j s_j(t),
+  \label{eq:current-based-syn-input}
+\end{equation}
+%
+so reducing variability in the filtered presynaptic activities $s_j(t)$ reduces variability in the weighted sum. Voltage variability then falls because the input current varies less.
+
+This is the simplest rate-level picture: stimulus quenches network variability, input current becomes more reliable, and membrane voltage becomes more reliable. Conductance-based neurons allow a different possibility.
+
+% ============================================================
+\section{The Huang/Sit/Schwalger/Abbott/Miller/Doiron Manuscript}
+\label{sec:huang-sit-schwalger-abbott-miller-doiron-manuscript}
+% ============================================================
+
+\noindent\textbf{Citation TODO.} The exact manuscript title, status, data set, and model details must be verified by the coordinator. Do not turn this section into a bibliographic claim until the source is available.
+
+The working issue attributed to the manuscript is a dissociation among three variables:
+%
+\begin{enumerate}[leftmargin=*]
+  \item membrane-potential variability;
+  \item synaptic current or conductance variability;
+  \item spike-count or firing-rate variability.
+\end{enumerate}
+%
+The common intuition is that lower voltage variability should come from lower synaptic input variability. The conductance-based alternative is that voltage variability can decrease because the membrane becomes more strongly clamped by total conductance, even if synaptic current fluctuations increase.
+
+This distinction matters for the SSN side branch. A rate SSN explains quenching by E/I stabilization of population activity. A conductance-shunting mechanism explains quenching at the cellular input-output level. Both mechanisms may operate together, but they are not the same claim.
+
+The final version of these notes should state only what is supported by the verified manuscript: the experimental preparation, the measured variables, the direction of each variability change, and the model used to explain the dissociation.
+
+% ============================================================
+\section{Experimental Finding: Membrane Potential Variability Decreases While Synaptic Current Variability Increases}
+\label{sec:membrane-potential-decreases-current-increases}
+% ============================================================
+
+The dissociation to understand is:
+%
+\begin{equation}
+  \Var[V\mid \mathrm{stim}]
+  <
+  \Var[V\mid \mathrm{spont}],
+  \qquad
+  \Var[I_{\mathrm{syn}}\mid \mathrm{stim}]
+  >
+  \Var[I_{\mathrm{syn}}\mid \mathrm{spont}],
+  \label{eq:voltage-current-dissociation}
+\end{equation}
+%
+where $V$ is membrane potential and $I_{\mathrm{syn}}$ is synaptic current under the relevant measurement convention. This equation should be treated as a source-dependent claim until the manuscript is checked.
+
+If true, it rules out the simplest current-based explanation in which voltage variability drops only because input-current variability drops. It says that the cell can receive more variable synaptic drive while its voltage becomes less variable.
+
+The key is that ``current variability'' depends on how current is measured. Voltage-clamp measurements hold $V$ fixed and infer synaptic currents from conductance changes at that clamp voltage. Current-clamp voltage dynamics allow $V$ to move, which changes driving forces and membrane impedance. Conductance-based equations connect these measurement regimes but do not make them identical.
+
+The learner should therefore ask: variability of what, measured under what clamp or operating condition, and transformed through which membrane equation?
+
+% ============================================================
+\section{Conductance-Based Shunting as an Alternative Mechanism}
+\label{sec:conductance-based-shunting-alternative}
+% ============================================================
+
+A conductance-based membrane equation is
+%
+\begin{equation}
+  C\dot V
+  =
+  -g_L(V-E_L)
+  -
+  g_E(t)(V-E_E)
+  -
+  g_I(t)(V-E_I)
+  +
+  I_{\mathrm{ext}}(t).
+  \label{eq:conductance-based-membrane}
+\end{equation}
+%
+The excitatory and inhibitory synaptic inputs are conductances, not injected currents. Their effect depends on the driving forces $V-E_E$ and $V-E_I$.
+
+Define the total conductance
+%
+\begin{equation}
+  g_{\mathrm{tot}}(t)
+  =
+  g_L+g_E(t)+g_I(t).
+  \label{eq:total-conductance}
+\end{equation}
+%
+The effective membrane time constant is
+%
+\begin{equation}
+  \tau_{\mathrm{eff}}(t)
+  =
+  \frac{C}{g_{\mathrm{tot}}(t)}.
+  \label{eq:effective-time-constant}
+\end{equation}
+%
+Increasing total conductance lowers input resistance and shortens the membrane time constant. The membrane becomes harder to move and faster to relax.
+
+Linearizing \eqref{eq:conductance-based-membrane} around a mean voltage $\bar V$ and mean conductances gives
+%
+\begin{equation}
+  C\,\delta\dot V
+  =
+  -\bar g_{\mathrm{tot}}\delta V
+  +
+  (E_E-\bar V)\delta g_E
+  +
+  (E_I-\bar V)\delta g_I
+  +
+  \delta I_{\mathrm{ext}}
+  +
+  \text{higher-order terms}.
+  \label{eq:conductance-linearization}
+\end{equation}
+%
+The conductance fluctuations enter as effective current fluctuations, but the voltage fluctuation is divided and filtered by $\bar g_{\mathrm{tot}}$.
+
+In the frequency domain,
+%
+\begin{equation}
+  \delta V(\omega)
+  =
+  \frac{\begin{aligned}
+      &(E_E-\bar V)\delta g_E(\omega)
+      +(E_I-\bar V)\delta g_I(\omega)\\
+      &\qquad+\delta I_{\mathrm{ext}}(\omega)
+    \end{aligned}
+  }{\bar g_{\mathrm{tot}}+i\omega C}.
+  \label{eq:conductance-impedance}
+\end{equation}
+%
+Thus larger conductance can reduce voltage variability even if the numerator becomes more variable, provided the denominator grows enough or the E/I conductance fluctuations cancel in voltage-effective directions.
+
+% ============================================================
+\section{Why Cellular Biophysics Can Decouple Current Variability from Voltage Variability}
+\label{sec:biophysics-decouples-current-voltage-variability}
+% ============================================================
+
+There are three decoupling mechanisms.
+
+First, increased total conductance lowers impedance:
+%
+\begin{equation}
+  |Z(\omega)|
+  =
+  \frac{1}{\sqrt{\bar g_{\mathrm{tot}}^2+(\omega C)^2}}.
+  \label{eq:conductance-impedance-magnitude}
+\end{equation}
+%
+Even larger current-like fluctuations can produce smaller voltage fluctuations if $|Z(\omega)|$ decreases enough.
+
+Second, excitation and inhibition can covary. The effective fluctuation driving voltage is
+%
+\begin{equation}
+  \delta I_{\mathrm{eff}}
+  =
+  (E_E-\bar V)\delta g_E
+  +
+  (E_I-\bar V)\delta g_I.
+  \label{eq:effective-conductance-current}
+\end{equation}
+%
+Because $E_E-\bar V$ and $E_I-\bar V$ have different signs and magnitudes near typical voltages, correlated conductance fluctuations can cancel in their voltage effect even when each conductance is variable.
+
+Third, conductance changes alter the membrane time constant. Faster voltage relaxation suppresses low-frequency fluctuations that would otherwise inflate voltage variance and spike-count variability.
+
+These mechanisms explain why voltage variability is not a direct readout of synaptic-current variability. The transformation from synaptic activity to voltage is state dependent and biophysical. Rate models hide this transformation unless they include conductance or input-resistance variables explicitly.
+
+% ============================================================
+\section{How This Relates to SSN and Clustered-Network Theories}
+\label{sec:conductance-quenching-relation-ssn-clusters}
+% ============================================================
+
+SSN, clustered-network, and conductance-shunting explanations operate at different levels.
+
+The SSN explanation is a population-level stabilization mechanism:
+%
+\begin{equation}
+  \begin{aligned}
+  \text{stimulus}
+  &\rightarrow \text{new E/I operating point}\\
+  &\rightarrow \text{changed effective connectivity}\\
+  &\rightarrow \text{lower output covariance}.
+  \end{aligned}
+  \label{eq:ssn-quenching-chain}
+\end{equation}
+%
+The clustered-network explanation is a state-occupancy mechanism:
+%
+\begin{equation}
+  \begin{aligned}
+  \text{stimulus}
+  &\rightarrow \text{biased attractor landscape}\\
+  &\rightarrow \text{more reproducible cluster states}\\
+  &\rightarrow \text{lower count variability}.
+  \end{aligned}
+  \label{eq:cluster-quenching-chain}
+\end{equation}
+%
+The shunting explanation is a cellular transformation mechanism:
+%
+\begin{equation}
+  \begin{aligned}
+  \text{stimulus}
+  &\rightarrow \text{higher total conductance}\\
+  &\rightarrow \text{lower voltage impedance}\\
+  &\rightarrow \text{lower voltage variability}.
+  \end{aligned}
+  \label{eq:shunting-quenching-chain}
+\end{equation}
+%
+These mechanisms are compatible but distinguishable. SSN quenching should appear in the covariance of population activity and in the effective linear operator. Cluster quenching should appear in state occupancy, dwell times, and transition probabilities. Shunting should appear in conductance, impedance, and voltage measurements.
+
+The rotation should avoid treating all decreases in variability as the same phenomenon. A convincing theory result should state the level of measurement, the variable being quenched, and the mechanism that maps stimulus onset to that decrease.
+
+\begin{chaptersummary}
+\begin{center}
+\renewcommand{\arraystretch}{1.5}
+\begin{tabularx}{\textwidth}{@{}l X X@{}}
+  \toprule
+  \textbf{Mechanism} & \textbf{Key equation} & \textbf{Interpretation} \\
+  \midrule
+  Latent rate variability &
+  $F=1+\Var[M]/\E[M]$ &
+  Super-Poisson counts come from trial-to-trial changes in integrated rate \\
+  General count decomposition &
+  $F=F_{\mathrm{cond}}+\Var[M]/\E[M]$ &
+  Spike-generation variability and latent-rate variability are separate terms \\
+  Current-based filtering &
+  $\delta V=(g_L+i\omega C)^{-1}\delta I_{\mathrm{syn}}$ &
+  Lower current variability directly lowers voltage variability \\
+  Conductance shunting &
+  $\tau_{\mathrm{eff}}=C/g_{\mathrm{tot}}$ &
+  Higher conductance lowers impedance and speeds voltage relaxation \\
+  Voltage-effective conductance noise &
+  $\delta I_{\mathrm{eff}}=(E_E-\bar V)\delta g_E+(E_I-\bar V)\delta g_I$ &
+  Conductance fluctuations can cancel or be attenuated before becoming voltage fluctuations \\
+  \bottomrule
+\end{tabularx}
+\end{center}
+\end{chaptersummary}
+
+\begin{conceptquestions}
+  \item In the Cox-process Fano decomposition, what term represents conditional spiking noise and what term represents latent rate variability?
+  \item Why can a reduced Fano factor fail to imply reduced single-trial spike irregularity?
+  \item What changes in the membrane equation when synapses are conductance-based rather than current-based?
+  \item How can synaptic current variability increase while voltage variability decreases?
+  \item What measurements would distinguish SSN stabilization from clustered-state occupancy changes and from cellular shunting?
+\end{conceptquestions}

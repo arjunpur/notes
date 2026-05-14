@@ -1,0 +1,398 @@
+\chapter{Minimal Code Recipes}
+\label{app:minimal-code-recipes}
+
+\textit{These recipes are pseudocode-level implementation plans. They are not project files and they intentionally omit exact source-paper parameters until the coordinator verifies citations and parameter tables. Their purpose is to make the research workflow unambiguous before writing production simulation code.}
+
+% ============================================================
+\section{Recipe 1: Build E-Cluster Connectivity}
+\label{app:recipe-build-e-cluster-connectivity}
+% ============================================================
+
+The first recipe creates a clustered excitatory connectivity matrix while keeping mean recurrent excitation controlled.
+
+\begin{lstlisting}[language=Python,caption={Pseudocode for E-cluster connectivity.}]
+inputs:
+    Q                    # number of excitatory clusters
+    n_E                  # excitatory neurons per cluster
+    N_I                  # inhibitory neurons
+    p_EE_base            # baseline E->E connection probability
+    g_EE                 # within-cluster strength multiplier
+    p_EI, p_IE, p_II     # remaining connection probabilities
+    seed
+
+set random seed
+assign each excitatory neuron i to cluster c[i] in {1,...,Q}
+
+p_EE_plus  = g_EE * p_EE_base
+p_EE_minus = (Q * p_EE_base - p_EE_plus) / (Q - 1)
+
+for each ordered E target i and E source j:
+    if i == j:
+        W_EE[i,j] = 0
+    else if c[i] == c[j]:
+        W_EE[i,j] = Bernoulli(p_EE_plus) * J_EE
+    else:
+        W_EE[i,j] = Bernoulli(p_EE_minus) * J_EE
+
+draw E<-I, I<-E, and I<-I connections from their baseline rules
+store cluster labels, probabilities, weights, and seed
+\end{lstlisting}
+
+The normalization line is only valid when it keeps $p_{EE}^{-}$ in $[0,1]$. If it does not, switch from probability clustering to weight clustering or choose a smaller $g_{EE}$.
+
+% ============================================================
+\section{Recipe 2: Simulate the Minimal LIF Baseline}
+\label{app:recipe-simulate-lif-baseline}
+% ============================================================
+
+The microscopic simulation should produce spike times and population summaries in one pass.
+
+\begin{lstlisting}[language=Python,caption={Pseudocode for a current-based LIF simulation.}]
+inputs:
+    connectivity matrices
+    neuron parameters: tau_m, V_rest, V_th, V_reset, tau_ref
+    synapse parameters: tau_s, J values
+    external drive I_ext
+    time step dt and duration T
+
+initialize V_i near V_rest
+initialize synaptic traces y_i = 0
+initialize refractory counters
+
+for each time step t:
+    decay all synaptic traces:
+        y_i <- y_i + dt * (-y_i / tau_s)
+
+    compute synaptic current for every neuron:
+        I_i = I_ext_i + sum_E W_E[i,j] y_j - sum_I W_I[i,j] y_j
+
+    update non-refractory membrane potentials:
+        V_i <- V_i + dt/tau_m * (-(V_i - V_rest) + R_m * I_i)
+
+    for neurons crossing threshold:
+        record spike time
+        set V_i = V_reset
+        set refractory counter = tau_ref
+        add spike impulse to y_i
+
+    decrement refractory counters
+
+save:
+    spike times
+    cluster labels
+    binned E and I rates
+    optional E/I current summaries
+\end{lstlisting}
+
+The simulation should be tested first with clustering disabled. If the unclustered network is not active, balanced, and irregular, the clustered version will be difficult to interpret.
+
+% ============================================================
+\section{Recipe 3: Detect Cluster States}
+\label{app:recipe-detect-cluster-states}
+% ============================================================
+
+Cluster-state detection converts spikes into the variables used in the mesoscopic theory.
+
+\begin{lstlisting}[language=Python,caption={Pseudocode for cluster-state detection.}]
+inputs:
+    spike times
+    cluster labels
+    smoothing kernel kappa
+    theta_on, theta_off
+    minimum_duration
+
+for each cluster k:
+    r_hat[k,t] = smoothed spike count of neurons in cluster k / n_E
+
+for each cluster k:
+    state[k,0] = 0
+    for each time bin t:
+        if r_hat[k,t] > theta_on:
+            state[k,t] = 1
+        else if r_hat[k,t] < theta_off:
+            state[k,t] = 0
+        else:
+            state[k,t] = state[k,t-1]
+
+remove active intervals shorter than minimum_duration
+compute:
+    active_cluster_count[t] = sum_k state[k,t]
+    lifetimes for each active interval
+    transition times
+\end{lstlisting}
+
+Thresholds should be chosen once per analysis protocol, preferably from the low/high valley of the pooled cluster-rate distribution. Do not tune thresholds separately for every parameter point.
+
+% ============================================================
+\section{Recipe 4: Fit or Choose Mesoscopic Transfer Functions}
+\label{app:recipe-fit-transfer-functions}
+% ============================================================
+
+The transfer function maps input statistics to expected population rate. A first project can choose a smooth nonlinearity; a stronger project estimates it from microscopic simulations.
+
+\begin{lstlisting}[language=Python,caption={Pseudocode for transfer-function estimation.}]
+inputs:
+    isolated or embedded population model
+    grid of mean input values mu_grid
+    optional grid of input variances sigma_grid
+    simulation duration per grid point
+
+for each mu in mu_grid:
+    for each sigma in sigma_grid:
+        drive population with fluctuating input having mean mu and variance sigma
+        simulate until transient has passed
+        estimate steady firing rate r_bar
+        store data point (mu, sigma, r_bar)
+
+fit Phi(mu, sigma) with a smooth constrained curve:
+    nonnegative output
+    monotone in mu when appropriate
+    bounded or saturating if needed
+
+validate:
+    predicted rates match held-out input points
+    gain Phi' is not unrealistically steep
+\end{lstlisting}
+
+If the final mesoscopic model only uses $\Phi(u)$, the variance dimension can be collapsed. If refractory-density theory is used, the transfer function may be replaced by age-structured dynamics instead.
+
+% ============================================================
+\section{Recipe 5: Integrate the E-Only Mesoscopic Model}
+\label{app:recipe-integrate-e-only-mesoscopic}
+% ============================================================
+
+This recipe tests whether the reduced E-only model can reproduce cluster switching.
+
+\begin{lstlisting}[language=Python,caption={Pseudocode for E-only mesoscopic integration.}]
+inputs:
+    Q, n_E
+    tau_E, tau_I
+    J_plus, J_minus, J_EI, J_IE
+    transfer functions Phi_E, Phi_I
+    finite-size noise function sigma_E
+    dt, T, seed
+
+initialize r_E[k] near low-rate state
+initialize r_I
+
+for each time step:
+    u_E[k] = h_E[k] + J_plus*r_E[k]
+             + J_minus*sum_{l != k} q[l]*r_E[l]
+             - J_EI*r_I
+    u_I = h_I + J_IE*sum_l q[l]*r_E[l]
+
+    drift_E[k] = (-r_E[k] + Phi_E(u_E[k])) / tau_E
+    drift_I    = (-r_I    + Phi_I(u_I))    / tau_I
+
+    r_E[k] <- r_E[k] + dt*drift_E[k]
+              + sqrt(dt) * sigma_E(r_E[k]) / sqrt(n_E) * normal()
+    r_I    <- r_I + dt*drift_I
+
+    enforce nonnegative rates by reducing dt or applying documented truncation
+
+save r_E, r_I, active-cluster indicators, and summary statistics
+\end{lstlisting}
+
+Always run the same parameter point with the noise amplitude set to zero. That determines whether switching is finite-size driven or already present in the deterministic equations.
+
+% ============================================================
+\section{Recipe 6: Integrate the E/I Mesoscopic Extension}
+\label{app:recipe-integrate-ei-mesoscopic}
+% ============================================================
+
+The E/I extension uses two variables per cluster and four coupling matrices.
+
+\begin{lstlisting}[language=Python,caption={Pseudocode for E/I mesoscopic integration.}]
+inputs:
+    Q, n_E, n_I
+    W_EE, W_EI, W_IE, W_II
+    h_E[k], h_I[k]
+    tau_E, tau_I
+    Phi_E, Phi_I
+    sigma_E, sigma_I
+    dt, T, seed
+
+initialize r_E[k] and r_I[k]
+
+for each time step:
+    for each cluster k:
+        u_E[k] = h_E[k]
+                 + sum_l W_EE[k,l] * r_E[l]
+                 - sum_l W_EI[k,l] * r_I[l]
+
+        u_I[k] = h_I[k]
+                 + sum_l W_IE[k,l] * r_E[l]
+                 - sum_l W_II[k,l] * r_I[l]
+
+        drift_E[k] = (-r_E[k] + Phi_E(u_E[k])) / tau_E
+        drift_I[k] = (-r_I[k] + Phi_I(u_I[k])) / tau_I
+
+        r_E[k] <- r_E[k] + dt*drift_E[k]
+                  + sqrt(dt)*sigma_E(r_E[k])/sqrt(n_E)*normal()
+        r_I[k] <- r_I[k] + dt*drift_I[k]
+                  + sqrt(dt)*sigma_I(r_I[k])/sqrt(n_I)*normal()
+
+save:
+    r_E, r_I
+    local balance residuals
+    E/I tracking correlations
+    state occupancies and lifetimes
+\end{lstlisting}
+
+The first comparison should change only the E/I-structure parameters relative to the E-only baseline. Retuning many old parameters at the same time makes the mechanism hard to identify.
+
+% ============================================================
+\section{Recipe 7: Fixed Points and Stability}
+\label{app:recipe-fixed-points-stability}
+% ============================================================
+
+Fixed-point analysis turns a simulation regime into a dynamical-systems claim.
+
+\begin{lstlisting}[language=Python,caption={Pseudocode for fixed-point and stability analysis.}]
+inputs:
+    deterministic drift function f(x; theta)
+    candidate initial states
+    numerical solver tolerance
+
+fixed_points = empty list
+
+for each initial state x0:
+    solve f(x; theta) = 0 starting from x0
+    if solution is valid and not already in fixed_points:
+        add solution
+
+for each fixed point x_star:
+    compute Jacobian J = derivative of f at x_star
+    compute eigenvalues lambda
+    classify:
+        stable if max(real(lambda)) < 0
+        saddle if some real parts positive and some negative
+        near-critical if max(real(lambda)) is close to 0
+
+return fixed point table:
+    state pattern
+    rates
+    leading eigenvalue
+    dominant eigenvector interpretation
+\end{lstlisting}
+
+For clustered systems, initialize the solver near no-active, one-active, and multiple-active patterns. Otherwise the solver may miss fixed points with small basins.
+
+% ============================================================
+\section{Recipe 8: Cluster-Size Scaling Test}
+\label{app:recipe-cluster-size-scaling}
+% ============================================================
+
+This is the decisive test for finite-size-driven switching.
+
+\begin{lstlisting}[language=Python,caption={Pseudocode for cluster-size scaling.}]
+inputs:
+    base deterministic parameters theta
+    cluster_sizes = [n1, n2, n3, ...]
+    seeds per size
+
+for each n in cluster_sizes:
+    set noise amplitude proportional to 1/sqrt(n)
+    keep deterministic drift f(x; theta) unchanged
+
+    for each seed:
+        simulate stochastic mesoscopic model
+        detect cluster states with fixed detection rule
+        compute dwell times and within-state variance
+
+    summarize over seeds:
+        mean lifetime
+        median lifetime
+        confidence interval or bootstrap interval
+        within-state variance
+
+plot:
+    log(mean lifetime) versus n
+    within-state variance versus 1/n
+\end{lstlisting}
+
+If microscopic simulations are used, preserving the deterministic drift while changing $n$ is harder because connectivity normalization must be adjusted carefully. Record the normalization protocol.
+
+% ============================================================
+\section{Recipe 9: Phase-Diagram Sweep}
+\label{app:recipe-phase-diagram-sweep}
+% ============================================================
+
+The phase diagram combines deterministic and stochastic classifiers.
+
+\begin{lstlisting}[language=Python,caption={Pseudocode for a phase-diagram sweep.}]
+inputs:
+    axis_1_values
+    axis_2_values
+    base parameters
+    seeds
+    deterministic classifier
+    stochastic classifier
+
+for value_1 in axis_1_values:
+    for value_2 in axis_2_values:
+        theta = update(base parameters, value_1, value_2)
+
+        deterministic_result = analyze_fixed_points(theta)
+        optional_lyapunov = estimate_largest_lyapunov(theta)
+
+        stochastic_summaries = []
+        for seed in seeds:
+            trajectory = simulate_with_noise(theta, seed)
+            summaries = compute_observables(trajectory)
+            stochastic_summaries.append(summaries)
+
+        label = classify_regime(deterministic_result,
+                                optional_lyapunov,
+                                stochastic_summaries)
+
+        store label and scalar overlays
+
+plot categorical labels
+overlay leading eigenvalue, log lifetime, or Fano factor
+attach representative trajectories for selected grid points
+\end{lstlisting}
+
+The classifier should mark ambiguous points explicitly. Ambiguity near bifurcation boundaries is information, not a plotting failure.
+
+% ============================================================
+\section{Recipe 10: Microscopic--Mesoscopic Comparison}
+\label{app:recipe-micro-meso-comparison}
+% ============================================================
+
+The final recipe aligns the microscopic and mesoscopic outputs.
+
+\begin{lstlisting}[language=Python,caption={Pseudocode for microscopic--mesoscopic comparison.}]
+inputs:
+    microscopic spike data and cluster labels
+    mesoscopic rate trajectories
+    common smoothing kernel
+    common state detection rule
+
+from microscopic data:
+    compute r_hat_E[k,t] and r_hat_I[k,t]
+    detect states
+    compute occupancy, lifetimes, Fano factors, autocorrelations
+
+from mesoscopic data:
+    use r_E[k,t] and r_I[k,t]
+    detect states with the same rule
+    compute occupancy, lifetimes, rate autocorrelations
+    optionally sample point-process counts from rates for Fano comparison
+
+build comparison table:
+    observable
+    microscopic value
+    mesoscopic value
+    discrepancy
+    likely explanation
+
+rank discrepancies:
+    transfer-function mismatch
+    coupling mismatch
+    noise-scale mismatch
+    missing slow variable
+    detection artifact
+\end{lstlisting}
+
+The comparison should end with a model revision decision. A mismatch is useful only if it points to the next modification or to a limit of the mesoscopic reduction.

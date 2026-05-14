@@ -1,0 +1,342 @@
+\chapter{Relating Rostami et al. to Litwin-Kumar and Doiron}
+\label{ch:rostami-to-litwin-kumar-doiron}
+
+\textit{Litwin-Kumar and Doiron-style clustered networks and Rostami-style E/I clustered attractor networks belong to the same modeling family: recurrent spiking networks in which clustered connectivity creates discrete, metastable population states. The difference is what is clustered, what the states mean, and how inhibition participates. This comparison identifies which mechanisms should survive the mesoscopic reduction.}
+
+\noindent\textbf{Citation TODO.} Add verified bibliography entries for Litwin-Kumar and Doiron's clustered balanced-network paper and for Rostami et al.\ 2024. The comparison below is intentionally mechanism-level. Exact parameter values, task protocols, and claims about robustness should be checked against the original papers before the coordinator removes this note.
+
+% ============================================================
+\section{Same Family: Clustered Attractor Networks}
+\label{sec:same-family-clustered-attractor-networks}
+% ============================================================
+
+Both models start from a balanced spiking network and add structured recurrence. The unclustered balanced network produces irregular asynchronous spiking, but it does not by itself create long-lived discrete population states. Clustering adds a low-dimensional state structure on top of the irregular microscopic spike trains.
+
+At the mesoscopic level, both models can be written as population dynamics with finite-size noise:
+%
+\begin{equation}
+  \mathrm{d}\vec x
+  =
+  f(\vec x;h,\theta)\,\mathrm{d}t
+  +
+  \frac{1}{\sqrt{N_{\mathrm{eff}}}}
+  B(\vec x;\theta)\,\mathrm{d}\vec W(t).
+  \label{eq:shared-clustered-attractor-form}
+\end{equation}
+%
+$\vec x$ is the cluster-level state, $f$ is the deterministic attractor skeleton, $h$ is external drive, and the final term represents finite-size population fluctuations. The difference between models is mostly hidden in the dimension and structure of $\vec x$ and in the coupling parameters inside $f$.
+
+The common attractor logic is:
+%
+\begin{enumerate}[leftmargin=*]
+  \item recurrent excitation within a cluster creates a tendency to stay active;
+  \item inhibition or competition prevents all clusters from remaining active together;
+  \item finite-size spiking fluctuations cause transitions among attractor-like states;
+  \item external input changes basin depths, occupancy probabilities, and transition rates.
+\end{enumerate}
+
+Thus the shared question is not whether the model is a rate model or a spiking model. It is which mesoscopic variables describe the attractor states and whether finite-size switching is the correct explanation of the observed slow variability.
+
+% ============================================================
+\section{Difference 1: E-Only Versus E/I Clusters}
+\label{sec:difference-e-only-versus-ei-clusters}
+% ============================================================
+
+In the E-only clustered baseline, the natural state is
+%
+\begin{equation}
+  \vec x_{\mathrm{E-only}}
+  =
+  (r_1^E,\ldots,r_Q^E,r_I){}^{\mathsf T}.
+  \label{eq:e-only-state-ch14}
+\end{equation}
+%
+Each excitatory cluster has its own activity variable, while inhibition is often represented as a shared pool. The excitatory coupling matrix is clustered:
+%
+\begin{equation}
+  W_{\alpha\beta}^{EE}
+  =
+  \begin{cases}
+    W_+^{EE}, & \alpha=\beta,\\
+    W_-^{EE}, & \alpha\ne\beta.
+  \end{cases}
+  \label{eq:e-only-clustered-ee}
+\end{equation}
+%
+The diagonal term supports up-states; the shared inhibitory pool mediates competition among clusters.
+
+In an E/I clustered model, the natural state is
+%
+\begin{equation}
+  \vec x_{\mathrm{E/I}}
+  =
+  (r_1^E,\ldots,r_Q^E,r_1^I,\ldots,r_Q^I){}^{\mathsf T}.
+  \label{eq:ei-state-ch14}
+\end{equation}
+%
+Inhibition is no longer only a global suppressive signal. It has cluster identity. A paired E/I state can be active in both components:
+%
+\begin{equation}
+  (r_{\alpha}^{E},r_{\alpha}^{I})
+  \approx
+  (r_U^E,r_U^I).
+  \label{eq:paired-active-state-ch14}
+\end{equation}
+%
+The inhibitory component is part of the attractor state, not merely a background brake.
+
+This difference changes what must be measured. In the E-only model, one mainly measures excitatory cluster rates and shared inhibition. In the E/I model, one must also measure whether each active E cluster recruits its paired I cluster and whether that recruitment is local enough to stabilize the state.
+
+% ============================================================
+\section{Difference 2: Fragile Versus Robust Metastability}
+\label{sec:difference-fragile-versus-robust-metastability}
+% ============================================================
+
+Metastability is useful only in an intermediate regime. Attractors must be stable enough to persist, but not so stable that the network cannot switch. They must also preserve plausible firing rates and irregular spiking.
+
+For an E-only clustered model, the relevant control parameter is often the excitatory clustering strength
+%
+\begin{equation}
+  \rho_E=\frac{W_+^{EE}}{W_-^{EE}}.
+  \label{eq:e-cluster-strength-ratio-ch14}
+\end{equation}
+%
+Increasing $\rho_E$ strengthens cluster up-states. But the same increase can also push rates too high, deepen basins too much, or alter the balance that supports irregular spiking. This is why E-only metastability can be parameter-sensitive.
+
+E/I clustering introduces additional stabilizing axes. A useful schematic parameter vector is
+%
+\begin{equation}
+  \theta_{\mathrm{E/I}}
+  =
+  (W_+^{EE},W_+^{IE},W_+^{EI},W_+^{II},
+   W_-^{EE},W_-^{IE},W_-^{EI},W_-^{II}).
+  \label{eq:ei-parameter-vector-ch14}
+\end{equation}
+%
+The E recurrence $W_+^{EE}$ can support the up-state, while the local E-to-I-to-E loop through $W_+^{IE}$ and $W_+^{EI}$ can control gain and irregularity.
+
+A rigorous robustness claim should be phrased as a parameter-volume statement. Define
+%
+\begin{equation}
+  \mathcal{P}
+  =
+  \{\theta:
+  \text{rates plausible, spiking irregular, lifetimes finite, task input controls occupancy}\}.
+  \label{eq:robust-parameter-region}
+\end{equation}
+%
+The claim that E/I clustering is more robust means that $\mathcal{P}$ occupies a larger or less fine-tuned region in the relevant parameter space. It should not mean that every E/I clustered network is robust.
+
+\noindent\textbf{Citation TODO.} Verify the specific robustness evidence reported by Rostami et al.\ before stating that the E/I model expands the robust parameter regime relative to an E-only architecture. The mathematical argument here explains why such an expansion is plausible.
+
+% ============================================================
+\section{Difference 3: Cognitive/Motor Task Interpretation}
+\label{sec:difference-cognitive-motor-task-interpretation}
+% ============================================================
+
+The Litwin-Kumar and Doiron-style model is primarily a mechanism for slow cortical variability. Cluster states are latent population patterns. Stimuli bias the network into fewer states, which can reduce trial-to-trial variability and produce variability quenching.
+
+The Rostami-style motor-cortex model attaches the same attractor machinery to a behavioral readout. Cluster $\alpha$ is interpreted as a target-related or action-related state. Prior target information biases a set of clusters, and the response signal selects the final target cluster. Reaction time is then linked to how quickly the correct cluster separates from competitors.
+
+The difference can be expressed through the input map. In a generic variability model,
+%
+\begin{equation}
+  h_{\alpha}(t)
+  =
+  h_0 + h_{\mathrm{stim}}(t)s_{\alpha},
+  \label{eq:generic-stimulus-bias-ch14}
+\end{equation}
+%
+where $s_{\alpha}$ says how strongly the stimulus drives cluster $\alpha$. In the motor task,
+%
+\begin{equation}
+  h_{\alpha}(t)
+  =
+  h_0
+  +
+  h_{\mathrm{prior}}(t)\mathbf{1}_{\alpha\in\mathcal{S}}
+  +
+  h_{\mathrm{go}}(t)\mathbf{1}_{\alpha=\alpha_*}.
+  \label{eq:motor-task-bias-ch14}
+\end{equation}
+%
+The second equation contains a candidate set $\mathcal{S}$ and a final target $\alpha_*$. That structure gives the model access to reaction-time predictions, not only neural variability predictions.
+
+This distinction matters for reduction. A mesoscopic model of the motor task must preserve the task-to-cluster input map and the readout. A mesoscopic model of generic variability may not need either.
+
+% ============================================================
+\section{Difference 4: Local Inhibitory Balance}
+\label{sec:difference-local-inhibitory-balance}
+% ============================================================
+
+In the E-only clustered baseline, inhibition can balance the network globally while remaining weakly structured at the cluster level. The shared inhibitory variable responds to total excitatory activity:
+%
+\begin{equation}
+  \tau_I\dot r_I
+  =
+  -r_I
+  +
+  \Phi_I\!\left(h_I+\sum_{\beta=1}^{Q}J^{IE}_{\beta}r_{\beta}^{E}\right).
+  \label{eq:shared-inhibition-ch14}
+\end{equation}
+%
+This equation can regulate the average activity of the excitatory population, but it cannot represent a separate inhibitory partner for each cluster.
+
+In the E/I clustered model, local balance is cluster-indexed:
+%
+\begin{equation}
+  b_{\alpha}^{E}
+  =
+  h_{\alpha}^{E}
+  +
+  \sum_{\beta}W_{\alpha\beta}^{EE}r_{\beta}^{E}
+  -
+  \sum_{\beta}W_{\alpha\beta}^{EI}r_{\beta}^{I}.
+  \label{eq:cluster-indexed-balance-ch14}
+\end{equation}
+%
+The diagonal contribution from $r_{\alpha}^{I}$ can specifically oppose the active E cluster. The off-diagonal contributions from $r_{\beta}^{I}$ can suppress competitors. Thus local balance and cross-cluster competition can be tuned separately.
+
+The operational consequence is that an active state should be described by both its firing rate and its balance structure. Two states with similar $r_{\alpha}^{E}$ can differ in stability and spiking irregularity if one has strong local E/I cancellation and the other is excitation dominated.
+
+% ============================================================
+\section{What Needs to Be Reduced Mesoscopically}
+\label{sec:what-needs-reduced-mesoscopically}
+% ============================================================
+
+The reduction target is not the full microscopic network. It is the explanatory core. For both models, the mesoscopic reduction must preserve the attractor skeleton, finite-size noise, and stimulus bias. For the E/I model, it must also preserve local inhibitory feedback.
+
+A useful reduction checklist is:
+%
+\begin{enumerate}[leftmargin=*]
+  \item \textbf{State variables}: choose $r_{\alpha}^{E}$ only, or paired $(r_{\alpha}^{E},r_{\alpha}^{I})$, depending on whether inhibition is structured.
+  \item \textbf{Transfer functions}: estimate $\Phi_E$ and $\Phi_I$ from the spiking neuron model and operating regime.
+  \item \textbf{Coupling matrices}: map microscopic connection probabilities and weights into effective $W^{XY}_{\alpha\beta}$.
+  \item \textbf{Noise amplitudes}: derive or fit the finite-size scaling matrices $B^E$ and $B^I$.
+  \item \textbf{Synaptic or refractory memory}: include extra variables if filtering, adaptation, or refractoriness changes switching statistics.
+  \item \textbf{Input protocol}: preserve the mapping from stimulus or task condition to cluster drive.
+  \item \textbf{Readout}: include a decoder only when the behavioral predictions require it.
+\end{enumerate}
+
+The generic E/I mesoscopic equations are
+%
+\begin{align}
+  \tau_E\dot{\vec r}^{\,E}
+  &=
+  -\vec r^{\,E}
+  +
+  \Phi_E(\vec h^{\,E}+W^{EE}\vec r^{\,E}-W^{EI}\vec r^{\,I}),
+  \label{eq:ch14-ei-meso-e}\\
+  \tau_I\dot{\vec r}^{\,I}
+  &=
+  -\vec r^{\,I}
+  +
+  \Phi_I(\vec h^{\,I}+W^{IE}\vec r^{\,E}-W^{II}\vec r^{\,I}).
+  \label{eq:ch14-ei-meso-i}
+\end{align}
+%
+These equations are the deterministic skeleton. The stochastic finite-size extension adds terms proportional to ${(n_{\alpha}^{E})}^{-1/2}$ and ${(n_{\alpha}^{I})}^{-1/2}$. If the reduced model cannot reproduce how switching changes with those noise scales, it has not captured the finite-size mechanism.
+
+% ============================================================
+\section{What Observables Should Match Across Models}
+\label{sec:what-observables-should-match-across-models}
+% ============================================================
+
+The models should be compared by observables, not by visual similarity of simulated rasters. The shared observables are:
+%
+\begin{enumerate}[leftmargin=*]
+  \item mean firing rates in spontaneous, delay, and stimulated epochs;
+  \item Fano factors and their stimulus or task dependence;
+  \item single-trial irregularity, such as $\operatorname{CV}$ or $\operatorname{CV2}$;
+  \item active-cluster occupancy probabilities;
+  \item cluster lifetime distributions and transition matrices;
+  \item autocorrelation time scales and low-frequency power;
+  \item pairwise correlations within and across clusters;
+  \item scaling of lifetimes and variability with cluster size;
+  \item response to pulse perturbations or cue changes.
+\end{enumerate}
+
+The Rostami-style model has additional behavioral observables:
+%
+\begin{enumerate}[leftmargin=*]
+  \item reaction-time distributions across target-information conditions;
+  \item probability that the pre-go active state matches the final target;
+  \item dependence of reaction time on pre-go cluster occupancy;
+  \item decoder separation between the chosen target and competitors.
+\end{enumerate}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.35}
+\begin{tabularx}{\textwidth}{@{}l X X@{}}
+  \toprule
+  \textbf{Observable} & \textbf{E-only clustered model} & \textbf{E/I clustered motor model} \\
+  \midrule
+  Cluster state &
+  active E clusters plus shared inhibition &
+  paired E/I cluster states \\
+  Fano factor &
+  latent-state occupancy plus spiking noise &
+  target-state occupancy plus balanced spiking noise \\
+  Irregularity &
+  balanced spiking in a clustered network &
+  local E/I balance inside target-related clusters \\
+  Metastability &
+  finite-size switching among latent states &
+  finite-size switching among action-related states \\
+  Stimulus effect &
+  bias into fewer cluster states &
+  prior and go cues bias candidate and final target states \\
+  Behavior &
+  usually not explicit &
+  reaction-time readout from cluster separation \\
+  \bottomrule
+\end{tabularx}
+\end{center}
+
+The central comparison is therefore mechanistic. If both models reproduce Fano-factor quenching, but only the E/I model preserves irregular spiking while linking cluster occupancy to reaction time, then the E/I architecture explains a richer set of constraints. If the mesoscopic E/I model can reproduce the same constraints with fewer microscopic details, it becomes the right object for the rotation's theory question.
+
+\begin{chaptersummary}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.45}
+\begin{tabularx}{\textwidth}{@{}l X X@{}}
+  \toprule
+  \textbf{Concept} & \textbf{Equation} & \textbf{Key Insight} \\
+  \midrule
+  Shared form &
+  $\mathrm{d}\vec x=f\,\mathrm{d}t+N_{\mathrm{eff}}^{-1/2}B\,\mathrm{d}\vec W$ &
+  Both models combine attractor drift with finite-size fluctuations \\
+  E-only state &
+  $\vec x_{\mathrm{E-only}}=(r_1^E,\ldots,r_Q^E,r_I)$ &
+  Inhibition is often a shared pool \\
+  E/I state &
+  $\vec x_{\mathrm{E/I}}=(\vec r^{\,E},\vec r^{\,I})$ &
+  Inhibition carries cluster identity \\
+  Robustness region &
+  $\theta\in\mathcal{P}_{\mathrm{robust}}$ &
+  Robustness should be measured as parameter volume, not asserted qualitatively \\
+  Task input &
+  $h_{\alpha}=h_0+\Delta h_{\alpha}^{\mathrm{task}}$ &
+  Rostami-style models connect cluster states to target selection \\
+  Local balance &
+  $b_{\alpha}^{E}=h_{\alpha}^{E}+E_{\alpha}^{E}-I_{\alpha}^{E}$ &
+  E/I clustering lets local feedback and cross-cluster competition be separated \\
+  \bottomrule
+\end{tabularx}
+\end{center}
+
+\end{chaptersummary}
+
+\begin{conceptquestions}
+  \item What is the common mesoscopic structure shared by E-only and E/I clustered attractor networks?
+
+  \item Why does adding inhibitory cluster identity change the state vector rather than only changing a parameter?
+
+  \item What would it mean to demonstrate that one architecture has a more robust metastable regime than another?
+
+  \item Why does the motor task require an input map and readout that a generic variability model may not need?
+
+  \item In \eqref{eq:cluster-indexed-balance-ch14}, which terms control local balance and which terms can mediate competition across clusters?
+
+  \item Which observables would convince you that a mesoscopic reduction preserves the same mechanism as the microscopic Rostami-style model?
+\end{conceptquestions}

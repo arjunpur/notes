@@ -1,0 +1,321 @@
+\chapter{Reproducing the Baseline Models}
+\label{ch:reproducing-baselines}
+
+\textit{A rotation project should begin with the smallest simulations that reproduce the qualitative mechanism. For clustered spiking networks, the first target is not a full task model. It is a controlled E-clustered network that shows balanced irregular spiking, cluster up- and down-states, metastable switching, and super-Poisson spike-count variability.}
+
+% ============================================================
+\section{Minimal E-Cluster Microscopic Model}
+\label{sec:minimal-e-cluster-microscopic-model}
+% ============================================================
+
+The minimal microscopic model has three ingredients: excitatory neurons divided into clusters, an inhibitory population that stabilizes the activity, and spiking dynamics with filtered synapses. The goal is to keep enough microscopic detail to see real spike trains while removing task-specific complications.
+
+Let there be $Q$ excitatory clusters. Cluster $k$ contains the set $\mathcal{C}_k$ with size $n_E$, so $N_E=Qn_E$. The inhibitory population contains $N_I$ neurons and is initially unclustered. For neuron $i$, use a leaky integrate-and-fire description,
+%
+\begin{equation}
+  \tau_m \frac{\dd V_i}{\dd t}
+  =
+  -(V_i-\Vrest)
+  +
+  R_m I_i(t),
+  \qquad
+  V_i(t^-)=\Vth \Rightarrow V_i(t^+)=\Vreset .
+  \label{eq:baseline-lif}
+\end{equation}
+%
+$V_i$ is the membrane potential, $\tau_m$ is the membrane time scale, $I_i$ is total synaptic and external current, and the threshold-reset rule turns voltage trajectories into spikes. A refractory interval $\tauref$ prevents immediate re-spiking.
+
+The current can be decomposed as
+%
+\begin{equation}
+  I_i(t)
+  =
+  I_i^{\mathrm{ext}}
+  +
+  \sum_{j\in E} J_{ij}^{E} y_j(t)
+  -
+  \sum_{j\in I} J_{ij}^{I} y_j(t),
+  \qquad
+  \tau_s \dot y_j=-y_j+s_j(t),
+  \label{eq:baseline-synaptic-current}
+\end{equation}
+%
+where $s_j(t)=\sum_m\delta(t-t_j^m)$ is the spike train of neuron $j$ and $y_j$ is its filtered synaptic output. The sign has been pulled out explicitly: $J_{ij}^E$ and $J_{ij}^I$ are nonnegative magnitudes.
+
+Excitatory clustering enters through the connectivity or weight matrix. A minimal probability version is
+%
+\begin{equation}
+  \mathbb{P}(j\to i)
+  =
+  \begin{cases}
+    p_{EE}^{+}, & i,j\in \mathcal{C}_k \ \text{for the same } k,\\
+    p_{EE}^{-}, & i\in\mathcal{C}_k,\ j\in\mathcal{C}_{\ell},\ k\ne \ell,\\
+    p_{ab}, & \text{otherwise for connection type } a\leftarrow b .
+  \end{cases}
+  \label{eq:e-cluster-connection-probabilities}
+\end{equation}
+%
+The superscript $+$ marks within-cluster excitation and the superscript $-$ marks between-cluster excitation. Increasing $p_{EE}^{+}/p_{EE}^{-}$ or the corresponding weight ratio increases the ability of one cluster to amplify its own fluctuations.
+
+This microscopic baseline should be judged by population observables, not by the exact spike sequence of any neuron. The first outputs to save are spike times, cluster membership, binned cluster activities, excitatory and inhibitory population rates, and synaptic current summaries. Those are the quantities that later mesoscopic equations must reproduce.
+
+% ============================================================
+\section{Minimal E-Cluster Mesoscopic Model}
+\label{sec:minimal-e-cluster-mesoscopic-model}
+% ============================================================
+
+The matching mesoscopic model treats each excitatory cluster as one noisy population. Let $r_k(t)$ be the filtered firing rate of excitatory cluster $k$ and let $r_I(t)$ be the filtered rate of the inhibitory pool. A useful starting point is
+%
+\begin{keyequation}[Minimal E-Cluster Mesoscopic Baseline]
+\begin{equation}
+  \tau_E \dot r_k
+  =
+  -r_k
+  +
+  \Phi_E\!\left(
+    h_k
+    +
+    J_{+}r_k
+    +
+    J_{-}\sum_{\ell\ne k} q_{\ell}r_{\ell}
+    -
+    J_{EI} r_I
+  \right)
+  +
+  \frac{\sigma_E(r_k)}{\sqrt{n_E}}\xi_k(t),
+  \label{eq:minimal-e-cluster-mesoscopic}
+\end{equation}
+\begin{equation}
+  \tau_I \dot r_I
+  =
+  -r_I
+  +
+  \Phi_I\!\left(
+    h_I
+    +
+    J_{IE}\sum_{\ell=1}^{Q}q_{\ell}r_{\ell}
+  \right).
+  \label{eq:minimal-shared-inhibition}
+\end{equation}
+\tcblower
+$r_k$ is cluster activity, $J_{+}$ is recurrent excitation within a cluster, $J_{-}$ is between-cluster excitation, $r_I$ is shared inhibition, $q_{\ell}=n_E/N_E$, and the noise amplitude scales with cluster size.
+\end{keyequation}
+
+\noindent The deterministic part encodes the attractor skeleton. The stochastic term encodes the fact that a cluster is a finite set of spiking neurons. If $n_E$ is increased while the deterministic parameters are held fixed, the noise amplitude should shrink like $n_E^{-1/2}$.
+
+The transfer functions $\Phi_E$ and $\Phi_I$ should not be treated as arbitrary decoration. They summarize the input-output behavior of the microscopic spiking populations under fluctuating synaptic drive. A first pass can use a smooth threshold-linear or sigmoid nonlinearity. A better second pass estimates $\Phi$ by injecting stationary input into the microscopic population and measuring the steady firing rate.
+
+The point of the mesoscopic baseline is to create a paired target: the microscopic model tells us what the network does, and \eqref{eq:minimal-e-cluster-mesoscopic} tells us which collective variables might explain it.
+
+% ============================================================
+\section{Parameter Choices from Litwin-Kumar / Tilo Notes}
+\label{sec:parameter-choices-from-lk-tilo-notes}
+% ============================================================
+
+The exact numerical parameter set should be resolved by the final coordinator from the source paper and Tilo's notes. Until that check is done, use parameters as \emph{roles} rather than as memorized constants.
+
+\begin{aside}[Citation TODO]
+Resolve the bibliography key and exact baseline parameters for the Litwin-Kumar--Doiron clustered balanced network and for any Tilo Schwalger notes used in the rotation. Do not turn the provisional ranges below into cited facts without checking the sources.
+\end{aside}
+
+A practical parameter ledger should include:
+%
+\begin{longtable}{@{}p{0.22\textwidth}p{0.34\textwidth}p{0.34\textwidth}@{}}
+\toprule
+\textbf{Parameter} & \textbf{Role in the model} & \textbf{What to verify} \\
+\midrule
+$N_E,N_I$ & Network size and E/I ratio. & Whether the reference simulation uses the same E/I fraction and whether finite-size effects are intentionally strong. \\
+$Q,n_E$ & Number and size of excitatory clusters. & Whether cluster size or cluster number is the controlled scaling variable. \\
+$p_{EE}^{+},p_{EE}^{-}$ or $J_{EE}^{+},J_{EE}^{-}$ & Strength of excitatory clustering. & Whether mean recurrent E input is held fixed while clustering is varied. \\
+$p_{EI},p_{IE},p_{II}$ and weights & Stabilizing inhibitory feedback. & Whether inhibition is strong enough to maintain asynchronous irregular firing outside cluster up-states. \\
+$I^{\mathrm{ext}}$ & Baseline drive. & Whether the unclustered network is balanced and active before clustering is introduced. \\
+$\tau_m,\tau_s,\tauref$ & Single-neuron and synaptic time scales. & Whether slow dynamics come from cluster-state switching rather than slow synapses accidentally inserted into the baseline. \\
+\bottomrule
+\end{longtable}
+
+The safest reproduction order is to tune from simple to structured. First build an unclustered balanced E/I network with realistic rates and irregular spikes. Then introduce clustering while preserving average recurrent excitation as closely as possible. Finally vary cluster strength until up-states and metastable transitions appear.
+
+For the mesoscopic model, begin with dimensionless or normalized parameters that reproduce the qualitative phase portrait: low fixed point, high cluster fixed point, and noise-driven switching. Only after this works should the parameters be mapped back to microscopic synaptic units.
+
+% ============================================================
+\section{Reproducing Bistability}
+\label{sec:reproducing-bistability}
+% ============================================================
+
+Bistability means that a cluster can support both a low-rate down-state and a high-rate up-state under the same external input. In the microscopic model, this appears as a cluster that can remain quiet or active for long periods depending on its recent history. In the mesoscopic model, it appears as multiple stable fixed points.
+
+For a one-cluster reduction with inhibition treated as a fast feedback, write
+%
+\begin{equation}
+  \tau_E \dot r
+  =
+  -r + \Phi_E\!\left(h + K r\right),
+  \label{eq:ch21-one-cluster-bistability}
+\end{equation}
+%
+where $K$ is effective recurrent gain after subtracting inhibitory feedback. A fixed point satisfies
+%
+\begin{equation}
+  r^*=\Phi_E(h+Kr^*).
+  \label{eq:ch21-one-cluster-fixed-point}
+\end{equation}
+%
+The left side is a straight line in $r^*$; the right side is the population input-output curve evaluated at recurrent input. Three intersections usually mean two stable fixed points separated by one unstable fixed point.
+
+The local stability condition is
+%
+\begin{equation}
+  \lambda
+  =
+  \frac{-1+K\Phi_E'(h+Kr^*)}{\tau_E}.
+  \label{eq:ch21-one-cluster-stability}
+\end{equation}
+%
+The fixed point is stable when $\lambda<0$. Term by term: $-1$ is rate relaxation, while $K\Phi_E'$ is recurrent amplification. Bistability becomes possible when recurrent amplification is strong enough to overcome leak over part of the input-output curve, but not so strong that every state runs away.
+
+In simulation, test bistability with controlled initial conditions. Start the same network once with cluster $k$ quiet and once with cluster $k$ transiently stimulated. If the two runs settle into distinct long-lived rates under identical parameters and inputs, the evidence for bistability is stronger than if an up-state merely appears in one noisy trajectory.
+
+% ============================================================
+\section{Reproducing Metastable Switching}
+\label{sec:reproducing-metastable-switching}
+% ============================================================
+
+Metastability is bistability plus transitions. The deterministic skeleton has attractor-like cluster states, but finite-size fluctuations push the network between them. In a microscopic simulation, a switch is a collective event: one cluster's rate crosses into an up-state or falls out of it, and the inhibitory pool responds.
+
+Define a smoothed cluster activity
+%
+\begin{equation}
+  \widehat r_k(t)
+  =
+  \frac{1}{n_E}
+  \sum_{i\in\mathcal{C}_k}
+  \int_0^t \kappa(t-t')s_i(t')\,\dd t',
+  \label{eq:smoothed-cluster-activity-for-detection}
+\end{equation}
+%
+where $\kappa$ is a causal or symmetric smoothing kernel. A cluster-state indicator can then be defined by a threshold with hysteresis,
+%
+\begin{equation}
+  m_k(t)=
+  \begin{cases}
+    1, & \widehat r_k(t)>\theta_{\mathrm{on}},\\
+    0, & \widehat r_k(t)<\theta_{\mathrm{off}},\\
+    m_k(t^-), & \theta_{\mathrm{off}}\le \widehat r_k(t)\le \theta_{\mathrm{on}}.
+  \end{cases}
+  \label{eq:cluster-state-hysteresis}
+\end{equation}
+%
+Hysteresis prevents one noisy threshold crossing from being counted as many state transitions. The thresholds should be chosen from the valley between low- and high-rate modes, not tuned separately for each condition.
+
+The strongest finite-size test is to repeat the simulation at several cluster sizes while preserving the deterministic mean input. If switching is noise-driven, mean lifetimes should increase as cluster size increases:
+%
+\begin{equation}
+  \log \E[L_k]
+  \approx
+  a + n_E S,
+  \qquad
+  S>0,
+  \label{eq:lifetime-size-check}
+\end{equation}
+%
+away from bifurcation boundaries. A flat lifetime curve suggests either deterministic wandering, parameter retuning across sizes, or a detection artifact.
+
+The learner should save transition-triggered averages of source cluster rate, target cluster rate, and inhibition. They reveal whether switches look like brief escapes across a boundary, slow drifts caused by adaptation, or synchronized network events.
+
+% ============================================================
+\section{Reproducing Super-Poisson Variability}
+\label{sec:reproducing-super-poisson-variability}
+% ============================================================
+
+Clustered networks produce super-Poisson spike-count variability when slow state fluctuations modulate spike rates across trials or time windows. The key identity is easiest for a conditionally Poisson count. Let $\Lambda_T$ be the integrated rate over a counting window,
+%
+\begin{equation}
+  \Lambda_T=\int_0^T \lambda(t)\,\dd t .
+  \label{eq:integrated-latent-rate}
+\end{equation}
+%
+If $N_T\mid \Lambda_T\sim\mathrm{Poisson}(\Lambda_T)$, then
+%
+\begin{keyequation}[Fano Factor from Slow Rate Fluctuations]
+\begin{equation}
+  \Var[N_T]
+  =
+  \E[\Lambda_T]
+  +
+  \Var[\Lambda_T],
+  \qquad
+  F(T)
+  =
+  1+\frac{\Var[\Lambda_T]}{\E[\Lambda_T]} .
+  \label{eq:fano-latent-rate-decomposition}
+\end{equation}
+\tcblower
+The first term is ordinary point-process variance. The second term is trial-to-trial or window-to-window variability in the latent rate caused by cluster-state fluctuations.
+\end{keyequation}
+
+\noindent A clustered network can therefore have irregular spikes within each state and additional slow variability across states. These are different measurements. CV or local CV asks about interspike interval irregularity. The Fano factor at long windows asks whether the expected count itself changes across trials.
+
+The baseline reproduction should report $F(T)$ for several window sizes. Short windows mainly measure fast spiking irregularity. Long windows include cluster-state occupancy. A successful E-clustered baseline should show that the super-Poisson component grows with the time scale over which clusters remain in up- or down-states.
+
+Stimulus effects should be tested later by adding a simple input bias that reduces the number of accessible cluster states. The expected signature is reduced slow count variability without necessarily making single-neuron spike trains regular.
+
+% ============================================================
+\section{Sanity Checks}
+\label{sec:baseline-sanity-checks}
+% ============================================================
+
+The first reproduction should pass simple checks before any theory claim is trusted.
+
+\begin{enumerate}[leftmargin=*]
+  \item \textbf{Unclustered baseline.} With $p_{EE}^{+}=p_{EE}^{-}$ or $J_{EE}^{+}=J_{EE}^{-}$, the network should show balanced asynchronous irregular activity rather than persistent cluster up-states.
+  \item \textbf{E/I cancellation.} Excitatory and inhibitory currents should be large compared with their net difference in the balanced regime. If both currents are small, the model is not testing balance.
+  \item \textbf{Rate scale.} Mean rates should remain in a plausible active range and should not depend on a few pathological neurons.
+  \item \textbf{Spike irregularity.} ISI CV or local CV should remain near the intended irregular regime. Metastability should not be a disguised synchronous burst rhythm.
+  \item \textbf{Connectivity normalization.} Changing cluster strength should not accidentally change total mean excitatory input unless that is the intended sweep.
+  \item \textbf{Detection robustness.} Cluster lifetimes and active-cluster counts should be qualitatively stable under modest changes in smoothing width and thresholds.
+  \item \textbf{Seed robustness.} The qualitative regime should not depend on one lucky random seed.
+\end{enumerate}
+
+The corresponding mesoscopic sanity checks are fixed-point existence, local stability, nonnegative rates, reasonable noise scale, and agreement between deterministic predictions and long-run state occupancy when noise is small.
+
+% ============================================================
+\section{Expected Failure Modes}
+\label{sec:baseline-expected-failure-modes}
+% ============================================================
+
+Several failures are informative because they identify which mechanism is missing.
+
+If the network is silent, baseline drive or recurrent excitation is too weak, or inhibition is too strong. If the network runs away, recurrent excitation is too strong, inhibitory feedback is too slow, or the transfer function lacks saturation. If the network oscillates synchronously, the E/I loop may be creating a rhythm rather than asynchronous metastability.
+
+If clusters do not form up-states, within-cluster gain is too weak or the background balanced state is too noisy to preserve a local attractor. If clusters lock permanently into one state, finite-size noise is too small, barriers are too high, or adaptation-like slow variables are absent from a model that needs them. If every cluster switches together, shared input or global inhibition dominates cluster-specific fluctuations.
+
+The most subtle failure is false metastability. A smoothed noisy rate can look like state switching even when the underlying distribution is unimodal. Check this by plotting the distribution of $\widehat r_k(t)$, fitting low/high modes only when they are visible, and comparing detected state lifetimes against surrogate data with matched autocorrelation but no discrete state structure.
+
+The practical implication is simple: reproduce mechanisms in stages. A failed full model is hard to diagnose. A failed unclustered balance check, bistability check, or finite-size scaling check points to a specific missing ingredient.
+
+\begin{chaptersummary}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.45}
+\begin{tabularx}{\textwidth}{@{}l X X@{}}
+  \toprule
+  \textbf{Target} & \textbf{What to compute} & \textbf{Pass criterion} \\
+  \midrule
+  Balanced baseline & E/I currents, rates, ISI CV & Active irregular state without clusters \\
+  Bistability & Fixed points and stimulated/unstimulated runs & Low and high cluster states coexist \\
+  Metastability & Cluster lifetime distribution & Long dwell times with brief transitions \\
+  Finite-size mechanism & Lifetime versus cluster size & Lifetimes grow as noise shrinks \\
+  Super-Poisson variability & $F(T)$ across windows & Long-window Fano factor exceeds Poisson baseline \\
+  Robustness & Seeds, thresholds, smoothing widths & Qualitative conclusions persist \\
+  \bottomrule
+\end{tabularx}
+\end{center}
+
+\end{chaptersummary}
+
+\begin{conceptquestions}
+  \item Why is it useful to reproduce the unclustered balanced network before adding excitatory clusters?
+  \item In \cref{eq:ch21-one-cluster-stability}, what changes when within-cluster recurrent gain increases?
+  \item How would you distinguish true discrete cluster-state switching from threshold crossings of a unimodal noisy rate?
+  \item Why can the Fano factor be super-Poisson even when spike trains within each state remain locally irregular but not bursty?
+\end{conceptquestions}

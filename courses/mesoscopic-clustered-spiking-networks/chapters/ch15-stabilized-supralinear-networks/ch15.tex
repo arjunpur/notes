@@ -1,0 +1,456 @@
+\chapter{Stabilized Supralinear Networks}
+\label{ch:stabilized-supralinear-networks}
+
+\textit{The stabilized supralinear network, or SSN, is a rate-level theory of cortical normalization, gain control, and variability quenching. Its defining move is to combine a supralinear input-output function with recurrent inhibition strong enough to stabilize the high-gain regime. This chapter is a side branch for the rotation: it introduces the SSN as a clean theory of stimulus-dependent variability, then marks what changes when the rate or Poisson idealization is replaced by generalized integrate-and-fire neurons.}
+
+\noindent\textbf{Citation TODO.} Add verified bibliography entries for the original SSN work, for Hennequin/Miller-style stochastic SSN variability-quenching analyses, and for any Tilo-specific spiking SSN notes used by the rotation. The equations below state the standard mechanism-level model and deliberately avoid paper-specific parameter claims.
+
+\noindent\textbf{Learning objectives.} After this chapter, the reader should be able to write the SSN power-law transfer function, explain how inhibition stabilizes supralinear excitation, linearize an E/I SSN around an operating point, and say why stochastic SSNs can quench variability after stimulus onset.
+
+\noindent\textbf{Notation.} The population rate vector is $\vec r=(r_E,r_I)^{\mathsf T}$ for a two-population model. The net input is $\vec u=\vec h+\mat W\vec r$. The gain matrix is $\mat G=\diag(\Phi'_E(u_E),\Phi'_I(u_I))$. The linearized effective connectivity is $\mat G\mat W$.
+
+% ============================================================
+\section{The Original SSN Idea}
+\label{sec:original-ssn-idea}
+% ============================================================
+
+The SSN starts from a simple observation about cortical responses. A small increase in input can produce more than a proportional increase in firing rate when the neuron or local population is near threshold. That is a supralinear response. If recurrent excitation amplifies this regime without restraint, the network is unstable. If recurrent inhibition grows with the response and cancels the dangerous amplification, the same circuit can be both sensitive and stable.
+
+The minimal single-population nonlinearity is
+%
+\begin{equation}
+  r
+  =
+  \Phi(u)
+  =
+  k[u]_{+}^{n},
+  \qquad
+  n>1,
+  \qquad
+  [u]_{+}=\max(u,0).
+  \label{eq:ssn-power-law-transfer}
+\end{equation}
+%
+The variable $u$ is net input, $k$ sets the response scale, and $n$ is the supralinear exponent. Increasing $u$ raises the rate and also raises the local gain
+%
+\begin{equation}
+  \Phi'(u)
+  =
+  kn[u]_{+}^{n-1}
+  \qquad (u>0).
+  \label{eq:ssn-gain-power-law}
+\end{equation}
+%
+The gain is small near zero input and larger at higher drive. This state-dependent gain is the engine of the SSN.
+
+In a recurrent network, net input is not just external drive. It contains feedback:
+%
+\begin{equation}
+  \tau \dot{\vec r}
+  =
+  -\vec r
+  +
+  \Phi(\vec h+\mat W\vec r),
+  \label{eq:ssn-recurrent-rate}
+\end{equation}
+%
+where $\Phi$ acts componentwise. The vector $\vec h$ is external input and $\mat W$ contains recurrent excitation and inhibition. The SSN question is: when does the network use large gain for computation without letting recurrent excitation run away?
+
+For this course, the SSN is useful because it offers a second route to variability quenching. Clustered attractor networks reduce variability by changing the occupancy of slow metastable states. SSNs can reduce variability by changing the local linear response of a high-gain E/I circuit.
+
+% ============================================================
+\section{Power-Law Input-Output Functions}
+\label{sec:ssn-power-law-input-output-functions}
+% ============================================================
+
+The power law in \eqref{eq:ssn-power-law-transfer} is not meant to be a complete biophysical neuron model. It is a local description of an operating range. Its main mathematical feature is that the slope increases with input:
+%
+\begin{equation}
+  g(u)
+  =
+  \frac{\dd \Phi}{\dd u}
+  =
+  knu^{n-1}
+  \qquad (u>0).
+  \label{eq:ssn-local-gain}
+\end{equation}
+%
+The number $g(u)$ converts a small input perturbation $\delta u$ into a rate perturbation $\delta r \approx g(u)\delta u$. A larger $g$ means the population is more sensitive.
+
+The exponent $n$ controls how quickly gain rises. If $n=1$, the transfer is linear above threshold and there is no supralinear regime. If $n>1$, gain grows with the operating point. This is why a stimulus can change not only the mean response but also the circuit's stability and variability.
+
+A two-population SSN uses separate nonlinearities:
+%
+\begin{equation}
+  \Phi_E(u_E)=k_E[u_E]_{+}^{n_E},
+  \qquad
+  \Phi_I(u_I)=k_I[u_I]_{+}^{n_I}.
+  \label{eq:ssn-two-transfer-functions}
+\end{equation}
+%
+The constants need not be identical. What matters for the mechanism is that at least one population, usually the excitatory population, enters a high-gain supralinear regime and that inhibitory feedback is recruited strongly enough to stabilize it.
+
+The learner should treat the power law as an input-output approximation. In a spiking SSN, the same object must be replaced by a transfer function derived or fitted from the generalized integrate-and-fire neuron under fluctuating synaptic input.
+
+% ============================================================
+\section{Supralinear Response at Weak Input}
+\label{sec:supralinear-response-weak-input}
+% ============================================================
+
+Weak input does not mean weak gain in every sense. It means that the operating point is near the lower part of the power-law curve, where increases in drive can move the population into a steeper region. For a small external perturbation $\delta h$, the first-order response is
+%
+\begin{equation}
+  \delta r
+  \approx
+  \Phi'(u_0)\delta h.
+  \label{eq:ssn-small-signal-response}
+\end{equation}
+%
+As $u_0$ rises, $\Phi'(u_0)$ rises. Thus the same physical input perturbation can have a larger effect when the population is already somewhat activated.
+
+In a recurrent excitatory circuit, this creates positive feedback. For a one-population excitatory model
+%
+\begin{equation}
+  \tau\dot r
+  =
+  -r+\Phi(h+w r),
+  \label{eq:ssn-one-pop-excitatory}
+\end{equation}
+%
+the linearized dynamics around a fixed point are
+%
+\begin{equation}
+  \tau\delta\dot r
+  =
+  \left[-1+\Phi'(u_0)w\right]\delta r.
+  \label{eq:ssn-one-pop-stability}
+\end{equation}
+%
+The fixed point is locally stable only if $\Phi'(u_0)w<1$. As input grows, the gain $\Phi'(u_0)$ can cross this threshold. Pure recurrent excitation therefore cannot safely exploit large supralinear gain over a broad range.
+
+The SSN solution is not to remove supralinearity. It is to place supralinear excitation inside an E/I circuit whose inhibitory feedback grows with drive. Sensitivity then comes from local gain, while stability comes from network feedback.
+
+% ============================================================
+\section{Stabilization by Inhibition at Strong Input}
+\label{sec:stabilization-by-inhibition-strong-input}
+% ============================================================
+
+For two populations, write the net inputs as
+%
+\begin{align}
+  u_E
+  &=
+  h_E+w_{EE}r_E-w_{EI}r_I,
+  \label{eq:ssn-e-input}\\
+  u_I
+  &=
+  h_I+w_{IE}r_E-w_{II}r_I.
+  \label{eq:ssn-i-input}
+\end{align}
+%
+The $w_{XY}$ are positive magnitudes. The minus signs mark inhibitory input. The rate dynamics are
+%
+\begin{align}
+  \tau_E\dot r_E
+  &=
+  -r_E+\Phi_E(u_E),
+  \label{eq:ssn-e-rate}\\
+  \tau_I\dot r_I
+  &=
+  -r_I+\Phi_I(u_I).
+  \label{eq:ssn-i-rate}
+\end{align}
+%
+Excitatory recurrence $w_{EE}r_E$ amplifies activity. The E-to-I-to-E loop, $r_E \to r_I \to -u_E$, opposes that amplification.
+
+The stabilizing idea can be seen by asking what happens when $r_E$ rises. The direct effect is positive: $u_E$ increases through $w_{EE}r_E$. The indirect effect is negative: $u_I$ increases through $w_{IE}r_E$, which raises $r_I$, which lowers $u_E$ through $w_{EI}r_I$. At high input, inhibitory gain can be large, so this indirect path can dominate the direct path.
+
+A useful mental model is that inhibition turns strong external drive into a change in the balance point rather than into runaway activity. The network may have high rates and high local gain, but perturbations are pulled back because the inhibitory population reacts strongly.
+
+% ============================================================
+\section{Two-Population E/I SSN}
+\label{sec:two-population-ei-ssn}
+% ============================================================
+
+The two-population SSN is the smallest model that contains the stabilization mechanism. In vector form,
+%
+\begin{keyequation}[Two-Population SSN]
+\begin{equation}
+  \mat T\dot{\vec r}
+  =
+  -\vec r
+  +
+  \Phi(\vec h+\mat W\vec r),
+  \qquad
+  \mat T=\diag(\tau_E,\tau_I),
+  \label{eq:two-population-ssn}
+\end{equation}
+\tcblower
+$\vec r=(r_E,r_I)^{\mathsf T}$ is the rate vector, $\vec h$ is external drive, $\mat W$ contains signed recurrent couplings, and $\Phi$ is the componentwise power-law nonlinearity.
+\end{keyequation}
+%
+One convenient signed coupling matrix is
+%
+\begin{equation}
+  \mat W
+  =
+  \begin{pmatrix}
+    w_{EE} & -w_{EI}\\
+    w_{IE} & -w_{II}
+  \end{pmatrix}.
+  \label{eq:ssn-signed-coupling}
+\end{equation}
+%
+The first row gives input to the E population. The second row gives input to the I population. Columns identify presynaptic populations.
+
+Fixed points satisfy
+%
+\begin{equation}
+  \vec r^*
+  =
+  \Phi(\vec h+\mat W\vec r^*).
+  \label{eq:ssn-fixed-point}
+\end{equation}
+%
+This is a self-consistency equation. The left side is the rate that the network actually expresses. The right side is the rate predicted by the transfer functions given the recurrent input produced by those same rates.
+
+The SSN is not defined by a single parameter setting. It is a regime: the transfer functions are supralinear, recurrent excitation is strong enough to matter, and inhibitory feedback makes the relevant fixed points stable.
+
+% ============================================================
+\section{Linearization and Effective Connectivity}
+\label{sec:ssn-linearization-effective-connectivity}
+% ============================================================
+
+Linearization tells us how small perturbations behave around an operating point. Let $\vec r^*$ be a fixed point and define $\delta\vec r=\vec r-\vec r^*$ and $\delta\vec h=\vec h-\vec h^*$. The gain matrix is
+%
+\begin{equation}
+  \mat G
+  =
+  \diag
+  \left(
+    \Phi'_E(u_E^*),
+    \Phi'_I(u_I^*)
+  \right),
+  \qquad
+  \vec u^*=\vec h^*+\mat W\vec r^*.
+  \label{eq:ssn-gain-matrix}
+\end{equation}
+%
+To first order,
+%
+\begin{equation}
+  \mat T\,\delta\dot{\vec r}
+  =
+  \left(-\mat I+\mat G\mat W\right)\delta\vec r
+  +
+  \mat G\,\delta\vec h.
+  \label{eq:ssn-linearized-dynamics}
+\end{equation}
+%
+The matrix $\mat G\mat W$ is the effective connectivity. It is not the anatomical coupling alone. It is anatomical coupling multiplied by the current gain of the postsynaptic population.
+
+Local stability is determined by
+%
+\begin{equation}
+  \mat L
+  =
+  \mat T^{-1}\left(-\mat I+\mat G\mat W\right).
+  \label{eq:ssn-linear-operator}
+\end{equation}
+%
+All eigenvalues of $\mat L$ must have negative real part. A stimulus changes $\vec u^*$, which changes $\mat G$, which changes $\mat L$. Therefore stimulus onset can change the covariance of fluctuations even if the external noise source itself is unchanged.
+
+The steady linear response to a constant input perturbation is
+%
+\begin{equation}
+  \delta\vec r_{\infty}
+  =
+  \left(\mat I-\mat G\mat W\right)^{-1}
+  \mat G\,\delta\vec h,
+  \label{eq:ssn-steady-linear-response}
+\end{equation}
+%
+provided the inverse exists and the operating point is stable. The inverse is the recurrent amplification or suppression operator. Variability quenching occurs when the stimulus moves the network to an operating point where this operator transmits spontaneous fluctuations less strongly in the measured directions.
+
+% ============================================================
+\section{Stimulus-Induced Variability Quenching in SSNs}
+\label{sec:ssn-stimulus-induced-variability-quenching}
+% ============================================================
+
+Variability quenching means that trial-to-trial variability decreases after stimulus onset. In an SSN, this can happen because the stimulus changes the circuit's effective linear dynamics. Consider the stochastic linear approximation
+%
+\begin{equation}
+  \dd\delta\vec r
+  =
+  \mat L\,\delta\vec r\,\dd t
+  +
+  \mat B\,\dd\vec W_t,
+  \label{eq:ssn-stochastic-linear-approx}
+\end{equation}
+%
+where $\mat L$ is the operating-point linear operator and $\mat B$ sets the noise input. The stationary covariance $\mat C=\E[\delta\vec r\,\delta\vec r^{\mathsf T}]$ solves the Lyapunov equation
+%
+\begin{equation}
+  \mat L\mat C+\mat C\mat L^{\mathsf T}
+  +
+  \mat B\mat B^{\mathsf T}
+  =
+  \mat 0.
+  \label{eq:ssn-lyapunov-covariance}
+\end{equation}
+%
+The drift matrix $\mat L$ determines how quickly fluctuations decay and which directions are amplified. The noise matrix $\mat B$ determines which directions are driven. A stimulus can reduce measured covariance by making the eigenvalues of $\mat L$ more negative or by rotating the amplified directions away from the readout.
+
+This is different from saying that all noise decreases. The external drive may add input variance, and spiking may become more intense. Quenching refers to a measured output covariance, such as spike-count covariance or rate covariance across trials. A stabilized high-gain inhibitory regime can reduce that output covariance even when the circuit is highly active.
+
+For comparison with clustered networks, the learner should ask whether quenching is caused by a change in local linear response or by a change in the probability of occupying discrete cluster states. Both mechanisms can lower Fano factors, but they make different predictions under population-size scaling and perturbation tests.
+
+% ============================================================
+\section{Hennequin / Miller Stochastic SSN Picture}
+\label{sec:hennequin-miller-stochastic-ssn-picture}
+% ============================================================
+
+The Hennequin/Miller-style stochastic SSN picture can be summarized as follows. Spontaneous cortical activity is represented as fluctuations around an E/I operating point. Stimulus onset shifts the operating point. Because SSN gain is state-dependent, the shift changes the effective connectivity and therefore the covariance of fluctuations.
+
+A compact schematic model is
+%
+\begin{equation}
+  \mat T\dot{\vec r}
+  =
+  -\vec r+\Phi(\vec h(t)+\mat W\vec r)
+  +
+  \vec \eta(t),
+  \label{eq:stochastic-ssn-schematic}
+\end{equation}
+%
+where $\vec \eta(t)$ is a zero-mean fluctuation. Linearizing before and after stimulus onset gives two different operators:
+%
+\begin{equation}
+  \mat L_{\mathrm{spont}}
+  =
+  \mat T^{-1}(-\mat I+\mat G_{\mathrm{spont}}\mat W),
+  \qquad
+  \mat L_{\mathrm{stim}}
+  =
+  \mat T^{-1}(-\mat I+\mat G_{\mathrm{stim}}\mat W).
+  \label{eq:ssn-two-linear-operators}
+\end{equation}
+%
+The quenching claim is that the stimulus-induced operator damps the relevant spontaneous covariance more strongly:
+%
+\begin{equation}
+  \operatorname{tr}\mat C_{\mathrm{stim}}
+  <
+  \operatorname{tr}\mat C_{\mathrm{spont}}
+  \label{eq:ssn-covariance-quench}
+\end{equation}
+%
+for the population variables or readout being measured.
+
+\noindent\textbf{Citation TODO.} Verify the exact formulation used in the intended Hennequin/Miller source before finalizing this section. In particular, check whether the noise is modeled as external input noise, internally generated rate noise, spiking noise, or a combination, and whether the analysis is based on full nonlinear simulations or linear covariance equations.
+
+% ============================================================
+\section{Why Poisson Neurons Are Mathematically Convenient}
+\label{sec:why-poisson-neurons-convenient-ssn}
+% ============================================================
+
+Poisson spiking is mathematically convenient because the firing rate is both the mean and the variance scale of spike counts. If neuron $i$ has conditional intensity $\lambda_i(t)$, then in a small bin $\Delta t$,
+%
+\begin{equation}
+  N_i(t,\Delta t)\mid \lambda_i(t)
+  \sim
+  \operatorname{Poisson}(\lambda_i(t)\Delta t).
+  \label{eq:ssn-poisson-bin}
+\end{equation}
+%
+Thus
+%
+\begin{equation}
+  \E[N_i\mid \lambda_i]=\lambda_i\Delta t,
+  \qquad
+  \Var[N_i\mid \lambda_i]=\lambda_i\Delta t.
+  \label{eq:ssn-poisson-mean-variance}
+\end{equation}
+%
+The same scalar $\lambda_i$ controls expected spikes and conditional count noise.
+
+This simplicity helps at several levels. A rate equation can be interpreted as the mean of many conditionally independent Poisson neurons. A finite-size population noise term has a natural amplitude proportional to $\sqrt{r/N}$. A doubly stochastic Poisson model yields a clean Fano factor decomposition into conditional spiking noise plus rate variability.
+
+The price is that Poisson neurons have no refractory memory unless it is added explicitly. They do not naturally produce sub-Poisson renewal statistics, adaptation-dependent history effects, or voltage-dependent conductance effects. Those omissions are acceptable for a clean stochastic SSN calculation, but they become important if the rotation asks how a spiking SSN with GIF neurons differs from the rate/Poisson idealization.
+
+% ============================================================
+\section{What Changes When Replacing Poisson/Rate Units with GIF Neurons?}
+\label{sec:ssn-replacing-poisson-rate-with-gif}
+% ============================================================
+
+A generalized integrate-and-fire neuron replaces the instantaneous Poisson rate by voltage and history variables. A schematic GIF model is
+%
+\begin{align}
+  C\dot V_i
+  &=
+  -g_L(V_i-E_L)
+  +
+  I_i^{\mathrm{syn}}(t)
+  -
+  a_i(t),
+  \label{eq:gif-voltage-ch15}\\
+  \lambda_i(t)
+  &=
+  \lambda_0
+  \exp\!\left(
+    \frac{V_i(t)-\vartheta_i(t)}{\Delta V}
+  \right).
+  \label{eq:gif-hazard-ch15}
+\end{align}
+%
+$V_i$ is membrane voltage, $a_i$ is an adaptation or after-spike current, $\vartheta_i$ is a dynamic threshold, and $\lambda_i$ is an escape-noise hazard. Spikes reset voltage and update the history variables.
+
+The population transfer function is no longer a primitive power law. It is an emergent object:
+%
+\begin{equation}
+  r
+  =
+  \Phi_{\mathrm{GIF}}(\mu,\sigma,\text{history parameters}),
+  \label{eq:gif-transfer-emergent}
+\end{equation}
+%
+where $\mu$ and $\sigma$ summarize the mean and fluctuations of synaptic input. To build a spiking SSN, one must tune or fit the GIF model so that $\Phi_{\mathrm{GIF}}$ approximates the desired supralinear power law over the relevant operating range.
+
+Finite-size noise also changes. Refractoriness and adaptation make spike counts less conditionally Poisson at short time scales. Synaptic filtering and voltage memory color the noise. Population equations may need age structure, refractory densities, or additional adaptation variables rather than a single Markovian rate variable.
+
+This is why the spiking SSN is a genuine side project. It keeps the SSN's stabilization question but replaces the convenient rate nonlinearity by a mesoscopic reduction of biophysical spiking dynamics.
+
+\begin{chaptersummary}
+\begin{center}
+\renewcommand{\arraystretch}{1.5}
+\begin{tabularx}{\textwidth}{@{}l X X@{}}
+  \toprule
+  \textbf{Object} & \textbf{Expression} & \textbf{Role} \\
+  \midrule
+  Power-law transfer &
+  $\Phi(u)=k[u]_{+}^{n}$ &
+  Makes gain increase with input when $n>1$ \\
+  Gain matrix &
+  $\mat G=\diag(\Phi'_E,\Phi'_I)$ &
+  Converts anatomical coupling into effective connectivity \\
+  Linear operator &
+  $\mat L=\mat T^{-1}(-\mat I+\mat G\mat W)$ &
+  Determines stability and covariance decay \\
+  Stochastic covariance &
+  $\mat L\mat C+\mat C\mat L^{\mathsf T}+\mat B\mat B^{\mathsf T}=0$ &
+  Links operating point to variability quenching \\
+  GIF replacement &
+  $\Phi_{\mathrm{GIF}}(\mu,\sigma,\text{history})$ &
+  Turns the SSN nonlinearity into a fitted or derived spiking transfer function \\
+  \bottomrule
+\end{tabularx}
+\end{center}
+\end{chaptersummary}
+
+\begin{conceptquestions}
+  \item Why does recurrent excitation become dangerous when the transfer-function gain increases with input?
+  \item In \eqref{eq:ssn-linearized-dynamics}, which object is anatomical and which object is operating-point dependent?
+  \item How can stimulus onset reduce output covariance without reducing every source of input noise?
+  \item What assumptions make Poisson neurons convenient for finite-size stochastic equations?
+  \item Which extra state variables might a GIF-based SSN need beyond $r_E$ and $r_I$?
+\end{conceptquestions}

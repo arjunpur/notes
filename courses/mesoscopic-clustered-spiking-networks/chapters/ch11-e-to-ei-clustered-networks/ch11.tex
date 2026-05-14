@@ -1,0 +1,442 @@
+\chapter{From E-Clustered to E/I-Clustered Networks}
+\label{ch:e-to-ei-clustered-networks}
+
+\textit{Excitatory clustering creates metastable attractor-like states, but it leaves inhibition as a global suppressive pool. E/I clustering adds structured inhibitory partners to the clusters. The main mathematical change is that each cluster now has both an excitatory activity and an inhibitory activity, so local balance can shape the stability, irregularity, and robustness of up-states.}
+
+% ============================================================
+\section{Why Add Inhibitory Clusters?}
+\label{sec:why-add-inhibitory-clusters}
+% ============================================================
+
+In an E-clustered network, an active excitatory cluster drives a shared inhibitory pool. That pool sends broad inhibition back to all excitatory clusters. This mechanism creates competition, but it also couples several effects that one may want to vary separately: the depth of an excitatory up-state, the amount of inhibition inside the active cluster, the suppression of inactive clusters, and the irregularity of single-neuron spiking.
+
+Adding inhibitory clusters introduces local inhibitory partners. Cluster $\alpha$ is no longer only an excitatory population $\mathcal{C}_{\alpha}^{E}$; it also has an inhibitory population $\mathcal{C}_{\alpha}^{I}$. The mesoscopic state becomes
+%
+\begin{equation}
+  \vec z(t)
+  =
+  \bigl(
+    r_1^E,\ldots,r_Q^E,
+    r_1^I,\ldots,r_Q^I
+  \bigr){}^{\mathsf T}.
+  \label{eq:ei-state-vector}
+\end{equation}
+%
+$r_{\alpha}^{E}$ measures excitatory output of cluster $\alpha$. $r_{\alpha}^{I}$ measures inhibitory output of the paired inhibitory population. Varying $r_{\alpha}^{I}$ changes the local inhibitory feedback onto the same cluster and the inhibition sent to other clusters.
+
+The biological and theoretical motivation is not that every inhibitory neuron must belong to a perfect one-to-one cluster. The motivation is that structured inhibition gives the model another controlled axis: local balance can be tuned separately from global competition.
+
+% ============================================================
+\section{Blanket Inhibition Versus Structured Inhibition}
+\label{sec:blanket-versus-structured-inhibition}
+% ============================================================
+
+Blanket inhibition uses one inhibitory rate $r_I$:
+%
+\begin{equation}
+  u_{\alpha}^{E}
+  =
+  h_{\alpha}^{E}
+  +
+  \sum_{\beta}J_{\alpha\beta}^{EE}r_{\beta}^{E}
+  -
+  J^{EI}r_I .
+  \label{eq:blanket-inhibition-input}
+\end{equation}
+%
+The same inhibitory signal reaches every excitatory cluster. It can suppress activity, but it cannot say which cluster should receive stronger local feedback except through differences in excitatory drive to the shared pool.
+
+Structured inhibition replaces the scalar $r_I$ with a vector $\vec r^{I}$. The excitatory input becomes
+%
+\begin{equation}
+  u_{\alpha}^{E}
+  =
+  h_{\alpha}^{E}
+  +
+  \sum_{\beta=1}^{Q}W_{\alpha\beta}^{EE}r_{\beta}^{E}
+  -
+  \sum_{\beta=1}^{Q}W_{\alpha\beta}^{EI}r_{\beta}^{I}.
+  \label{eq:structured-inhibition-input}
+\end{equation}
+%
+$W_{\alpha\beta}^{EI}$ is the strength of inhibition from inhibitory cluster $\beta$ onto excitatory cluster $\alpha$. If $W_{\alpha\alpha}^{EI}$ is large, inhibition is local: an active E cluster recruits an I partner that pushes back mostly on the same pair. If off-diagonal $W_{\alpha\beta}^{EI}$ is large, inhibition is competitive across clusters.
+
+The modeling question changes from ``how strong is inhibition?'' to ``where does inhibition go?'' That spatial or cluster-index structure is what E/I clustering adds.
+
+% ============================================================
+\section{Local E/I Balance Inside a Cluster}
+\label{sec:local-ei-balance-inside-cluster}
+% ============================================================
+
+For each cluster $\alpha$, define excitatory and inhibitory inputs
+%
+\begin{align}
+  u_{\alpha}^{E}
+  &=
+  h_{\alpha}^{E}
+  +
+  \sum_{\beta}W_{\alpha\beta}^{EE}r_{\beta}^{E}
+  -
+  \sum_{\beta}W_{\alpha\beta}^{EI}r_{\beta}^{I},
+  \label{eq:ei-input-e}\\
+  u_{\alpha}^{I}
+  &=
+  h_{\alpha}^{I}
+  +
+  \sum_{\beta}W_{\alpha\beta}^{IE}r_{\beta}^{E}
+  -
+  \sum_{\beta}W_{\alpha\beta}^{II}r_{\beta}^{I}.
+  \label{eq:ei-input-i}
+\end{align}
+%
+The superscript on $W^{XY}$ means ``from population $Y$ to population $X$.'' Thus $W^{IE}$ maps excitatory rates into inhibitory input, and $W^{EI}$ maps inhibitory rates into excitatory input.
+
+Local balance in cluster $\alpha$ means that large excitation and large inhibition nearly cancel in the excitatory input:
+%
+\begin{equation}
+  b_{\alpha}^{E}
+  =
+  h_{\alpha}^{E}
+  +
+  \sum_{\beta}W_{\alpha\beta}^{EE}r_{\beta}^{E}
+  -
+  \sum_{\beta}W_{\alpha\beta}^{EI}r_{\beta}^{I}
+  \quad
+  \text{is moderate even when the separate sums are large.}
+  \label{eq:local-balance-residual}
+\end{equation}
+%
+$b_{\alpha}^{E}$ is the residual drive after cancellation. It is the input actually seen by the E transfer function. If $b_{\alpha}^{E}$ rises, the cluster becomes more active; if it falls, the cluster is suppressed. The separate E and I currents can both be large while the residual remains in a spiking regime with irregular single-neuron activity.
+
+This distinction is important for mesoscopic theory. Attractor strength is controlled by residual feedback, but spike irregularity is controlled by the large fluctuating currents and their cancellation. A rate-only E-cluster model can easily confuse these two.
+
+% ============================================================
+\section{Paired E/I Clusters in Rostami et al. 2024}
+\label{sec:paired-ei-clusters-rostami}
+% ============================================================
+
+The rotation outline identifies the Rostami et al. 2024 model as an E/I clustered attractor network. The exact bibliographic key and detailed parameterization should be resolved by the coordinator against the source paper. In these notes, the safe abstraction is the paired-cluster motif: each excitatory cluster has a preferentially coupled inhibitory partner with the same cluster index.
+
+A minimal paired architecture is
+%
+\begin{equation}
+  W_{\alpha\beta}^{XY}
+  =
+  \begin{cases}
+    W_{+}^{XY}, & \alpha=\beta,\\
+    W_{-}^{XY}, & \alpha\ne\beta,
+  \end{cases}
+  \qquad
+  X,Y\in\{E,I\}.
+  \label{eq:paired-ei-coupling}
+\end{equation}
+%
+The diagonal terms define within-pair coupling. The off-diagonal terms define cross-cluster coupling. Different choices of $W_{+}^{XY}$ and $W_{-}^{XY}$ implement different hypotheses:
+%
+\begin{enumerate}[leftmargin=*]
+  \item Strong $W_{+}^{EE}$ deepens excitatory up-states.
+  \item Strong $W_{+}^{IE}$ makes the local I population respond sharply when its E partner activates.
+  \item Strong $W_{+}^{EI}$ sends local inhibitory feedback back to the active E cluster.
+  \item Off-diagonal $W_{-}^{EI}$ and $W_{-}^{IE}$ shape competition between different cluster pairs.
+\end{enumerate}
+
+The precise Rostami-specific claims should be attached only after checking the paper. The mesoscopic structure above is deliberately generic: it captures the mathematical effect of paired E/I clustering without fabricating a citation-dependent detail.
+
+% ============================================================
+\section{How Inhibitory Clustering Changes Cluster Up-States}
+\label{sec:inhibitory-clustering-changes-upstates}
+% ============================================================
+
+In an E-only clustered model, an up-state is mostly a high value of $r_{\alpha}^{E}$. In an E/I clustered model, an up-state is a paired state:
+%
+\begin{equation}
+  (r_{\alpha}^{E},r_{\alpha}^{I})
+  \approx
+  (r_U^E,r_U^I),
+  \qquad
+  r_U^E>r_D^E,
+  \qquad
+  r_U^I>r_D^I .
+  \label{eq:paired-upstate}
+\end{equation}
+%
+The inhibitory component is not a failure of the up-state. It is part of the up-state. The active E population recruits local I activity, and that local I activity controls the gain and stability of the active pair.
+
+A two-variable reduction for one isolated pair is
+%
+\begin{align}
+  \tau_E \dot r^E
+  &=
+  -r^E
+  +
+  \Phi_E(h_E+W_{+}^{EE}r^E-W_{+}^{EI}r^I),
+  \label{eq:single-pair-e}\\
+  \tau_I \dot r^I
+  &=
+  -r^I
+  +
+  \Phi_I(h_I+W_{+}^{IE}r^E-W_{+}^{II}r^I).
+  \label{eq:single-pair-i}
+\end{align}
+%
+The E equation contains positive recurrent feedback through $W_{+}^{EE}r^E$ and negative local feedback through $W_{+}^{EI}r^I$. The I equation says that local inhibition is recruited by E activity through $W_{+}^{IE}r^E$ and limited by I-to-I inhibition through $W_{+}^{II}r^I$.
+
+The up-state is stable only if these two loops cooperate correctly: E recurrence must be strong enough to sustain high activity, while E-to-I-to-E feedback must prevent runaway excitation.
+
+% ============================================================
+\section{Why E/I Clustering May Regularize Within-Cluster Spiking}
+\label{sec:ei-clustering-regularize-spiking}
+% ============================================================
+
+Structured inhibition can regularize spiking because it creates fast negative feedback that is matched to the active cluster. When $r_{\alpha}^{E}$ rises, $r_{\alpha}^{I}$ rises; the resulting inhibitory current pushes back on the same E population.
+
+Linearizing the isolated pair gives
+%
+\begin{equation}
+  \mathcal{J}_{\mathrm{pair}}
+  =
+  \begin{pmatrix}
+    \dfrac{-1+g_E W_{+}^{EE}}{\tau_E} &
+    \dfrac{-g_E W_{+}^{EI}}{\tau_E} \\[1.0em]
+    \dfrac{g_I W_{+}^{IE}}{\tau_I} &
+    \dfrac{-1-g_I W_{+}^{II}}{\tau_I}
+  \end{pmatrix},
+  \label{eq:pair-jacobian}
+\end{equation}
+%
+where
+%
+\begin{equation}
+  g_E=\Phi_E'(u_E^*),
+  \qquad
+  g_I=\Phi_I'(u_I^*).
+  \label{eq:pair-gains}
+\end{equation}
+%
+The off-diagonal product $-g_E W_{+}^{EI}\,g_I W_{+}^{IE}$ is a negative feedback loop from E to I back to E. Larger loop gain can reduce the effective E gain and damp fluctuations, provided the inhibitory time scale is not so slow that it creates oscillatory overshoot.
+
+This is a cautious statement, not a universal theorem. E/I clustering may regularize within-cluster spiking when local inhibitory feedback is strong, fast, and well matched to E activation. If inhibition is delayed or too strong, the same loop can produce oscillations, rebound, or suppression of the attractor.
+
+% ============================================================
+\section{Why E/I Clustering May Make Metastability More Robust}
+\label{sec:ei-clustering-robust-metastability}
+% ============================================================
+
+Metastability requires a delicate combination: attractor basins must be deep enough to hold states for behaviorally relevant times, but shallow enough that finite-size fluctuations or inputs can move the network between states. E-only clustering often ties this balance to a narrow range of recurrent excitation.
+
+E/I clustering can widen the useful range because it separates three functions:
+%
+\begin{enumerate}[leftmargin=*]
+  \item \textbf{Self-excitation} through $W_{+}^{EE}$ supports the high-rate state.
+  \item \textbf{Local feedback inhibition} through $W_{+}^{IE}$ and $W_{+}^{EI}$ limits runaway activity inside the active pair.
+  \item \textbf{Cross-cluster competition} through off-diagonal inhibitory pathways shapes which other clusters are suppressed.
+\end{enumerate}
+
+In a fast-inhibition approximation, local inhibitory feedback modifies the effective E-to-E coupling:
+%
+\begin{equation}
+  W_{\mathrm{eff}}^{EE}
+  \approx
+  W_{+}^{EE}
+  -
+  W_{+}^{EI}
+  \frac{g_I}{1+g_I W_{+}^{II}}
+  W_{+}^{IE}.
+  \label{eq:local-effective-ee}
+\end{equation}
+%
+The first term creates the up-state. The second term subtracts local E-to-I-to-E feedback. By changing these terms separately, an E/I clustered model can preserve attractor structure while controlling gain and irregularity.
+
+The testable prediction is a parameter-volume statement: the E/I clustered model should support metastable switching across a larger region of $(W_{+}^{EE},W_{+}^{EI},W_{+}^{IE})$ than the E-only model supports across $J_{EE}^{+}$ alone, if the robustness claim is correct.
+
+% ============================================================
+\section{What Changes in the Mesoscopic Equations?}
+\label{sec:what-changes-in-mesoscopic-equations}
+% ============================================================
+
+The E/I mesoscopic model is a $2Q$-dimensional system:
+%
+\begin{keyequation}[E/I Clustered Mesoscopic Equations]
+\begin{align}
+  \tau_E \dot{\vec r}^{\,E}
+  &=
+  -\vec r^{\,E}
+  +
+  \Phi_E\!\left(
+    \vec h^{\,E}
+    +
+    W^{EE}\vec r^{\,E}
+    -
+    W^{EI}\vec r^{\,I}
+  \right),
+  \label{eq:ei-vector-e}\\
+  \tau_I \dot{\vec r}^{\,I}
+  &=
+  -\vec r^{\,I}
+  +
+  \Phi_I\!\left(
+    \vec h^{\,I}
+    +
+    W^{IE}\vec r^{\,E}
+    -
+    W^{II}\vec r^{\,I}
+  \right).
+  \label{eq:ei-vector-i}
+\end{align}
+\tcblower
+$\vec r^{\,E}$ and $\vec r^{\,I}$ are cluster-indexed E and I rates; $W^{XY}$ maps rates from population type $Y$ to input of population type $X$; $\Phi_E$ and $\Phi_I$ act componentwise.
+\end{keyequation}
+
+\noindent Finite-size noise now has two population sizes per cluster:
+%
+\begin{align}
+  \dd r_{\alpha}^{E}
+  &=
+  f_{\alpha}^{E}(\vec z)\,\dd t
+  +
+  \frac{1}{\sqrt{n_{\alpha}^{E}}}
+  \sum_{\mu}B_{\alpha\mu}^{E}(\vec z)\,\dd W_{\mu}^{E}(t),
+  \label{eq:ei-noise-e}\\
+  \dd r_{\alpha}^{I}
+  &=
+  f_{\alpha}^{I}(\vec z)\,\dd t
+  +
+  \frac{1}{\sqrt{n_{\alpha}^{I}}}
+  \sum_{\mu}B_{\alpha\mu}^{I}(\vec z)\,\dd W_{\mu}^{I}(t).
+  \label{eq:ei-noise-i}
+\end{align}
+%
+Because inhibitory clusters are often smaller than excitatory clusters, $n_{\alpha}^{I}$ can be an important noise parameter. Noisy inhibition is not just background variability; it directly modulates the effective basin geometry of the E populations.
+
+% ============================================================
+\section{New Fixed Points and Stability Conditions}
+\label{sec:new-fixed-points-stability-conditions}
+% ============================================================
+
+E/I clustering adds new kinds of fixed points. Besides all-low and E-active states, one can have paired E/I up-states, inhibition-dominated suppressed states, and mixed states where E activity is high but local I feedback changes the gain rather than simply tracking E rate.
+
+For a $k$-active symmetric paired state,
+%
+\begin{equation}
+  (r_{\alpha}^{E},r_{\alpha}^{I})
+  =
+  \begin{cases}
+    (r_U^E,r_U^I), & \alpha\in\mathcal{A},\\
+    (r_D^E,r_D^I), & \alpha\notin\mathcal{A}.
+  \end{cases}
+  \label{eq:ei-k-active-ansatz}
+\end{equation}
+%
+The fixed-point equations are the E/I analog of the E-only equations: each active pair must self-consistently maintain high E and I rates, while each inactive pair must remain low under cross-cluster input and inhibition.
+
+The full Jacobian has block form
+%
+\begin{equation}
+  \mathcal{J}
+  =
+  \begin{pmatrix}
+    \tau_E^{-1}(-\mat{I} + D_E W^{EE}) &
+    -\tau_E^{-1}D_E W^{EI} \\
+    \tau_I^{-1}D_I W^{IE} &
+    \tau_I^{-1}(-\mat{I} - D_I W^{II})
+  \end{pmatrix},
+  \label{eq:ei-block-jacobian}
+\end{equation}
+%
+where $D_E=\operatorname{diag}(\Phi_E'(u_{\alpha}^{E,*}))$ and $D_I=\operatorname{diag}(\Phi_I'(u_{\alpha}^{I,*}))$. Stability requires all eigenvalues of this $2Q$ by $2Q$ matrix to have negative real part.
+
+If inhibition is fast, the I variables can be eliminated to first order. The effective E feedback matrix is approximately
+%
+\begin{equation}
+  K_{\mathrm{eff}}^{EE}
+  =
+  W^{EE}
+  -
+  W^{EI}
+  \bigl[\mat{I}+D_I W^{II}\bigr]{}^{-1}
+  D_I W^{IE}.
+  \label{eq:ei-schur-effective-feedback}
+\end{equation}
+%
+This is the E/I version of the competition matrix. The first term is direct E recurrence. The second term is structured disynaptic inhibition. Its diagonal entries regulate local up-states; its off-diagonal entries regulate competition across clusters.
+
+% ============================================================
+\section{Comparing E-Only and E/I-Clustered Phase Diagrams}
+\label{sec:comparing-e-only-ei-phase-diagrams}
+% ============================================================
+
+An E-only phase diagram can often be drawn in two axes such as recurrent cluster strength $J_{EE}^{+}$ and external drive $h$. An E/I clustered phase diagram needs at least one additional axis for inhibitory structure. Useful choices include
+%
+\begin{equation}
+  \rho_{\mathrm{local}}
+  =
+  \frac{W_{+}^{EI}W_{+}^{IE}}{W_{-}^{EI}W_{-}^{IE}},
+  \qquad
+  \rho_{EE}
+  =
+  \frac{W_{+}^{EE}}{W_{-}^{EE}}.
+  \label{eq:phase-diagram-ratios}
+\end{equation}
+%
+$\rho_{EE}$ measures excitatory clustering. $\rho_{\mathrm{local}}$ measures how much E-to-I-to-E feedback is concentrated within pairs rather than spread across pairs.
+
+The comparison should classify regimes using the same observables in both models:
+%
+\begin{enumerate}[leftmargin=*]
+  \item asynchronous low-dimensional activity with no stable cluster up-states,
+  \item stable one-cluster or few-cluster attractors,
+  \item metastable switching between cluster states,
+  \item oscillatory E/I dynamics caused by delayed or strong negative feedback,
+  \item irregular high-dimensional dynamics that may require the chaos tests of \cref{ch:multistability-or-mesoscopic-chaos}.
+\end{enumerate}
+
+The most useful plot is not a decorative phase diagram. It is a decision tool: for each parameter point, show whether the model has local balance, realistic rates, irregular spiking, long but finite lifetimes, and stimulus-controllable occupancy. E/I clustering earns its keep only if it improves several of these criteria at once.
+
+\begin{chaptersummary}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.45}
+\begin{tabularx}{\textwidth}{@{}l X X@{}}
+  \toprule
+  \textbf{Concept} & \textbf{Equation} & \textbf{Key Insight} \\
+  \midrule
+  E/I state &
+  $\vec z=(\vec r^{\,E},\vec r^{\,I})$ &
+  Each cluster has excitatory and inhibitory population variables \\
+  Structured inhibition &
+  $u_{\alpha}^{E}=h_{\alpha}^{E}+\sum_{\beta}W_{\alpha\beta}^{EE}r_{\beta}^{E}-\sum_{\beta}W_{\alpha\beta}^{EI}r_{\beta}^{I}$ &
+  Inhibition has a cluster-index pattern \\
+  Local balance &
+  $b_{\alpha}^{E}=E_{\alpha}-I_{\alpha}$ moderate &
+  Large E and I currents can cancel to a controlled residual \\
+  Paired up-state &
+  $(r_{\alpha}^{E},r_{\alpha}^{I})\approx(r_U^E,r_U^I)$ &
+  The inhibitory partner is part of the active state \\
+  Pair Jacobian &
+  $\mathcal{J}_{\mathrm{pair}}$ in \eqref{eq:pair-jacobian} &
+  E-to-I-to-E feedback changes gain and stability \\
+  Effective E feedback &
+  $K_{\mathrm{eff}}^{EE}=W^{EE}-W^{EI}[\mat{I}+D_I W^{II}]{}^{-1}D_I W^{IE}$ &
+  Direct recurrence minus structured disynaptic inhibition \\
+  Phase comparison &
+  $(\rho_{EE},\rho_{\mathrm{local}})$ &
+  E/I clustering adds an axis for local inhibitory structure \\
+  \bottomrule
+\end{tabularx}
+\end{center}
+
+\end{chaptersummary}
+
+\begin{conceptquestions}
+  \item What dynamical effects are tied together in an E-only clustered model that can be separated in an E/I clustered model?
+
+  \item In $W^{XY}$ notation, what does the superscript $EI$ mean? Why is it important to keep the direction clear?
+
+  \item How can large excitation and large inhibition coexist with a moderate residual input to the excitatory transfer function?
+
+  \item What should be checked before making a specific claim about the Rostami et al.\ architecture in these notes?
+
+  \item Why can local E-to-I-to-E feedback regularize spiking? Under what time-scale condition might it instead create oscillations?
+
+  \item Interpret each term in $K_{\mathrm{eff}}^{EE}=W^{EE}-W^{EI}[\mat{I}+D_I W^{II}]{}^{-1}D_I W^{IE}$. Which entries shape local stability, and which entries shape competition?
+\end{conceptquestions}

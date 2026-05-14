@@ -1,0 +1,172 @@
+{
+  "lectures": [
+    {
+      "lecture_slug": "scientific-problem",
+      "title": "What are we trying to explain?",
+      "slide_filename": "rotation-outline-01-scientific-problem.pdf",
+      "chapter_paths": ["chapters/ch01-scientific-problem/ch01.tex"],
+      "aliases": ["trial-to-trial variability", "Fano factor", "variability quenching"]
+    },
+    {
+      "lecture_slug": "litwin-kumar-doiron-baseline",
+      "title": "The Litwin-Kumar and Doiron baseline",
+      "slide_filename": "rotation-outline-02-litwin-kumar-doiron-baseline.pdf",
+      "chapter_paths": ["chapters/ch02-litwin-kumar-doiron-baseline/ch02.tex"],
+      "aliases": ["clustered balanced networks", "slow dynamics", "cluster up-states"]
+    },
+    {
+      "lecture_slug": "single-neuron-models",
+      "title": "Single-neuron models needed for this project",
+      "slide_filename": "rotation-outline-03-single-neuron-models.pdf",
+      "chapter_paths": ["chapters/ch03-single-neuron-models/ch03.tex"],
+      "aliases": ["Poisson neurons", "LIF neurons", "GIF neurons", "hazard spiking"]
+    },
+    {
+      "lecture_slug": "balanced-networks",
+      "title": "Balanced networks",
+      "slide_filename": "rotation-outline-04-balanced-networks.pdf",
+      "chapter_paths": ["chapters/ch04-balanced-networks/ch04.tex"],
+      "aliases": ["E/I balance", "asynchronous irregular activity"]
+    },
+    {
+      "lecture_slug": "clustered-spiking-networks",
+      "title": "Clustered spiking networks",
+      "slide_filename": "rotation-outline-05-clustered-spiking-networks.pdf",
+      "chapter_paths": ["chapters/ch05-clustered-spiking-networks/ch05.tex"],
+      "aliases": ["clusters", "cluster lifetime", "cluster dimensionality"]
+    },
+    {
+      "lecture_slug": "why-mesoscopic-theory",
+      "title": "Why mesoscopic theory?",
+      "slide_filename": "rotation-outline-06-why-mesoscopic-theory.pdf",
+      "chapter_paths": ["chapters/ch06-why-mesoscopic-theory/ch06.tex"],
+      "aliases": ["micro to meso", "finite-size noise"]
+    },
+    {
+      "lecture_slug": "mean-field-reductions",
+      "title": "Mean-field reductions of spiking networks",
+      "slide_filename": "rotation-outline-07-mean-field-reductions.pdf",
+      "chapter_paths": ["chapters/ch07-mean-field-reductions/ch07.tex"],
+      "aliases": ["transfer functions", "self-consistency", "linear stability"]
+    },
+    {
+      "lecture_slug": "refractory-density-age-structured",
+      "title": "Refractory-density and age-structured population methods",
+      "slide_filename": "rotation-outline-08-refractory-density-age-structured.pdf",
+      "chapter_paths": ["chapters/ch08-refractory-density-age-structured/ch08.tex"],
+      "aliases": ["age since last spike", "renewal equations", "Schwalger Deger Gerstner"]
+    },
+    {
+      "lecture_slug": "stochastic-mesoscopic-equations",
+      "title": "Stochastic mesoscopic equations",
+      "slide_filename": "rotation-outline-09-stochastic-mesoscopic-equations.pdf",
+      "chapter_paths": ["chapters/ch09-stochastic-mesoscopic-equations/ch09.tex"],
+      "aliases": ["Langevin", "multiplicative noise", "noise-induced switching"]
+    },
+    {
+      "lecture_slug": "mesoscopic-excitatory-clustering",
+      "title": "Mesoscopic model of excitatory clustering",
+      "slide_filename": "rotation-outline-10-mesoscopic-excitatory-clustering.pdf",
+      "chapter_paths": ["chapters/ch10-mesoscopic-excitatory-clustering/ch10.tex"],
+      "aliases": ["E-clustered mesoscopic model", "bistability"]
+    },
+    {
+      "lecture_slug": "e-to-ei-clustered-networks",
+      "title": "From E-clustered to E/I-clustered networks",
+      "slide_filename": "rotation-outline-11-e-to-ei-clustered-networks.pdf",
+      "chapter_paths": ["chapters/ch11-e-to-ei-clustered-networks/ch11.tex"],
+      "aliases": ["inhibitory clusters", "local E/I balance", "Rostami architecture"]
+    },
+    {
+      "lecture_slug": "multistability-or-mesoscopic-chaos",
+      "title": "The main theory question: multistability or mesoscopic chaos?",
+      "slide_filename": "rotation-outline-12-multistability-or-mesoscopic-chaos.pdf",
+      "chapter_paths": ["chapters/ch12-multistability-or-mesoscopic-chaos/ch12.tex"],
+      "aliases": ["finite-size escape", "Lyapunov exponents", "chaos"]
+    },
+    {
+      "lecture_slug": "spiking-attractor-motor-cortex",
+      "title": "Spiking attractor model of motor cortex",
+      "slide_filename": "rotation-outline-13-spiking-attractor-motor-cortex.pdf",
+      "chapter_paths": ["chapters/ch13-spiking-attractor-motor-cortex/ch13.tex"],
+      "aliases": ["Rostami et al.", "target uncertainty", "reaction time"]
+    },
+    {
+      "lecture_slug": "rostami-to-litwin-kumar-doiron",
+      "title": "Relating Rostami et al. to Litwin-Kumar and Doiron",
+      "slide_filename": "rotation-outline-14-rostami-to-litwin-kumar-doiron.pdf",
+      "chapter_paths": ["chapters/ch14-rostami-to-litwin-kumar-doiron/ch14.tex"],
+      "aliases": ["E-only versus E/I clusters", "clustered attractor comparison"]
+    },
+    {
+      "lecture_slug": "stabilized-supralinear-networks",
+      "title": "Stabilized supralinear networks",
+      "slide_filename": "rotation-outline-15-stabilized-supralinear-networks.pdf",
+      "chapter_paths": ["chapters/ch15-stabilized-supralinear-networks/ch15.tex"],
+      "aliases": ["SSN", "supralinear transfer", "inhibitory stabilization"]
+    },
+    {
+      "lecture_slug": "spiking-ssn-gif",
+      "title": "Spiking SSN with generalized integrate-and-fire neurons",
+      "slide_filename": "rotation-outline-16-spiking-ssn-gif.pdf",
+      "chapter_paths": ["chapters/ch16-spiking-ssn-gif/ch16.tex"],
+      "aliases": ["GIF SSN", "age-structured SSN"]
+    },
+    {
+      "lecture_slug": "variability-quenching-conductance-shunting",
+      "title": "Variability quenching and conductance shunting",
+      "slide_filename": "rotation-outline-17-variability-quenching-conductance-shunting.pdf",
+      "chapter_paths": ["chapters/ch17-variability-quenching-conductance-shunting/ch17.tex"],
+      "aliases": ["conductance shunting", "voltage variability"]
+    },
+    {
+      "lecture_slug": "dynamical-systems-essentials",
+      "title": "Dynamical systems essentials",
+      "slide_filename": "rotation-outline-18-dynamical-systems-essentials.pdf",
+      "chapter_paths": ["chapters/ch18-dynamical-systems-essentials/ch18.tex"],
+      "aliases": ["fixed points", "bifurcations", "phase diagrams"]
+    },
+    {
+      "lecture_slug": "stochastic-processes",
+      "title": "Stochastic processes for neural population models",
+      "slide_filename": "rotation-outline-19-stochastic-processes.pdf",
+      "chapter_paths": ["chapters/ch19-stochastic-processes/ch19.tex"],
+      "aliases": ["Poisson processes", "OU processes", "diffusion approximations"]
+    },
+    {
+      "lecture_slug": "measuring-variability-metastability",
+      "title": "Measuring variability and metastability",
+      "slide_filename": "rotation-outline-20-measuring-variability-metastability.pdf",
+      "chapter_paths": ["chapters/ch20-measuring-variability-metastability/ch20.tex"],
+      "aliases": ["Fano factor", "cluster lifetime", "power spectra"]
+    },
+    {
+      "lecture_slug": "reproducing-baselines",
+      "title": "Reproducing the baseline models",
+      "slide_filename": "rotation-outline-21-reproducing-baselines.pdf",
+      "chapter_paths": ["chapters/ch21-reproducing-baselines/ch21.tex"],
+      "aliases": ["E-cluster microscopic model", "E-cluster mesoscopic model"]
+    },
+    {
+      "lecture_slug": "building-ei-mesoscopic-extension",
+      "title": "Building the E/I mesoscopic extension",
+      "slide_filename": "rotation-outline-22-building-ei-mesoscopic-extension.pdf",
+      "chapter_paths": ["chapters/ch22-building-ei-mesoscopic-extension/ch22.tex"],
+      "aliases": ["E/I coupling matrices", "local balance constraints"]
+    },
+    {
+      "lecture_slug": "phase-diagrams-theory-deliverables",
+      "title": "Phase diagrams and theory deliverables",
+      "slide_filename": "rotation-outline-23-phase-diagrams-theory-deliverables.pdf",
+      "chapter_paths": ["chapters/ch23-phase-diagrams-theory-deliverables/ch23.tex"],
+      "aliases": ["parameter sweeps", "metastable region", "chaotic region"]
+    },
+    {
+      "lecture_slug": "final-rotation-artifact",
+      "title": "Suggested final rotation artifact",
+      "slide_filename": "rotation-outline-24-final-rotation-artifact.pdf",
+      "chapter_paths": ["chapters/ch24-final-rotation-artifact/ch24.tex"],
+      "aliases": ["reproduction notebook", "derivation note", "phase diagram"]
+    }
+  ]
+}

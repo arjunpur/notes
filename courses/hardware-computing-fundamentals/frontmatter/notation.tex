@@ -1,0 +1,47 @@
+\section*{Notation}
+\addcontentsline{toc}{section}{Notation}
+
+\subsection*{Performance quantities}
+
+\begin{tabularx}{\textwidth}{@{}p{0.24\textwidth}X@{}}
+  \toprule
+  \textbf{Symbol or term} & \textbf{Meaning} \\
+  \midrule
+  FLOP & One floating-point operation, usually an add, multiply, or fused multiply-add by convention \\
+  FLOP/s & Floating-point operations per second \\
+  Byte & Unit of data movement \\
+  \(I\) & Arithmetic intensity, measured as FLOPs per byte moved \\
+  \(B\) & Bandwidth from a specified memory level \\
+  \(T\) & Time, latency, or step duration depending on context \\
+  \(U\) & Utilization, the fraction of useful occupied hardware work slots \\
+  \bottomrule
+\end{tabularx}
+
+\subsection*{Memory and execution}
+
+\begin{tabularx}{\textwidth}{@{}p{0.24\textwidth}X@{}}
+  \toprule
+  \textbf{Term} & \textbf{Meaning} \\
+  \midrule
+  HBM & High Bandwidth Memory close to an accelerator package \\
+  SRAM & Fast on-chip memory used for registers, caches, scratchpads, and local buffers \\
+  Kernel & Low-level operation launched on an accelerator \\
+  Tile & Block of data reused near compute before being evicted \\
+  Interconnect & Link between chips, devices, or nodes \\
+  Collective & Distributed communication operation such as all-reduce or all-to-all \\
+  \bottomrule
+\end{tabularx}
+
+\subsection*{Model and graph structure}
+
+\begin{tabularx}{\textwidth}{@{}p{0.24\textwidth}X@{}}
+  \toprule
+  \textbf{Symbol or term} & \textbf{Meaning} \\
+  \midrule
+  \(G=(V,E)\) & Graph with nodes \(V\) and edges \(E\) \\
+  \(d(i,j)\) & Distance, latency, or communication cost between nodes \(i\) and \(j\) \\
+  \(S_t\) & Spike indicator at discrete time \(t\) \\
+  \(V(t)\) & Membrane potential in a spiking neuron model \\
+  \(\tau_m\) & Membrane time constant \\
+  \bottomrule
+\end{tabularx}

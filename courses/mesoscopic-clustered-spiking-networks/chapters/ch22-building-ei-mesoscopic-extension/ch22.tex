@@ -1,0 +1,439 @@
+\chapter{Building the E/I Mesoscopic Extension}
+\label{ch:building-ei-mesoscopic-extension}
+
+\textit{The E/I extension replaces a single shared inhibitory pool with structured inhibitory variables. The practical question is whether paired excitatory and inhibitory clusters can preserve attractor-like cluster states while keeping local spiking balanced, irregular, and robust over a wider parameter range.}
+
+% ============================================================
+\section{Defining E and I Population Variables per Cluster}
+\label{sec:defining-e-and-i-population-variables-per-cluster}
+% ============================================================
+
+An E/I-clustered model assigns two population variables to each cluster index $k$: an excitatory activity and an inhibitory activity. Let $r_k^E(t)$ be the filtered rate of excitatory neurons in cluster $k$, and let $r_k^I(t)$ be the filtered rate of inhibitory neurons in cluster $k$:
+%
+\begin{equation}
+  \left(r_k^E(t),r_k^I(t)\right),
+  \qquad
+  k=1,\ldots,Q .
+  \label{eq:ei-cluster-rate-definitions}
+\end{equation}
+%
+The state vector is
+%
+\begin{equation}
+  \vec x(t)
+  =
+  \begin{bmatrix}
+  r_1^E & \cdots & r_Q^E & r_1^I & \cdots & r_Q^I
+  \end{bmatrix}^{\top}
+  \in \R^{2Q}.
+  \label{eq:ch22-ei-state-vector}
+\end{equation}
+%
+This is the minimal coordinate system that can express local E/I balance inside each cluster.
+
+The population variables should be tied to microscopic observables:
+%
+\begin{equation}
+  \widehat r_k^a(t)
+  =
+  \frac{1}{N_k^a}
+  \sum_{i\in \mathcal{C}_k^a}
+  (\kappa * s_i)(t),
+  \qquad
+  a\in\{E,I\}.
+  \label{eq:empirical-ei-cluster-rates}
+\end{equation}
+%
+$N_k^a$ is the number of neurons of type $a$ in cluster $k$, $\mathcal{C}_k^a$ is the corresponding neuron set, and $\kappa$ is the same smoothing kernel used for model comparison. Increasing $r_k^E$ means the excitatory half of the pair is more active. Increasing $r_k^I$ means local inhibition is more active and can cancel, gate, or sharpen the excitatory up-state.
+
+% ============================================================
+\section{Choosing Coupling Matrices}
+\label{sec:choosing-coupling-matrices}
+% ============================================================
+
+Use four coupling matrices, one for each source-target population type. For $a,b\in\{E,I\}$, $W^{ab}_{k\ell}$ denotes the effective input to population $a$ in cluster $k$ from population $b$ in cluster $\ell$:
+%
+\begin{equation}
+  W^{ab}_{k\ell},
+  \qquad
+  k,\ell=1,\ldots,Q,
+  \qquad
+  a,b\in\{E,I\}.
+  \label{eq:ei-coupling-matrix-definition}
+\end{equation}
+%
+The sign convention is that $W^{aE}_{k\ell}\ge 0$ is excitatory input and $W^{aI}_{k\ell}\ge 0$ is inhibitory input magnitude. The input equations carry the minus sign for inhibition.
+
+A symmetric clustered parameterization is
+%
+\begin{equation}
+  W^{ab}_{k\ell}
+  =
+  \begin{cases}
+    W_{+}^{ab}, & k=\ell,\\
+    W_{-}^{ab}, & k\ne \ell,
+  \end{cases}
+  \label{eq:ei-clustered-coupling-blocks}
+\end{equation}
+%
+with one within-cluster and one between-cluster value for each block. This creates four structured pathways:
+%
+\begin{equation}
+  E\to E,\qquad
+  E\to I,\qquad
+  I\to E,\qquad
+  I\to I .
+  \label{eq:four-ei-pathways}
+\end{equation}
+%
+The $E\to E$ block creates excitatory up-states. The $E\to I$ block recruits local inhibition. The $I\to E$ block suppresses excitatory activity. The $I\to I$ block controls how inhibitory clusters compete or stabilize each other.
+
+When varying one block, preserve mean input whenever possible. For equal cluster sizes, one normalization is
+%
+\begin{equation}
+  \frac{1}{Q}W_{+}^{ab}
+  +
+  \frac{Q-1}{Q}W_{-}^{ab}
+  =
+  W_0^{ab}.
+  \label{eq:ei-mean-coupling-normalization}
+\end{equation}
+%
+This keeps the average coupling from type $b$ to type $a$ fixed while redistributing it between within-cluster and between-cluster pathways.
+
+% ============================================================
+\section{Within-Cluster E/I Coupling}
+\label{sec:within-cluster-ei-coupling}
+% ============================================================
+
+Within-cluster E/I coupling is the new mechanism relative to an E-only clustered model. For cluster $k$, the local input pair can be written
+%
+\begin{equation}
+  u_k^E
+  =
+  h_k^E
+  +
+  W_{+}^{EE}r_k^E
+  -
+  W_{+}^{EI}r_k^I
+  +
+  \text{between-cluster terms},
+  \label{eq:local-e-input}
+\end{equation}
+%
+\begin{equation}
+  u_k^I
+  =
+  h_k^I
+  +
+  W_{+}^{IE}r_k^E
+  -
+  W_{+}^{II}r_k^I
+  +
+  \text{between-cluster terms}.
+  \label{eq:local-i-input}
+\end{equation}
+%
+The term $W_{+}^{EE}r_k^E$ supports the excitatory up-state. The term $W_{+}^{IE}r_k^E$ drives the paired inhibitory population when the excitatory cluster turns on. The term $W_{+}^{EI}r_k^I$ feeds that local inhibition back onto the excitatory cluster.
+
+The intended regime is not simply stronger inhibition. It is local tracking. When $r_k^E$ rises, $r_k^I$ should rise enough to prevent runaway but not enough to erase the attractor. This can reduce within-cluster spike synchrony while preserving the slower cluster-state variable.
+
+One useful diagnostic is the local balance residual
+%
+\begin{equation}
+  B_k(t)
+  =
+  W_{+}^{EE}r_k^E(t)
+  -
+  W_{+}^{EI}r_k^I(t)
+  +
+  h_k^E .
+  \label{eq:ch22-local-balance-residual}
+\end{equation}
+%
+$B_k$ is not the full input, but it measures whether local recurrent excitation is approximately cancelled by paired inhibition. Large positive residuals predict runaway or synchronized bursts. Large negative residuals predict suppressed up-states.
+
+% ============================================================
+\section{Between-Cluster Coupling}
+\label{sec:between-cluster-coupling}
+% ============================================================
+
+Between-cluster coupling determines whether clusters cooperate, compete, or remain nearly independent. The full input equations are
+%
+\begin{keyequation}[E/I Cluster Inputs]
+\begin{equation}
+  u_k^E
+  =
+  h_k^E
+  +
+  \sum_{\ell=1}^{Q}W_{k\ell}^{EE}r_{\ell}^{E}
+  -
+  \sum_{\ell=1}^{Q}W_{k\ell}^{EI}r_{\ell}^{I},
+  \label{eq:full-e-input-ei-extension}
+\end{equation}
+\begin{equation}
+  u_k^I
+  =
+  h_k^I
+  +
+  \sum_{\ell=1}^{Q}W_{k\ell}^{IE}r_{\ell}^{E}
+  -
+  \sum_{\ell=1}^{Q}W_{k\ell}^{II}r_{\ell}^{I}.
+  \label{eq:full-i-input-ei-extension}
+\end{equation}
+\tcblower
+The first sum in each equation is drive from excitatory clusters. The second sum is inhibitory feedback. Structured within-cluster entries and weaker between-cluster entries define the E/I clustered architecture.
+\end{keyequation}
+
+\noindent Between-cluster $E\to E$ coupling lets one active cluster excite others. Between-cluster $I\to E$ coupling suppresses other excitatory clusters. Between-cluster $E\to I$ coupling lets one active excitatory cluster recruit inhibition elsewhere. Between-cluster $I\to I$ coupling determines whether inhibitory clusters synchronize or compete.
+
+A conservative first extension keeps between-cluster inhibitory structure weak and focuses on local E/I pairs. A more ambitious second extension varies $W_{+}^{EI}$ and $W_{+}^{IE}$ independently from $W_{-}^{EI}$ and $W_{-}^{IE}$ to ask whether local inhibitory pairing broadens the metastable parameter regime.
+
+% ============================================================
+\section{Local Balance Constraints}
+\label{sec:local-balance-constraints}
+% ============================================================
+
+Local balance should be imposed at an operating point, not as an identity for all states. Choose a target state $(r_{D}^{E},r_{D}^{I})$ for down clusters and $(r_{U}^{E},r_{U}^{I})$ for up clusters. The balance residual for state $z\in\{D,U\}$ is
+%
+\begin{equation}
+  B_z
+  =
+  h^E
+  +
+  W_{+}^{EE}r_z^E
+  -
+  W_{+}^{EI}r_z^I
+  +
+  \sum_{\ell\ne k}
+  \left(
+    W_{-}^{EE}r_{\ell}^{E}
+    -
+    W_{-}^{EI}r_{\ell}^{I}
+  \right).
+  \label{eq:balance-residual-state}
+\end{equation}
+%
+Small $B_z$ means excitation and inhibition nearly cancel in the excitatory input to a cluster in state $z$.
+
+The local inhibitory rate is not chosen freely. It must satisfy its own population equation,
+%
+\begin{equation}
+  r_k^I
+  =
+  \Phi_I(u_k^I).
+  \label{eq:inhibitory-self-consistency}
+\end{equation}
+%
+Thus local balance is a coupled constraint. Increasing $W_{+}^{IE}$ recruits inhibition more strongly, but the realized $r_k^I$ also depends on inhibitory self-coupling, transfer-function gain, baseline drive, and saturation.
+
+For practical sweeps, track two quantities:
+%
+\begin{equation}
+  \bar B
+  =
+  \frac{1}{Q}\sum_{k=1}^{Q}|B_k|,
+  \qquad
+  \Delta_{EI,k}
+  =
+  \operatorname{corr}_{t}\!\left(r_k^E(t),r_k^I(t)\right).
+  \label{eq:balance-and-tracking-diagnostics}
+\end{equation}
+%
+$\bar B$ measures cancellation magnitude. $\Delta_{EI,k}$ measures local E/I tracking. A robust E/I-clustered regime should not rely on poor cancellation or delayed inhibition so large that each up-state becomes a burst.
+
+% ============================================================
+\section{Deriving Effective Cluster Equations}
+\label{sec:deriving-effective-cluster-equations}
+% ============================================================
+
+The population dynamics can be written as
+%
+\begin{equation}
+  \tau_E \dot r_k^E
+  =
+  -r_k^E+\Phi_E(u_k^E)
+  +
+  \frac{\sigma_E(r_k^E)}{\sqrt{N_k^E}}\xi_k^E(t),
+  \label{eq:ei-meso-e-dynamics}
+\end{equation}
+%
+\begin{equation}
+  \tau_I \dot r_k^I
+  =
+  -r_k^I+\Phi_I(u_k^I)
+  +
+  \frac{\sigma_I(r_k^I)}{\sqrt{N_k^I}}\xi_k^I(t).
+  \label{eq:ei-meso-i-dynamics}
+\end{equation}
+%
+These equations are the direct E/I mesoscopic extension. They should be the first object simulated.
+
+To understand how inhibitory clustering changes the excitatory attractor landscape, eliminate fast inhibition as an approximation. Linearize around an operating point and write
+%
+\begin{equation}
+  \delta \vec r^{\,I}
+  =
+  G_I\!\left(
+    W^{IE}\delta \vec r^{\,E}
+    -
+    W^{II}\delta \vec r^{\,I}
+  \right),
+  \label{eq:fast-i-linear-response}
+\end{equation}
+%
+where $G_I=\diag(\Phi_I'(u_1^I),\ldots,\Phi_I'(u_Q^I))$ is inhibitory gain. Solving gives
+%
+\begin{equation}
+  \delta \vec r^{\,I}
+  =
+  {(\mat{I}+G_I W^{II})}^{-1}G_I W^{IE}\delta \vec r^{\,E}.
+  \label{eq:fast-i-eliminated}
+\end{equation}
+%
+The effective excitatory coupling is therefore
+%
+\begin{keyequation}[Effective E/I-Corrected Cluster Coupling]
+\begin{equation}
+  K_{\mathrm{eff}}
+  =
+  W^{EE}
+  -
+  W^{EI}{(\mat{I}+G_I W^{II})}^{-1}G_I W^{IE}.
+  \label{eq:ei-effective-coupling}
+\end{equation}
+\tcblower
+$W^{EE}$ is direct excitation. The second term is the inhibitory pathway recruited by excitatory activity and fed back onto excitatory clusters.
+\end{keyequation}
+
+\noindent This formula is the practical bridge from architecture to phase diagram. Local E/I clustering changes not only the amount of inhibition, but also the spatial structure of the effective competition matrix.
+
+% ============================================================
+\section{Stability Analysis of One Active Cluster}
+\label{sec:stability-analysis-one-active-cluster}
+% ============================================================
+
+A one-active-cluster fixed point has one pair $(r_U^E,r_U^I)$ and $Q-1$ down pairs $(r_D^E,r_D^I)$. Let cluster $1$ be active. The fixed-point equations are
+%
+\begin{equation}
+  r_1^a=\Phi_a(u_1^a),
+  \qquad
+  r_k^a=\Phi_a(u_D^a)\quad k\ne 1,
+  \qquad
+  a\in\{E,I\}.
+  \label{eq:one-active-ei-fixed-point}
+\end{equation}
+%
+The exact inputs include within-active, active-to-down, down-to-active, and down-to-down terms.
+
+Local stability is determined by the Jacobian. For variables ordered as $(\vec r^{\,E},\vec r^{\,I})$, the block form is
+%
+\begin{equation}
+  \Jac
+  =
+  \begin{bmatrix}
+  \tau_E^{-1}\!\left(-\mat{I}+G_E W^{EE}\right)
+  &
+  -\tau_E^{-1}G_E W^{EI}
+  \\
+  \tau_I^{-1}G_I W^{IE}
+  &
+  \tau_I^{-1}\!\left(-\mat{I}-G_I W^{II}\right)
+  \end{bmatrix},
+  \label{eq:ei-full-jacobian}
+\end{equation}
+%
+where $G_E$ and $G_I$ are diagonal gain matrices evaluated at the fixed point. The one-active state is locally stable if every eigenvalue of $\Jac$ has negative real part.
+
+The interpretation is direct. The $G_E W^{EE}$ block is recurrent excitatory amplification. The $-G_E W^{EI}$ block is inhibitory feedback onto E. The $G_I W^{IE}$ block is recruitment of inhibition by E. The $-\mat{I}-G_I W^{II}$ block is inhibitory relaxation plus inhibitory self-suppression. The E/I extension is successful only if these blocks stabilize fast spiking while leaving the desired slow cluster-state directions weak enough for metastability.
+
+% ============================================================
+\section{Stability Analysis of Multiple Active Clusters}
+\label{sec:stability-analysis-multiple-active-clusters}
+% ============================================================
+
+For a symmetric $K$-active state, $K$ clusters have the up pair $(r_U^E,r_U^I)$ and $Q-K$ clusters have the down pair $(r_D^E,r_D^I)$. Stability decomposes approximately into three mode families when clusters are exchangeable.
+
+The first family is the \emph{common mode}: all active clusters rise or fall together. Instability here means the whole active set collapses, runs away, or oscillates.
+
+The second family is the \emph{active contrast mode}: one active cluster rises while another active cluster falls. Instability here means the $K$-active state breaks symmetry and becomes a smaller active set.
+
+The third family is the \emph{inactive invasion mode}: a down cluster begins to rise while active clusters remain high. Instability here means the active set recruits additional clusters.
+
+A useful reduced diagnostic is the effective coupling matrix from \cref{eq:ei-effective-coupling}. If $K_{\mathrm{eff}}$ has strong diagonal entries and negative or weak off-diagonal entries, single-cluster up-states are favored. If off-diagonal excitation remains strong, multi-cluster states become easier. If inhibitory feedback creates too much global suppression, every active state can become fragile.
+
+The practical computation is to enumerate candidate active sets, solve the fixed-point equations, compute $\Jac$, and classify eigenvectors by whether they live mostly on active clusters, inactive clusters, excitatory variables, or inhibitory variables.
+
+% ============================================================
+\section{Numerical Integration of Mesoscopic Equations}
+\label{sec:numerical-integration-mesoscopic-equations}
+% ============================================================
+
+The stochastic equations can be integrated with Euler--Maruyama as a first diagnostic:
+%
+\begin{equation}
+  r_{k,n+1}^{a}
+  =
+  r_{k,n}^{a}
+  +
+  \Delta t\,
+  \frac{-r_{k,n}^{a}+\Phi_a(u_{k,n}^{a})}{\tau_a}
+  +
+  \sqrt{\Delta t}\,
+  \frac{\sigma_a(r_{k,n}^{a})}{\sqrt{N_k^a}\tau_a}
+  z_{k,n}^{a},
+  \label{eq:ei-euler-maruyama}
+\end{equation}
+%
+where $z_{k,n}^{a}\sim \mathcal{N}(0,1)$ are independent standard normal draws unless a correlated noise model is being tested.
+
+The time step must resolve the fastest population time constant and the steepest transfer-function gain. Negative rates produced by a large stochastic step should not be silently accepted. Options are to reduce $\Delta t$, use a positivity-preserving activity model, or reflect/truncate rates while documenting the approximation.
+
+For deterministic stability and Lyapunov tests, run the same code with noise amplitude set to zero. If deterministic trajectories switch irregularly with $\sigma_a=0$, the model is not in a pure finite-size metastability regime. That may be interesting, but it is a different mechanism and should be labeled as such.
+
+% ============================================================
+\section{Comparison Against Microscopic Simulations}
+\label{sec:comparison-against-microscopic-simulations}
+% ============================================================
+
+The comparison should be observable-based. The mesoscopic model does not need to reproduce individual spike times. It should reproduce the statistics of the population variables it claims to model.
+
+Use the following comparison ladder:
+%
+\begin{enumerate}[leftmargin=*]
+  \item \textbf{Mean rates}: compare $\langle r_k^E\rangle$, $\langle r_k^I\rangle$, and population averages.
+  \item \textbf{State occupancy}: compare the fraction of time with $K=0,1,2,\ldots$ active clusters.
+  \item \textbf{Dwell times}: compare survival curves for up-state and down-state lifetimes.
+  \item \textbf{Transition paths}: compare transition-triggered averages of E and I cluster rates.
+  \item \textbf{Variability}: compare Fano factors, rate autocorrelation, and low-frequency power.
+  \item \textbf{Scaling}: compare how lifetimes and within-state variance change with cluster size.
+\end{enumerate}
+
+The most important mismatch should guide the next model refinement. If mean rates are wrong, the transfer functions or coupling normalization are wrong. If state occupancy is wrong but rates are right, the attractor landscape or noise scale is wrong. If transition paths are wrong, the time constants or E/I feedback structure are wrong. If scaling is wrong, the finite-size noise model is wrong.
+
+\begin{chaptersummary}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.45}
+\begin{tabularx}{\textwidth}{@{}l X X@{}}
+  \toprule
+  \textbf{Ingredient} & \textbf{Mathematical object} & \textbf{Practical test} \\
+  \midrule
+  E/I variables & $(r_k^E,r_k^I)$ & Match smoothed microscopic E/I cluster rates \\
+  Coupling & $W^{ab}_{k\ell}$ & Preserve mean input while varying structure \\
+  Local balance & $B_k=W_{+}^{EE}r_k^E-W_{+}^{EI}r_k^I+h_k^E$ & Avoid runaway and over-suppression \\
+  Fast-I reduction & $K_{\mathrm{eff}}$ & Predict competition and up-state stability \\
+  Stability & Eigenvalues of $\Jac$ & Classify active-set fixed points \\
+  Finite-size noise & $N_k^{-1/2}\sigma_a\xi_k^a$ & Test lifetime and variance scaling \\
+  \bottomrule
+\end{tabularx}
+\end{center}
+
+\end{chaptersummary}
+
+\begin{conceptquestions}
+  \item Why does an E/I-clustered model need two variables per cluster rather than one net activity variable?
+  \item In \cref{eq:ei-effective-coupling}, which architectural change makes the indirect inhibitory term more local?
+  \item What eigenvalue signature would indicate that a one-active-cluster state is locally stable but close to losing stability?
+  \item Which mesoscopic mismatch would make you revise the transfer function rather than the noise model?
+\end{conceptquestions}

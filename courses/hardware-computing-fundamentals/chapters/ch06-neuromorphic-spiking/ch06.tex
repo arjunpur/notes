@@ -1,0 +1,151 @@
+\section{Lecture 6: Neuromorphic and Spiking Neural Network Literacy}
+
+\subsection{Why Spikes?}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=\textwidth]{spiking-neuromorphic.png}
+  \caption{A raster teaching plate for spiking systems. The left side shows leaky integrate-and-fire dynamics: weighted input spikes raise membrane potential, leak pulls it down, threshold creates an output spike, and reset restarts the cycle. The center shows spike trains, event cameras, and surrogate gradients. The right and lower panels compare dense clocked computation with sparse event-driven routing.}
+  \label{fig:spiking-neuromorphic}
+\end{figure}
+
+Most deep learning models pass continuous activations from layer to layer. Spiking neural networks pass events. A spike is a discrete event in time. Instead of saying, ``neuron \(i\) has activation 0.73,'' an SNN says, ``neuron \(i\) fired at these times.''
+
+This can be useful when the world is sparse in time. An event camera does not send a full image every frame. It sends changes in brightness at pixels. If nothing changes, little or nothing is sent. A neuromorphic chip can exploit this by waking computation only for events.
+
+\begin{aside}[Core workflow]
+For spiking systems, start from the event representation, choose the neuron dynamics, simulate the temporal state, and only then ask whether a neuromorphic platform can exploit the sparsity. A spiking model simulated densely is not automatically hardware-efficient.
+\end{aside}
+
+\subsection{Leaky Integrate-and-Fire Neurons}
+
+The leaky integrate-and-fire model is the beginner's entry point. A neuron has a membrane potential \(V(t)\). Input spikes push \(V(t)\) upward. Leak pulls it back toward rest. When \(V(t)\) crosses a threshold, the neuron emits a spike and resets.
+
+A common continuous-time form is:
+\[
+  \tau_m \frac{\dd V}{\dd t}
+  =
+  -(V - V_{\text{rest}}) + R I(t),
+\]
+with a spike rule:
+\[
+  \text{if } V(t) \ge V_{\text{th}}, \quad
+  \text{emit spike and set } V(t) \leftarrow V_{\text{reset}}.
+\]
+
+Here \(\tau_m\) is a membrane time constant, \(R\) is an effective resistance, and \(I(t)\) is input current. The equation integrates inputs over time but forgets old input through leak.
+
+\subsection{Spike Trains}
+
+A spike train can be represented as a sequence of event times:
+\[
+  S(t) = \sum_k \delta(t - t_k),
+\]
+where \(t_k\) are spike times. In simulation, time is often discretized:
+\[
+  S_t \in \{0,1\}.
+\]
+
+Rate coding uses spike count over a window. Temporal coding uses exact spike timing. Population coding uses patterns across many neurons. The right code depends on the task and hardware.
+
+This is the first interpretive choice. A rate code turns the spike train into a smoother statistic. A temporal code preserves precise timing. A population code treats the pattern across neurons as the variable. Different choices can imply different hardware behavior because they change how much state must be stored and how often events must be routed.
+
+\subsection{Surrogate Gradients}
+
+The spike function is discontinuous. A tiny change in voltage can flip a spike from absent to present. Standard backpropagation expects differentiable operations, so direct gradients through spikes are problematic.
+
+Surrogate gradient training solves this by using one function in the forward pass and another smooth approximation in the backward pass. Forward pass:
+\[
+  S_t = H(V_t - V_{\text{th}}),
+\]
+where \(H\) is a step function. Backward pass: pretend the derivative is a smooth bump near threshold.
+
+\begin{aside}[Surrogate gradient intuition]
+The model still emits discrete spikes in the forward pass. During learning, the optimizer receives a useful hint about how close the membrane potential was to threshold.
+\end{aside}
+
+\subsection{Practical SNN Tooling}
+
+For practical experimentation, start in PyTorch with libraries such as snnTorch or related SNN toolkits. The advantage is that you can learn SNN dynamics while keeping familiar tensor tooling.
+
+A minimal conceptual loop looks like:
+
+\begin{lstlisting}[language=Python, caption={Conceptual SNN training loop. This is schematic, not a complete script.}]
+mem = neuron.init_state(batch_size)
+loss = 0.0
+
+for t in range(num_steps):
+    x_t = event_batch[:, t]
+    current = encoder(x_t)
+    spk, mem = lif_neuron(current, mem)
+    logits_t = readout(spk)
+    loss = loss + criterion(logits_t, target)
+
+loss.backward()   # surrogate gradients handle spike non-differentiability
+optimizer.step()
+\end{lstlisting}
+
+Neuromorphic datasets often include event-based vision data, spoken digits encoded as spikes, or synthetic spike streams. DVS-style datasets come from dynamic vision sensors. SHD-style datasets represent audio as spike events. The important shift is that input is not a dense frame at every time; it is a sparse stream of changes.
+
+\subsection{A First SNN Experiment}
+
+A useful beginner experiment has three runs:
+\begin{enumerate}
+  \item a conventional dense neural network on frames or features,
+  \item an SNN simulated in PyTorch with the same task,
+  \item the same SNN measured by spike rate, event count, and time steps.
+\end{enumerate}
+
+The comparison should not ask only which accuracy is higher. It should ask how many events were processed, how many timesteps were simulated, whether silent periods were skipped, and whether the implementation actually avoided work. This makes the hardware question concrete.
+
+\subsection{Neuromorphic Hardware}
+
+Neuromorphic platforms include Loihi-like chips, SpiNNaker-like many-core event-routing machines, BrainScaleS-like mixed-signal systems, and research analog or mixed-signal substrates. You do not need to master all of them at the start. You should know what makes them different from GPUs:
+
+\begin{itemize}[leftmargin=*]
+  \item They often communicate with spikes or events.
+  \item They may use asynchronous or event-driven execution.
+  \item Memory and compute may be colocated near neurons or synapses.
+  \item They can be energy-efficient for sparse temporal workloads.
+  \item Their software ecosystem is less general than mainstream GPU frameworks.
+\end{itemize}
+
+\subsection{When SNNs Help}
+
+SNNs are not automatically better. They are promising when:
+
+\begin{itemize}[leftmargin=*]
+  \item the input is naturally event-based,
+  \item low power matters,
+  \item latency from first event matters,
+  \item the model can exploit temporal sparsity,
+  \item the hardware avoids doing work for inactive neurons.
+\end{itemize}
+
+They are less compelling if you simulate dense spike tensors inefficiently on hardware that cannot exploit event sparsity. A dense SNN simulation on a GPU may be slower and more complex than a conventional neural network.
+
+\subsection{Next steps}
+
+For this chapter, the mathematical object is a spike train coupled to a membrane state. The empirical diagnostic is event count over time, spike sparsity, accuracy, and energy or runtime when available. The failure mode is mistaking biological inspiration for computational efficiency.
+
+\begin{chaptersummary}
+\begin{itemize}[leftmargin=*]
+  \item SNNs communicate events over time rather than dense activations alone.
+  \item Leaky integrate-and-fire neurons integrate input, leak, threshold, spike, and reset.
+  \item Surrogate gradients make spike-based models trainable with backpropagation-style methods.
+  \item Event-based datasets and neuromorphic chips matter because they can exploit sparse temporal structure.
+  \item The practical question is whether sparsity survives all the way to the hardware execution path.
+\end{itemize}
+\end{chaptersummary}
+
+\begin{conceptquestions}
+\item What does the leak term do in a leaky integrate-and-fire neuron?
+\item Why does spike discontinuity create a training problem?
+\item Why might an event camera pair naturally with neuromorphic hardware?
+\end{conceptquestions}
+
+\begin{exercises}
+\item Simulate a leaky integrate-and-fire neuron receiving three input spikes. Sketch how the membrane potential changes if the leak is weak versus strong.
+\item Explain surrogate gradients in one paragraph without using calculus notation. What is different in the forward and backward passes?
+\item Design a tiny experiment comparing dense-frame processing to event processing. What measurements would prove that the event representation saved real work?
+\end{exercises}

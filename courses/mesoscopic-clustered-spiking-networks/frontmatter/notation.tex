@@ -1,0 +1,64 @@
+\chapter*{Notation}
+\addcontentsline{toc}{chapter}{Notation}
+
+\section*{Core conventions}
+
+\begin{tabularx}{\textwidth}{@{}p{0.22\textwidth}X@{}}
+  \toprule
+  \textbf{Symbol} & \textbf{Meaning} \\
+  \midrule
+  $i,j$ & Neuron indices. \\
+  $k,\ell,\alpha,\beta$ & Cluster or population indices; chapters use Greek indices when the population type may be E or I. \\
+  $a,b,X,Y$ & Population types, usually $E$ or $I$. \\
+  $\mathcal{C}_k$ & Set of neurons in cluster $k$. \\
+  $N$, $N_k$, $n_k$ & Total population size, cluster size, or local cluster size depending on context. \\
+  $\vec{x}$, $\vec r$, $\vec z$ & State vectors. \\
+  $\mat W$, $\mat J$, $\Jac$ & Coupling matrix, Jacobian, or linearized operator as defined locally. \\
+  \bottomrule
+\end{tabularx}
+
+\section*{Spikes, rates, and population activity}
+
+\begin{tabularx}{\textwidth}{@{}p{0.22\textwidth}X@{}}
+  \toprule
+  \textbf{Symbol} & \textbf{Meaning} \\
+  \midrule
+  $s_i(t)$ or $X_i(t)$ & Spike train of neuron $i$, typically $\sum_m \delta(t-t_i^m)$. \\
+  $N_i(a,b)$ & Spike count in window $[a,b]$. \\
+  $\lambda_i(t)$ & Conditional intensity or hazard of neuron $i$. \\
+  $A_k(t)$ & Empirical population activity of cluster $k$, a finite average of spike trains. \\
+  $r_k(t)$ or $R_k(t)$ & Filtered or expected cluster rate. \\
+  $m_k(t)$ & Binary or smoothed indicator that cluster $k$ is active. \\
+  $n_{\mathrm{act}}(t)$ & Number of active clusters. \\
+  \bottomrule
+\end{tabularx}
+
+\section*{Dynamical and stochastic objects}
+
+\begin{tabularx}{\textwidth}{@{}p{0.22\textwidth}X@{}}
+  \toprule
+  \textbf{Symbol} & \textbf{Meaning} \\
+  \midrule
+  $\vec f(\vec x;\theta)$ & Deterministic mesoscopic drift. \\
+  $\mat G(\vec x;\theta)$ & Noise-amplitude matrix in a Langevin equation. \\
+  $\mat D=\mat G\mat G^\top$ & Diffusion matrix, the covariance rate of stochastic increments. \\
+  $W_t$ & Brownian motion; $\dd W_t$ is its stochastic increment. \\
+  $\Phi$ & Transfer function from input statistics to firing rate. \\
+  $\rho(a,t)$ & Refractory or age density over time since last spike. \\
+  $h(a,t)$ & Age-dependent hazard in refractory-density notation. \\
+  \bottomrule
+\end{tabularx}
+
+\section*{Measured variability}
+
+\begin{tabularx}{\textwidth}{@{}p{0.22\textwidth}X@{}}
+  \toprule
+  \textbf{Symbol} & \textbf{Meaning} \\
+  \midrule
+  $F(T)$ & Fano factor of spike counts in a window of duration $T$. \\
+  $\mathrm{CV}$, $\mathrm{CV2}$ & Interspike-interval irregularity measures. \\
+  $C_x(\tau)$, $\rho_x(\tau)$ & Autocovariance and normalized autocorrelation. \\
+  $L$ or $T_{\mathrm{escape}}$ & Cluster lifetime or basin escape time. \\
+  $d_{\mathrm{PR}}$ & Participation-ratio dimensionality. \\
+  \bottomrule
+\end{tabularx}

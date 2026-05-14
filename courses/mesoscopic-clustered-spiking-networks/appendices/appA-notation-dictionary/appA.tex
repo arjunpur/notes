@@ -1,0 +1,186 @@
+\chapter{Notation Dictionary}
+\label{app:notation-dictionary}
+
+\textit{This appendix gives a working notation dictionary for the course. The final coordinator may adjust symbols for consistency across chapters, but the distinctions below should be preserved: microscopic variables describe neurons and spikes, mesoscopic variables describe populations or clusters, and observables describe measurements made from simulations or data.}
+
+% ============================================================
+\section{Indices, sets, and sizes}
+\label{app:notation-indices}
+% ============================================================
+
+\begin{tabularx}{\textwidth}{@{}p{0.22\textwidth}X@{}}
+\toprule
+\textbf{Symbol} & \textbf{Meaning} \\
+\midrule
+$i,j$ & Neuron indices or population indices, depending on context. \\
+$k,\ell$ & Cluster indices. \\
+$a,b$ & Population-type indices, usually $a,b\in\{E,I\}$. \\
+$N$ & Total number of neurons in a network or population under discussion. \\
+$N_k$ & Number of neurons in cluster $k$. \\
+$N_E,N_I$ & Number of excitatory and inhibitory neurons. \\
+$K$ & Number of clusters. \\
+$\mathcal{C}_k$ & Set of neurons belonging to cluster $k$. \\
+$\theta$ & Generic parameter vector. \\
+\bottomrule
+\end{tabularx}
+
+% ============================================================
+\section{Microscopic spiking variables}
+\label{app:notation-microscopic}
+% ============================================================
+
+\begin{tabularx}{\textwidth}{@{}p{0.22\textwidth}X@{}}
+\toprule
+\textbf{Symbol} & \textbf{Meaning} \\
+\midrule
+$V_i(t)$ & Membrane potential of neuron $i$. \\
+$\Vth,\Vreset,\Vrest$ & Spike threshold, reset voltage, and resting voltage. \\
+$\taum,\tauref$ & Membrane and refractory time constants. \\
+$t_i^m$ & Time of the $m$th spike emitted by neuron $i$. \\
+$s_i(t)$ & Spike train of neuron $i$, often $s_i(t)=\sum_m \delta(t-t_i^m)$. \\
+$N_i(t_0,t_1)$ & Spike count of neuron $i$ in window $[t_0,t_1]$. \\
+$T_i^m$ & Interspike interval $t_i^{m+1}-t_i^m$. \\
+$\lambda_i(t)$ & Conditional intensity or instantaneous hazard of neuron $i$. \\
+$h_i(a,t)$ & Hazard as a function of age $a$ since the last spike and time $t$. \\
+$p_{\mathrm{ISI}}(T)$ & Interspike-interval density. \\
+$S(T)$ & ISI survival function, $\mathbb{P}\{\mathrm{ISI}>T\}$. \\
+\bottomrule
+\end{tabularx}
+
+% ============================================================
+\section{Connectivity and input}
+\label{app:notation-connectivity}
+% ============================================================
+
+\begin{tabularx}{\textwidth}{@{}p{0.22\textwidth}X@{}}
+\toprule
+\textbf{Symbol} & \textbf{Meaning} \\
+\midrule
+$J_{ij}$ & Microscopic synaptic weight from neuron $j$ to neuron $i$ when used in spiking-network equations. \\
+$W_{ab}$ & Effective mesoscopic coupling from population type $b$ to population type $a$. \\
+$W_{k\ell}^{ab}$ & Coupling from population type $b$ in cluster $\ell$ to population type $a$ in cluster $k$. \\
+$p_{ab}$ & Connection probability from type $b$ to type $a$. \\
+$p_{\mathrm{in}},p_{\mathrm{out}}$ & Within-cluster and between-cluster connection probabilities. \\
+$g$ or $J_+$ & Cluster-strength parameter increasing within-cluster excitation or structured coupling. \\
+$I_i(t)$ & External or synaptic input current to neuron $i$. \\
+$I_k^a(t)$ & Effective input to population type $a$ in cluster $k$. \\
+$\tau_s$ & Synaptic filtering time constant. \\
+$\Phi(\cdot)$ & Static or effective transfer function from input to firing rate. \\
+\bottomrule
+\end{tabularx}
+
+% ============================================================
+\section{Mesoscopic population variables}
+\label{app:notation-mesoscopic}
+% ============================================================
+
+\begin{tabularx}{\textwidth}{@{}p{0.22\textwidth}X@{}}
+\toprule
+\textbf{Symbol} & \textbf{Meaning} \\
+\midrule
+$r_i(t)$ & Firing rate of neuron or unit $i$ in rate-model notation. \\
+$r_k^a(t)$ & Mean firing rate of population type $a$ in cluster $k$. \\
+$A_k^a(t)$ & Population activity: fraction or rate of spikes emitted by population type $a$ in cluster $k$ over a small time bin. \\
+$\bar r(t)$ & Population-averaged firing rate. \\
+$m_k(t)$ & Generic cluster activation variable, often binary or smoothed. \\
+$q(t)$ & Generic low-dimensional order parameter, such as number of active clusters. \\
+$n_{\mathrm{act}}(t)$ & Number of active clusters at time $t$. \\
+$u_k^a(t)$ & Synaptic or effective input variable for population type $a$ in cluster $k$. \\
+$x(t)$, $\vec{x}(t)$ & Generic scalar or vector state of a mesoscopic dynamical system. \\
+$\vec{f}(\vec{x};\theta)$ & Deterministic drift or vector field. \\
+$G(\vec{x})$ & Noise-amplitude matrix in a Langevin equation. \\
+$D(\vec{x})=G(\vec{x})\,G^\top(\vec{x})$ & Diffusion matrix. \\
+\bottomrule
+\end{tabularx}
+
+% ============================================================
+\section{Dynamical-systems notation}
+\label{app:notation-dynamics}
+% ============================================================
+
+\begin{tabularx}{\textwidth}{@{}p{0.22\textwidth}X@{}}
+\toprule
+\textbf{Symbol} & \textbf{Meaning} \\
+\midrule
+$\vec{x}^*$ & Fixed point satisfying $\vec{f}(\vec{x}^*)=\vec{0}$. \\
+$\delta\vec{x}$ & Small perturbation around a fixed point. \\
+$\Jac$ & Jacobian matrix with entries $(\Jac)_{ij}=\partial f_i/\partial x_j$. \\
+$\lambda_\mu$ & Eigenvalue of the Jacobian or another linear operator. \\
+$\vec{v}_\mu$ & Eigenvector or mode associated with $\lambda_\mu$. \\
+$\Re(\lambda)$ & Real part of eigenvalue $\lambda$; negative real parts imply local stability for continuous-time fixed points. \\
+$\mathcal{B}(A)$ & Basin of attraction of attractor $A$. \\
+$U(x)$ & Effective potential in one-dimensional intuition for attractors and barriers. \\
+$\Delta U$ & Potential-barrier height. \\
+$T_{\mathrm{escape}}$ & First-passage or escape time from an attractor basin. \\
+$\alpha,\mu$ & Scalar control parameters used in bifurcation analysis. \\
+\bottomrule
+\end{tabularx}
+
+% ============================================================
+\section{Stochastic-process notation}
+\label{app:notation-stochastic}
+% ============================================================
+
+\begin{tabularx}{\textwidth}{@{}p{0.22\textwidth}X@{}}
+\toprule
+\textbf{Symbol} & \textbf{Meaning} \\
+\midrule
+$N(t)$ & Counting process. \\
+$N_T$ & Count in a window of duration $T$. \\
+$\lambda(t)$ & Time-dependent intensity of an inhomogeneous or Cox process. \\
+$\Lambda_T$ & Integrated intensity $\int_0^T\lambda(t)\,\dd t$. \\
+$W_t$ & Standard Brownian motion. \\
+$\xi(t)$ & White noise, formally $\dd W_t/\dd t$. \\
+$\eta(t)$ & Generic colored-noise process. \\
+$\tau_c$ & Correlation time of colored noise or an OU process. \\
+$\sigma^2$ & Variance parameter; exact meaning should be read from the surrounding equation. \\
+$p(\vec{x},t)$ & Probability density over state space. \\
+$b(x),a(x)$ & Drift and infinitesimal variance in a one-dimensional diffusion approximation. \\
+$\Delta S$ & Effective action or large-deviation barrier controlling finite-size escape. \\
+\bottomrule
+\end{tabularx}
+
+% ============================================================
+\section{Variability and metastability measurements}
+\label{app:notation-measurements}
+% ============================================================
+
+\begin{tabularx}{\textwidth}{@{}p{0.22\textwidth}X@{}}
+\toprule
+\textbf{Symbol} & \textbf{Meaning} \\
+\midrule
+$F(T)$ & Fano factor $\Var[N_T]/\E[N_T]$ for counting window $T$. \\
+$\mathrm{CV}$ & Coefficient of variation of interspike intervals. \\
+$\mathrm{CV}_{\mathrm{local}}$ & Local adjacent-interval irregularity statistic. \\
+$C_x(\tau)$ & Autocovariance of signal $x(t)$. \\
+$\rho_x(\tau)$ & Normalized autocorrelation of $x(t)$. \\
+$\tau_{\mathrm{int}}$ & Integrated autocorrelation time. \\
+$L$ & Cluster lifetime or dwell time. \\
+$S_L(t)$ & Survival function of cluster lifetimes. \\
+$c_{ij}$ & Pairwise count correlation between neurons or populations $i$ and $j$. \\
+$\Sigma$ & Covariance matrix of population or cluster activity. \\
+$d_{\mathrm{PR}}$ & Participation-ratio dimensionality. \\
+$S_x(f)$ & Power spectrum of signal $x(t)$. \\
+\bottomrule
+\end{tabularx}
+
+% ============================================================
+\section{Scaling conventions}
+\label{app:notation-scaling}
+% ============================================================
+
+\begin{tabularx}{\textwidth}{@{}p{0.22\textwidth}X@{}}
+\toprule
+\textbf{Symbol} & \textbf{Meaning} \\
+\midrule
+$O(\cdot)$ & Order-of-magnitude scaling. \\
+$N^{-1/2}$ & Typical standard-deviation scaling for incoherent population averages. \\
+$N^{-1}$ & Typical variance scaling for incoherent population averages. \\
+$N_k^{-1/2}$ & Finite-size fluctuation scale for cluster $k$ when cluster size is the relevant averaging variable. \\
+$\exp(N\Delta S)$ & Typical large-deviation scaling of mean dwell time in noise-driven escape. \\
+$K$ fixed, $N_k\to\infty$ & Scaling test that increases cluster size while keeping the number of attractor labels fixed. \\
+$K\to\infty$, $N_k$ fixed & Scaling test that increases the number of clusters and possible states while keeping single-cluster noise scale similar. \\
+\bottomrule
+\end{tabularx}
+
+\clearpage

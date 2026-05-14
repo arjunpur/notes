@@ -10,6 +10,8 @@ This repository holds Bodhi-managed LaTeX lecture notes for multiple courses.
 - `courses/machine-intelligence-ii/`
 - `courses/acquisition-and-analysis-of-neural-data-summer/`
 - `courses/models-of-higher-brain-function/`
+- `courses/mathematical-foundations-neuroai/`
+- `courses/hardware-computing-fundamentals/`
 
 Each course directory is self-contained and should be buildable from inside that directory.
 
@@ -61,6 +63,20 @@ cd courses/acquisition-and-analysis-of-neural-data-summer
 make all
 ```
 
+### Mathematical Foundations for Computational Neuroscience and AI
+
+```bash
+cd courses/mathematical-foundations-neuroai
+make all
+```
+
+### Hardware Computing Fundamentals for AI
+
+```bash
+cd courses/hardware-computing-fundamentals
+make all
+```
+
 ## Note Quality Bar
 
 The target style is minimal on the page and rich in explanation. Good additions should:
@@ -80,6 +96,8 @@ Each course keeps its current canonical export in the course directory:
 - `courses/machine-intelligence-ii/machine-intelligence-ii-lecture-notes.pdf`
 - `courses/models-of-higher-brain-function/models-of-higher-brain-function-lecture-notes.pdf`
 - `courses/acquisition-and-analysis-of-neural-data-summer/acquisition-and-analysis-of-neural-data-summer-lecture-notes.pdf`
+- `courses/mathematical-foundations-neuroai/mathematical-foundations-neuroai-lecture-notes.pdf`
+- `courses/hardware-computing-fundamentals/hardware-computing-fundamentals-lecture-notes.pdf`
 
 The repo-backed preview site is generated under `site/` and is intentionally not committed.
 

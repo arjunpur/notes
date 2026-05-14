@@ -1,0 +1,83 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{coursenotes-macros}[2026/04/17 Generic course-notes notation macros]
+
+% ---------- Differential operator ----------
+\newcommand{\dd}{\mathop{}\!\mathrm{d}}
+
+% ---------- Common operators ----------
+\DeclareMathOperator{\tr}{tr}
+\DeclareMathOperator{\diag}{diag}
+\DeclareMathOperator{\sign}{sign}
+
+% ---------- Vectors and matrices (bold) ----------
+\renewcommand{\vec}[1]{\mathbf{#1}}
+\newcommand{\mat}[1]{\mathbf{#1}}
+
+% ---------- Neuroscience: membrane potential ----------
+\newcommand{\Vm}{V_m}
+\newcommand{\Vrest}{V_{\text{rest}}}
+\newcommand{\Vth}{V_{\text{th}}}
+\newcommand{\Vreset}{V_{\text{reset}}}
+
+% ---------- Neuroscience: reversal potentials ----------
+% Usage: \Erev{Na}, \Erev{K}, \Erev{Cl}, \Erev{L}
+\newcommand{\Erev}[1]{E_{\mathrm{#1}}}
+
+% ---------- Neuroscience: conductances ----------
+% Usage: \gbar{Na}, \gbar{K}
+\newcommand{\gbar}[1]{\bar{g}_{\mathrm{#1}}}
+\newcommand{\gleak}{g_L}
+
+% ---------- Neuroscience: time constants ----------
+\newcommand{\taum}{\tau_m}
+\newcommand{\tauref}{\tau_{\text{ref}}}
+\newcommand{\taur}{\tau_r}
+
+% ---------- Neuroscience: capacitance ----------
+\newcommand{\Cm}{C_m}
+
+% ---------- Neuroscience: gating variables ----------
+\newcommand{\minf}{m_\infty}
+\newcommand{\hinf}{h_\infty}
+\newcommand{\ninf}{n_\infty}
+\newcommand{\xinf}{x_\infty}
+\newcommand{\taux}{\tau_x}
+
+% ---------- Cable theory ----------
+\newcommand{\lambdac}{\lambda}    % Length constant
+\newcommand{\ri}{r_L}             % Axial resistivity
+\newcommand{\rmem}{r_m}           % Membrane resistance per unit length
+\newcommand{\cmem}{c_m}           % Membrane capacitance per unit length
+
+% ---------- Network models ----------
+\newcommand{\wvec}{\vec{w}}
+\newcommand{\xvec}{\vec{x}}
+\newcommand{\uvec}{\vec{u}}
+\newcommand{\vvec}{\vec{v}}
+\newcommand{\hvec}{\vec{h}}
+\newcommand{\evec}{\vec{e}}
+\newcommand{\Wmat}{\mat{W}}
+\newcommand{\Mmat}{\mat{M}}
+\newcommand{\Jac}{\mat{J}}       % Jacobian
+
+% ---------- Ions (convenience) ----------
+\newcommand{\Na}{\mathrm{Na}^+}
+\newcommand{\K}{\mathrm{K}^+}
+\newcommand{\Cl}{\mathrm{Cl}^-}
+\newcommand{\Ca}{\mathrm{Ca}^{2+}}
+
+% ---------- Concentrations ----------
+% Usage: \conc{K}{out}, \conc{Na}{in}
+\newcommand{\conc}[2]{[\mathrm{#1}]_{\text{#2}}}
+
+% ---------- General math ----------
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\E}{\mathbb{E}}
+\DeclareMathOperator{\Var}{Var}
+
+% ---------- Partial derivatives shorthand ----------
+\newcommand{\pd}[2]{\frac{\partial #1}{\partial #2}}
+\newcommand{\pdd}[2]{\frac{\partial^2 #1}{\partial #2^2}}
+
+\endinput

@@ -1,0 +1,219 @@
+\section{Lecture 8: Algorithm-Hardware Co-Design and the Practice Stack}
+
+\subsection{The Co-Design Loop}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=\textwidth]{codesign-loop.png}
+  \caption{A raster teaching plate for algorithm-hardware co-design. Model architecture, compiler/runtime, hardware constraints, measurements, and workload structure form a loop. Good systems do not pick a model in isolation and then hope hardware runs it well. They adapt the model, runtime, and placement together.}
+  \label{fig:codesign-loop}
+\end{figure}
+
+Algorithm-hardware co-design means the model and the machine are designed with each other in mind. The model asks for certain operations, memory layouts, sparsity patterns, and communication routes. The hardware offers certain fast paths, memory capacities, interconnects, and precision formats. The runtime connects them.
+
+A co-design loop looks like:
+
+\begin{enumerate}[leftmargin=*]
+  \item Choose a model idea.
+  \item Estimate operations, memory, and communication.
+  \item Implement a baseline.
+  \item Profile it.
+  \item Modify architecture, placement, kernels, precision, batching, or routing.
+  \item Re-measure on the target workload.
+\end{enumerate}
+
+The loop matters because intuition is often wrong. A clever sparse model can be slow. A simple dense model can win because libraries are excellent. A quantized model can be faster, or slower if dequantization dominates. A distributed placement can fit memory while losing to communication.
+
+\begin{aside}[Core workflow]
+Co-design is a loop, not a slogan: propose, estimate, implement, profile, revise. Stop only when the measured bottleneck matches the intended design tradeoff.
+\end{aside}
+
+\subsection{Mixture-of-Pathways Thinking}
+
+Mixture-of-experts routes tokens to experts. Mixture-of-pathways generalizes the idea: different information can take different computational paths. Some paths may be dense, others sparse, recurrent, symbolic, retrieval-based, spiking, or graph-structured.
+
+The hardware-aware question is:
+
+\begin{aside}[Pathway placement]
+Can the pathway structure be placed so frequently communicating modules are close, rare paths are cheap to activate, and specialized hardware is used only when its advantage survives routing overhead?
+\end{aside}
+
+This is where maximum heterogeneity becomes practical rather than aesthetic. Heterogeneity is useful only when specialization beats the cost of coordination.
+
+\subsection{A Concrete Co-Design Example}
+
+Suppose a model has a dense language core, a retrieval module, a graph-reasoning module, and a sparse event stream from a sensor. A hardware-oblivious design might push everything through the same dense model path. A co-designed system would ask:
+\begin{itemize}[leftmargin=*]
+  \item Can retrieval run near the vector index to avoid moving many documents?
+  \item Can graph reasoning use a CPU or specialized sparse kernel without blocking token generation?
+  \item Can event streams remain sparse until a dense summary is actually needed?
+  \item Can the dense language core receive compact summaries instead of raw intermediate state?
+\end{itemize}
+
+The goal is not to maximize heterogeneity. The goal is to keep each representation on the cheapest substrate until communication or quality requires conversion.
+
+\subsection{Benchmarking Cost, Latency, and Energy}
+
+A credible benchmark records:
+
+\begin{itemize}[leftmargin=*]
+  \item model version and precision,
+  \item input shapes and sequence lengths,
+  \item batch size and request pattern,
+  \item warmup steps and measurement steps,
+  \item hardware SKU and memory capacity,
+  \item software versions and compiler flags,
+  \item latency distribution, not only mean latency,
+  \item throughput,
+  \item peak and average memory usage,
+  \item energy or power when available,
+  \item total cost for the task.
+\end{itemize}
+
+For inference, record time to first token, inter-token latency, total tokens per second, and cost per million tokens. For training, record tokens or examples per second, step time, convergence behavior, and cost to target quality. Hardware speed without quality or cost can mislead.
+
+\begin{keyequation}[Benchmark record]
+\[
+  \text{result}
+  =
+  \left(
+  \text{quality},
+  \text{latency},
+  \text{throughput},
+  \text{memory},
+  \text{energy},
+  \text{cost}
+  \right)
+\]
+\tcblower
+A benchmark is incomplete if it reports only one coordinate. A faster model that loses quality, exceeds memory, or costs more per useful result may not be an improvement.
+\end{keyequation}
+
+\subsection{The Optional High-Signal Stack}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=\textwidth]{implementation-stack.png}
+  \caption{A raster teaching plate for the optional implementation stack. Kernel work focuses on tiling, memory coalescing, occupancy, and fusion. FPGA work focuses on custom streaming pipelines. Cluster work focuses on containers, queues, multi-GPU nodes, network fabric, and logs. Benchmarking ties them together by measuring latency, throughput, cost, energy, and utilization.}
+  \label{fig:implementation-stack}
+\end{figure}
+
+You do not need to master CUDA, Triton, FPGAs, and HPC before thinking well about hardware. But each gives a useful perspective.
+
+\subsubsection{CUDA and Triton}
+
+CUDA teaches the full GPU model: threads, warps, blocks, memory hierarchy, synchronization, occupancy, and coalescing. Triton gives a higher-level path to custom GPU kernels while keeping tiling and memory movement explicit.
+
+Kernel work is useful when:
+
+\begin{itemize}[leftmargin=*]
+  \item the bottleneck is a small custom operation not covered by libraries,
+  \item several operations can be fused,
+  \item memory layout is the problem,
+  \item a model idea requires unusual sparsity or routing,
+  \item profiler evidence shows existing kernels dominate time.
+\end{itemize}
+
+It is not useful when the bottleneck is data loading, networking, or an already excellent library kernel.
+
+\subsubsection{FPGA and Verilog Basics}
+
+FPGAs are reconfigurable hardware fabrics. Instead of running a program on fixed cores, you configure a circuit-like pipeline. They can be excellent for fixed low-latency streaming tasks, custom protocols, or specialized preprocessing. They are harder to program and less flexible than GPUs.
+
+Basic terms:
+
+\begin{itemize}[leftmargin=*]
+  \item lookup tables implement small logic functions,
+  \item flip-flops store bits,
+  \item DSP blocks accelerate arithmetic,
+  \item BRAM stores on-chip data,
+  \item pipelines increase throughput by processing different items at different stages.
+\end{itemize}
+
+\subsubsection{Clusters and HPC}
+
+Cluster experience teaches that hardware is operated, not merely owned. Slurm-like schedulers allocate jobs. Containers package environments. Multi-GPU nodes need drivers and libraries aligned. Network topology affects collectives. Logs and metrics explain failures.
+
+Useful cluster habits:
+
+\begin{itemize}[leftmargin=*]
+  \item request only the resources the job needs,
+  \item save environment and git revision with every run,
+  \item measure startup, data loading, training, checkpointing, and teardown separately,
+  \item design jobs to resume after preemption,
+  \item collect profiler traces on small representative runs before scaling.
+\end{itemize}
+
+\subsection{A Beginner Roadmap}
+
+\begin{enumerate}[leftmargin=*]
+  \item Learn tensor shapes and memory sizes. Compute how many bytes a layer reads and writes.
+  \item Profile a small PyTorch model. Identify CPU gaps, copies, kernels, and memory spikes.
+  \item Study the roofline model. Classify operations as memory-bound or compute-bound.
+  \item Learn distributed parallelism vocabulary: data, tensor, pipeline, expert, and state sharding.
+  \item Implement one small Triton or CUDA kernel only after profiling shows why it matters.
+  \item Train or simulate one SNN with surrogate gradients to understand event-driven computation.
+  \item Add one graph or wiring regularizer to a toy model and inspect the learned topology.
+  \item Benchmark the same model on two hardware paths and explain the result using bytes, FLOPs, latency, and communication.
+\end{enumerate}
+
+\subsection{Final Mental Checklist}
+
+Before accepting a hardware claim, ask:
+
+\begin{itemize}[leftmargin=*]
+  \item What workload was measured?
+  \item What tensor shapes and batch sizes?
+  \item Which precision?
+  \item What memory capacity and bandwidth?
+  \item What interconnect?
+  \item What utilization?
+  \item Was communication included?
+  \item Was data loading included?
+  \item Was quality held constant?
+  \item Does the software stack support the model cleanly?
+\end{itemize}
+
+This checklist is the practical result of the course. Hardware-aware AI is not chip trivia. It is disciplined reasoning about operations, memory, communication, and constraints.
+
+\subsection{Capstone: Explain One Run End to End}
+
+The capstone exercise for these notes is to take one model run and write a short technical report with the following structure:
+\begin{enumerate}
+  \item workload and model shape,
+  \item hardware and software stack,
+  \item operation and memory estimates,
+  \item profiler evidence,
+  \item bottleneck diagnosis,
+  \item one attempted change,
+  \item before/after measurement,
+  \item interpretation and remaining uncertainty.
+\end{enumerate}
+
+This mirrors the style of a good data-analysis report. The report is not a list of tricks. It is a chain from measurement to interpretation.
+
+\subsection{Next steps}
+
+For this chapter, the mathematical object is the joint design space of model, runtime, hardware, and workload. The empirical diagnostic is a benchmark record with quality and resource coordinates. The failure mode is optimizing a local metric that makes the whole system worse.
+
+\begin{chaptersummary}
+\begin{itemize}[leftmargin=*]
+  \item Co-design links model architecture, runtime, hardware, measurement, and workload.
+  \item Heterogeneity helps only when specialization beats coordination cost.
+  \item Benchmarking must include latency, throughput, memory, cost, energy, and quality.
+  \item CUDA/Triton, FPGA basics, and cluster practice each expose a different layer of the system.
+  \item The final skill is explaining performance using concrete resource flows.
+\end{itemize}
+\end{chaptersummary}
+
+\begin{conceptquestions}
+\item Why can a specialized pathway become a net loss after routing overhead?
+\item What information should be recorded to make a benchmark reproducible?
+\item When would you write a custom kernel, and when would you avoid it?
+\end{conceptquestions}
+
+\begin{exercises}
+\item Choose a model architecture idea such as long-context attention, mixture-of-experts, retrieval augmentation, or SNN perception. Write a co-design loop for it: estimate, implement, profile, revise.
+\item Build a benchmark record for an inference workload. Which coordinate matters most for an interactive user? Which matters most for an offline batch job?
+\item Write the capstone report outline for a real or imagined profiling run. The goal is not to be right immediately; it is to make the assumptions inspectable.
+\end{exercises}
