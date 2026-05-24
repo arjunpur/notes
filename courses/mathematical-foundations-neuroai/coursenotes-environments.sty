@@ -1,0 +1,114 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{coursenotes-environments}[2026/04/17 Generic course-notes environments]
+
+% Requires tcolorbox (loaded by coursenotes.cls)
+
+% ================================================================
+%
+%   Three environments — use sparingly:
+%
+%     keyequation  — centred display equation with notation legend
+%     aside        — left-border callout; use only when content truly
+%                    needs to stand apart from the main text flow
+%     derivation   — smaller font, clearly skippable detail
+%
+%   Most content should be plain prose. Prefer inline text over boxes.
+%
+% ================================================================
+
+% --- Key Equation ---
+%   Thin top rule, centred equation, optional \tcblower for notation.
+\newtcolorbox{keyequation}[1][]{
+  enhanced,
+  colback=white,
+  colframe=white,
+  boxrule=0pt,
+  borderline north={0.8pt}{0pt}{black!25},
+  borderline south={0.4pt}{0pt}{black!15},
+  arc=0mm,
+  left=1.5em, right=1.5em,
+  top=1em, bottom=0.8em,
+  fonttitle=\sffamily\small\color{black!60},
+  title={#1},
+  attach boxed title to top left={xshift=0em, yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=white, colframe=white, boxrule=0pt},
+  segmentation style={solid, black!12},
+  before upper={\centering},
+  before skip=1.2em, after skip=1.2em
+}
+
+% --- Aside ---
+%   Left-border blockquote. Title distinguishes purpose.
+%   Used for: Key Idea, Example, Common Mistake, Connection, etc.
+\newtcolorbox{aside}[1][]{
+  enhanced, breakable,
+  colback=white,
+  colframe=white,
+  boxrule=0pt,
+  borderline west={2pt}{0pt}{black!18},
+  arc=0mm,
+  left=1em, right=1em,
+  top=0.6em, bottom=0.6em,
+  fonttitle=\sffamily\small\color{black!55},
+  title={#1},
+  attach title to upper={\par\smallskip},
+  before skip=1em, after skip=1em
+}
+
+% --- Derivation ---
+%   Indented, slightly smaller font. Clearly "optional" reading.
+\newtcolorbox{derivation}[1][Derivation]{
+  enhanced, breakable,
+  colback=black!2,
+  colframe=black!2,
+  boxrule=0pt,
+  arc=0mm,
+  left=1.5em, right=1.5em,
+  top=0.8em, bottom=0.8em,
+  fontupper=\small,
+  fonttitle=\sffamily\footnotesize\color{black!45},
+  title={\MakeUppercase{#1}},
+  attach title to upper={\par\smallskip},
+  before skip=1em, after skip=1em
+}
+
+
+% ================================================================
+% SUMMARY TABLE environment (end of chapter)
+% ================================================================
+\newenvironment{chaptersummary}{%
+  \section*{Chapter Summary}
+  \addcontentsline{toc}{section}{Chapter Summary}
+}{%
+  \bigskip
+}
+
+% ================================================================
+% EXERCISES environment (end of chapter)
+% ================================================================
+\newenvironment{exercises}{%
+  \section*{Exercises}
+  \addcontentsline{toc}{section}{Exercises}
+  \begin{enumerate}[label=\textbf{\thechapter.\arabic*}, leftmargin=*]
+}{%
+  \end{enumerate}
+}
+
+% ================================================================
+% CONCEPTUAL QUESTIONS (end of chapter)
+% ================================================================
+\newenvironment{conceptquestions}{%
+  \section*{Conceptual Questions}
+  \addcontentsline{toc}{section}{Conceptual Questions}
+  \begin{enumerate}[label=\textbf{Q\thechapter.\arabic*}, leftmargin=*]
+}{%
+  \end{enumerate}
+}
+
+% ================================================================
+% PARTS LIST (for sub-items in exercises)
+% ================================================================
+\newlist{parts}{enumerate}{1}
+\setlist[parts]{label=\textbf{(\alph*)}, leftmargin=*, itemsep=0.4em, topsep=0.2em, parsep=0pt}
+
+\endinput

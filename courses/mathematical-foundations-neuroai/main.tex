@@ -1,0 +1,98 @@
+\documentclass[11pt]{article}
+            \usepackage[letterpaper,margin=1in]{geometry}
+            \usepackage{fontspec}
+            \usepackage{unicode-math}
+            \usepackage{amsmath}
+            \usepackage{amsthm}
+            \usepackage{graphicx}
+            \usepackage{xcolor}
+            \usepackage{booktabs}
+            \usepackage{enumitem}
+            \usepackage{microtype}
+            \usepackage{hyperref}
+            \usepackage{bookmark}
+            \emergencystretch=3em
+            \setcounter{tocdepth}{3}
+            \setlist{itemsep=0.25em, topsep=0.35em}
+
+            \title{Mathematical Foundations for Computational Neuroscience and AI}
+            \author{Arjun Puri}
+            \date{2026}
+
+            \begin{document}
+            \pagenumbering{gobble}
+            \input{frontmatter/titlepage}
+            \clearpage
+            \pagenumbering{roman}
+            \tableofcontents
+            \clearpage
+            \input{frontmatter/preface}
+            \input{frontmatter/notation}
+            \clearpage
+            \pagenumbering{arabic}
+
+            \part{Volume I: Mathematical Language and Finite-Dimensional Geometry}
+\input{chapters/ch01-mathematical-language-proof-and-abstraction/ch01}
+\input{chapters/ch02-functions-transformations-and-coordinate-systems/ch02}
+\input{chapters/ch03-vectors-geometry-and-vector-spaces/ch03}
+\input{chapters/ch04-matrices-as-linear-maps/ch04}
+\input{chapters/ch05-orthogonality-projections-and-least-squares/ch05}
+\input{chapters/ch06-eigenvalues-svd-quadratic-forms-and-pca/ch06}
+\input{chapters/ch07-tensors-multilinear-algebra-and-matrix-calculus/ch07}
+\part{Volume II: Calculus, Analysis, and Continuous Mathematics}
+\input{chapters/ch08-limits-continuity-derivatives-and-integrals/ch08}
+\input{chapters/ch09-multivariable-calculus/ch09}
+\input{chapters/ch10-taylor-approximation-local-geometry-and-manifolds/ch10}
+\input{chapters/ch11-measure-integration-and-change-of-variables/ch11}
+\input{chapters/ch12-function-spaces-operators-and-fourier-analysis/ch12}
+\part{Volume III: Probability, Statistics, Information, and Causality}
+\input{chapters/ch13-probability-spaces-and-random-variables/ch13}
+\input{chapters/ch14-distributions-and-exponential-families/ch14}
+\input{chapters/ch15-expectation-conditioning-and-bayes/ch15}
+\input{chapters/ch16-limit-theorems-concentration-and-high-dimensional-probability/ch16}
+\input{chapters/ch17-statistical-inference-and-decision-theory/ch17}
+\input{chapters/ch18-information-theory-and-information-geometry/ch18}
+\input{chapters/ch19-causality-interventions-and-experimental-design/ch19}
+\part{Volume IV: Optimization and Computation}
+\input{chapters/ch20-optimization-geometry-and-convexity/ch20}
+\input{chapters/ch21-gradient-methods-newton-methods-and-stochastic-optimization/ch21}
+\input{chapters/ch22-constrained-optimization-duality-and-variational-principles/ch22}
+\input{chapters/ch23-automatic-differentiation-and-numerical-computation/ch23}
+\input{chapters/ch24-numerical-linear-algebra-and-scientific-computing/ch24}
+\part{Volume V: Dynamics, Signals, Graphs, and Control}
+\input{chapters/ch25-ordinary-differential-equations-and-dynamical-systems/ch25}
+\input{chapters/ch26-partial-differential-equations-and-continuum-models/ch26}
+\input{chapters/ch27-stochastic-processes-markov-chains-and-sdes/ch27}
+\input{chapters/ch28-signals-time-series-and-spectral-analysis/ch28}
+\input{chapters/ch29-graphs-networks-and-spectral-graph-theory/ch29}
+\input{chapters/ch30-control-theory-and-dynamic-programming/ch30}
+\part{Volume VI: Machine Learning Mathematics}
+\input{chapters/ch31-learning-as-statistical-function-approximation/ch31}
+\input{chapters/ch32-linear-models-glms-and-classification/ch32}
+\input{chapters/ch33-regularization-kernels-and-gaussian-processes/ch33}
+\input{chapters/ch34-probabilistic-graphical-models-and-latent-variables/ch34}
+\input{chapters/ch35-unsupervised-learning-manifolds-and-representation/ch35}
+\input{chapters/ch36-reinforcement-learning/ch36}
+\part{Volume VII: Deep Learning Mathematics}
+\input{chapters/ch37-neural-networks-as-parameterized-function-classes/ch37}
+\input{chapters/ch38-backpropagation-and-differentiable-programming/ch38}
+\input{chapters/ch39-deep-optimization-and-training-dynamics/ch39}
+\input{chapters/ch40-deep-architectures-cnns-rnns-transformers-and-gnns/ch40}
+\input{chapters/ch41-generative-deep-learning/ch41}
+\input{chapters/ch42-representation-geometry-robustness-and-interpretability/ch42}
+\part{Volume VIII: Computational Neuroscience Mathematics}
+\input{chapters/ch43-neuronal-biophysics-and-cable-theory/ch43}
+\input{chapters/ch44-point-neuron-models-and-spiking-dynamics/ch44}
+\input{chapters/ch45-synapses-plasticity-and-learning-rules/ch45}
+\input{chapters/ch46-spike-trains-point-processes-and-neural-glms/ch46}
+\input{chapters/ch47-neural-coding-decoding-and-information/ch47}
+\input{chapters/ch48-population-geometry-and-latent-neural-dynamics/ch48}
+\input{chapters/ch49-neural-circuits-attractors-oscillations-and-neural-fields/ch49}
+\input{chapters/ch50-decision-making-bayesian-brain-and-predictive-coding/ch50}
+\input{chapters/ch51-neural-data-analysis-and-model-comparison/ch51}
+\input{chapters/ch52-bridges-between-biological-and-artificial-intelligence/ch52}
+\part{Volume IX: Integration, Capstones, and Reference Material}
+\input{chapters/ch53-integrated-mathematical-case-studies/ch53}
+\input{chapters/ch54-mathematical-appendices/ch54}
+
+            \end{document}

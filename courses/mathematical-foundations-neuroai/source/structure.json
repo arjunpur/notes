@@ -1,0 +1,1523 @@
+{
+  "title": "Mathematical Foundations for Computational Neuroscience and AI",
+  "slug": "mathematical-foundations-neuroai",
+  "author": "Arjun Puri",
+  "mode": "structure-plus-authored-chapters",
+  "content_policy": "Generated prose templates are disabled. Chapter files preserve the volume, chapter, and section spine unless a durable source file exists under source/authored-chapters/.",
+  "section_count": 216,
+  "chapter_count": 54,
+  "volumes": [
+    {
+      "label": "Volume I",
+      "title": "Mathematical Language and Finite-Dimensional Geometry",
+      "chapters": [
+        {
+          "number": 1,
+          "title": "Mathematical Language, Proof, and Abstraction",
+          "path": "chapters/ch01-mathematical-language-proof-and-abstraction/ch01.tex",
+          "sections": [
+            {
+              "number": "1.1",
+              "title": "Mathematical objects, statements, and notation",
+              "status": "authored"
+            },
+            {
+              "number": "1.2",
+              "title": "Sets, relations, and logical structure",
+              "status": "authored"
+            },
+            {
+              "number": "1.3",
+              "title": "Proof methods and mathematical maturity",
+              "status": "authored"
+            },
+            {
+              "number": "1.4",
+              "title": "Mathematical modeling as compression",
+              "status": "authored"
+            }
+          ]
+        },
+        {
+          "number": 2,
+          "title": "Functions, Transformations, and Coordinate Systems",
+          "path": "chapters/ch02-functions-transformations-and-coordinate-systems/ch02.tex",
+          "sections": [
+            {
+              "number": "2.1",
+              "title": "Functions as mappings",
+              "status": "authored"
+            },
+            {
+              "number": "2.2",
+              "title": "Coordinate systems and representations",
+              "status": "authored"
+            },
+            {
+              "number": "2.3",
+              "title": "Transformations of data",
+              "status": "authored"
+            },
+            {
+              "number": "2.4",
+              "title": "Algebraic structures",
+              "status": "authored"
+            }
+          ]
+        },
+        {
+          "number": 3,
+          "title": "Vectors, Geometry, and Vector Spaces",
+          "path": "chapters/ch03-vectors-geometry-and-vector-spaces/ch03.tex",
+          "sections": [
+            {
+              "number": "3.1",
+              "title": "Vectors as arrows, points, and data",
+              "status": "authored"
+            },
+            {
+              "number": "3.2",
+              "title": "Vector spaces and subspaces",
+              "status": "authored"
+            },
+            {
+              "number": "3.3",
+              "title": "Norms, distances, and angles",
+              "status": "authored"
+            },
+            {
+              "number": "3.4",
+              "title": "Orthogonality and decomposition",
+              "status": "authored"
+            }
+          ]
+        },
+        {
+          "number": 4,
+          "title": "Matrices as Linear Maps",
+          "path": "chapters/ch04-matrices-as-linear-maps/ch04.tex",
+          "sections": [
+            {
+              "number": "4.1",
+              "title": "Matrices as arrays and transformations",
+              "status": "authored"
+            },
+            {
+              "number": "4.2",
+              "title": "Composition, inverses, and change of basis",
+              "status": "authored"
+            },
+            {
+              "number": "4.3",
+              "title": "Rank, null space, and column space",
+              "status": "authored"
+            },
+            {
+              "number": "4.4",
+              "title": "Linear systems and data fitting",
+              "status": "authored"
+            }
+          ]
+        },
+        {
+          "number": 5,
+          "title": "Orthogonality, Projections, and Least Squares",
+          "path": "chapters/ch05-orthogonality-projections-and-least-squares/ch05.tex",
+          "sections": [
+            {
+              "number": "5.1",
+              "title": "Projection as best approximation",
+              "status": "authored"
+            },
+            {
+              "number": "5.2",
+              "title": "Least-squares regression",
+              "status": "authored"
+            },
+            {
+              "number": "5.3",
+              "title": "Gram matrices and similarity",
+              "status": "authored"
+            },
+            {
+              "number": "5.4",
+              "title": "QR decomposition and stable fitting",
+              "status": "authored"
+            }
+          ]
+        },
+        {
+          "number": 6,
+          "title": "Eigenvalues, SVD, Quadratic Forms, and PCA",
+          "path": "chapters/ch06-eigenvalues-svd-quadratic-forms-and-pca/ch06.tex",
+          "sections": [
+            {
+              "number": "6.1",
+              "title": "Eigenvalues and eigenvectors",
+              "status": "authored"
+            },
+            {
+              "number": "6.2",
+              "title": "Symmetric matrices and quadratic forms",
+              "status": "authored"
+            },
+            {
+              "number": "6.3",
+              "title": "Singular value decomposition",
+              "status": "authored"
+            },
+            {
+              "number": "6.4",
+              "title": "Principal component analysis",
+              "status": "authored"
+            }
+          ]
+        },
+        {
+          "number": 7,
+          "title": "Tensors, Multilinear Algebra, and Matrix Calculus",
+          "path": "chapters/ch07-tensors-multilinear-algebra-and-matrix-calculus/ch07.tex",
+          "sections": [
+            {
+              "number": "7.1",
+              "title": "Tensors and multidimensional arrays",
+              "status": "authored"
+            },
+            {
+              "number": "7.2",
+              "title": "Tensor operations",
+              "status": "authored"
+            },
+            {
+              "number": "7.3",
+              "title": "Matrix and tensor derivatives",
+              "status": "authored"
+            },
+            {
+              "number": "7.4",
+              "title": "Convolution as linear algebra",
+              "status": "authored"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "label": "Volume II",
+      "title": "Calculus, Analysis, and Continuous Mathematics",
+      "chapters": [
+        {
+          "number": 8,
+          "title": "Limits, Continuity, Derivatives, and Integrals",
+          "path": "chapters/ch08-limits-continuity-derivatives-and-integrals/ch08.tex",
+          "sections": [
+            {
+              "number": "8.1",
+              "title": "Limits and continuity",
+              "status": "authored"
+            },
+            {
+              "number": "8.2",
+              "title": "Derivatives as local linearization",
+              "status": "authored"
+            },
+            {
+              "number": "8.3",
+              "title": "Integrals as accumulation",
+              "status": "authored"
+            },
+            {
+              "number": "8.4",
+              "title": "Differential equations preview",
+              "status": "authored"
+            }
+          ]
+        },
+        {
+          "number": 9,
+          "title": "Multivariable Calculus",
+          "path": "chapters/ch09-multivariable-calculus/ch09.tex",
+          "sections": [
+            {
+              "number": "9.1",
+              "title": "Functions of many variables",
+              "status": "authored"
+            },
+            {
+              "number": "9.2",
+              "title": "Gradients and directional derivatives",
+              "status": "authored"
+            },
+            {
+              "number": "9.3",
+              "title": "Jacobians and vector-valued functions",
+              "status": "authored"
+            },
+            {
+              "number": "9.4",
+              "title": "Hessians and curvature",
+              "status": "authored"
+            }
+          ]
+        },
+        {
+          "number": 10,
+          "title": "Taylor Approximation, Local Geometry, and Manifolds",
+          "path": "chapters/ch10-taylor-approximation-local-geometry-and-manifolds/ch10.tex",
+          "sections": [
+            {
+              "number": "10.1",
+              "title": "Taylor series and local models",
+              "status": "authored"
+            },
+            {
+              "number": "10.2",
+              "title": "Local geometry of optimization landscapes",
+              "status": "authored"
+            },
+            {
+              "number": "10.3",
+              "title": "Manifolds as locally flat spaces",
+              "status": "authored"
+            },
+            {
+              "number": "10.4",
+              "title": "Constrained surfaces and Lagrange geometry",
+              "status": "authored"
+            }
+          ]
+        },
+        {
+          "number": 11,
+          "title": "Measure, Integration, and Change of Variables",
+          "path": "chapters/ch11-measure-integration-and-change-of-variables/ch11.tex",
+          "sections": [
+            {
+              "number": "11.1",
+              "title": "Why measure theory matters",
+              "status": "authored"
+            },
+            {
+              "number": "11.2",
+              "title": "Densities and integration in high dimensions",
+              "status": "authored"
+            },
+            {
+              "number": "11.3",
+              "title": "Change of variables",
+              "status": "authored"
+            },
+            {
+              "number": "11.4",
+              "title": "Delta functions and generalized functions",
+              "status": "authored"
+            }
+          ]
+        },
+        {
+          "number": 12,
+          "title": "Function Spaces, Operators, and Fourier Analysis",
+          "path": "chapters/ch12-function-spaces-operators-and-fourier-analysis/ch12.tex",
+          "sections": [
+            {
+              "number": "12.1",
+              "title": "Spaces of functions",
+              "status": "authored"
+            },
+            {
+              "number": "12.2",
+              "title": "Linear operators",
+              "status": "authored"
+            },
+            {
+              "number": "12.3",
+              "title": "Fourier series and Fourier transform",
+              "status": "authored"
+            },
+            {
+              "number": "12.4",
+              "title": "Sampling, aliasing, and filters",
+              "status": "authored"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "label": "Volume III",
+      "title": "Probability, Statistics, Information, and Causality",
+      "chapters": [
+        {
+          "number": 13,
+          "title": "Probability Spaces and Random Variables",
+          "path": "chapters/ch13-probability-spaces-and-random-variables/ch13.tex",
+          "sections": [
+            {
+              "number": "13.1",
+              "title": "Probability as measure of uncertainty",
+              "status": "authored"
+            },
+            {
+              "number": "13.2",
+              "title": "Random variables as measurable functions",
+              "status": "authored"
+            },
+            {
+              "number": "13.3",
+              "title": "Joint, marginal, and conditional distributions",
+              "status": "authored"
+            },
+            {
+              "number": "13.4",
+              "title": "Random vectors and covariance",
+              "status": "authored"
+            }
+          ]
+        },
+        {
+          "number": 14,
+          "title": "Distributions and Exponential Families",
+          "path": "chapters/ch14-distributions-and-exponential-families/ch14.tex",
+          "sections": [
+            {
+              "number": "14.1",
+              "title": "Core discrete distributions",
+              "status": "authored"
+            },
+            {
+              "number": "14.2",
+              "title": "Core continuous distributions",
+              "status": "authored"
+            },
+            {
+              "number": "14.3",
+              "title": "Multivariate Gaussian distribution",
+              "status": "authored"
+            },
+            {
+              "number": "14.4",
+              "title": "Exponential families",
+              "status": "authored"
+            }
+          ]
+        },
+        {
+          "number": 15,
+          "title": "Expectation, Conditioning, and Bayes",
+          "path": "chapters/ch15-expectation-conditioning-and-bayes/ch15.tex",
+          "sections": [
+            {
+              "number": "15.1",
+              "title": "Expectation as averaging",
+              "status": "authored"
+            },
+            {
+              "number": "15.2",
+              "title": "Conditional expectation",
+              "status": "authored"
+            },
+            {
+              "number": "15.3",
+              "title": "Bayes' theorem",
+              "status": "authored"
+            },
+            {
+              "number": "15.4",
+              "title": "Bayesian decision theory",
+              "status": "authored"
+            }
+          ]
+        },
+        {
+          "number": 16,
+          "title": "Limit Theorems, Concentration, and High-Dimensional Probability",
+          "path": "chapters/ch16-limit-theorems-concentration-and-high-dimensional-probability/ch16.tex",
+          "sections": [
+            {
+              "number": "16.1",
+              "title": "Law of large numbers and central limit theorem",
+              "status": "authored"
+            },
+            {
+              "number": "16.2",
+              "title": "Modes of convergence",
+              "status": "authored"
+            },
+            {
+              "number": "16.3",
+              "title": "Concentration inequalities",
+              "status": "authored"
+            },
+            {
+              "number": "16.4",
+              "title": "High-dimensional geometry",
+              "status": "authored"
+            }
+          ]
+        },
+        {
+          "number": 17,
+          "title": "Statistical Inference and Decision Theory",
+          "path": "chapters/ch17-statistical-inference-and-decision-theory/ch17.tex",
+          "sections": [
+            {
+              "number": "17.1",
+              "title": "Estimation and likelihood",
+              "status": "authored"
+            },
+            {
+              "number": "17.2",
+              "title": "Fisher information and uncertainty",
+              "status": "authored"
+            },
+            {
+              "number": "17.3",
+              "title": "Hypothesis testing and confidence intervals",
+              "status": "authored"
+            },
+            {
+              "number": "17.4",
+              "title": "Model selection and predictive risk",
+              "status": "authored"
+            }
+          ]
+        },
+        {
+          "number": 18,
+          "title": "Information Theory and Information Geometry",
+          "path": "chapters/ch18-information-theory-and-information-geometry/ch18.tex",
+          "sections": [
+            {
+              "number": "18.1",
+              "title": "Entropy and uncertainty",
+              "status": "authored"
+            },
+            {
+              "number": "18.2",
+              "title": "KL divergence and cross-entropy",
+              "status": "authored"
+            },
+            {
+              "number": "18.3",
+              "title": "Mutual information",
+              "status": "authored"
+            },
+            {
+              "number": "18.4",
+              "title": "Fisher geometry and statistical manifolds",
+              "status": "authored"
+            }
+          ]
+        },
+        {
+          "number": 19,
+          "title": "Causality, Interventions, and Experimental Design",
+          "path": "chapters/ch19-causality-interventions-and-experimental-design/ch19.tex",
+          "sections": [
+            {
+              "number": "19.1",
+              "title": "Correlation, causation, and structural models",
+              "status": "spine-only"
+            },
+            {
+              "number": "19.2",
+              "title": "Do-calculus intuition",
+              "status": "spine-only"
+            },
+            {
+              "number": "19.3",
+              "title": "Randomized experiments and neural interventions",
+              "status": "spine-only"
+            },
+            {
+              "number": "19.4",
+              "title": "Causal representation learning preview",
+              "status": "spine-only"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "label": "Volume IV",
+      "title": "Optimization and Computation",
+      "chapters": [
+        {
+          "number": 20,
+          "title": "Optimization Geometry and Convexity",
+          "path": "chapters/ch20-optimization-geometry-and-convexity/ch20.tex",
+          "sections": [
+            {
+              "number": "20.1",
+              "title": "Optimization problems",
+              "status": "spine-only"
+            },
+            {
+              "number": "20.2",
+              "title": "Convex sets and convex functions",
+              "status": "spine-only"
+            },
+            {
+              "number": "20.3",
+              "title": "Subgradients and nonsmooth optimization",
+              "status": "spine-only"
+            },
+            {
+              "number": "20.4",
+              "title": "Geometry of regularization",
+              "status": "spine-only"
+            }
+          ]
+        },
+        {
+          "number": 21,
+          "title": "Gradient Methods, Newton Methods, and Stochastic Optimization",
+          "path": "chapters/ch21-gradient-methods-newton-methods-and-stochastic-optimization/ch21.tex",
+          "sections": [
+            {
+              "number": "21.1",
+              "title": "Gradient descent",
+              "status": "spine-only"
+            },
+            {
+              "number": "21.2",
+              "title": "Momentum and adaptive methods",
+              "status": "spine-only"
+            },
+            {
+              "number": "21.3",
+              "title": "Newton and quasi-Newton methods",
+              "status": "spine-only"
+            },
+            {
+              "number": "21.4",
+              "title": "Stochastic gradient descent",
+              "status": "spine-only"
+            }
+          ]
+        },
+        {
+          "number": 22,
+          "title": "Constrained Optimization, Duality, and Variational Principles",
+          "path": "chapters/ch22-constrained-optimization-duality-and-variational-principles/ch22.tex",
+          "sections": [
+            {
+              "number": "22.1",
+              "title": "Lagrange multipliers",
+              "status": "spine-only"
+            },
+            {
+              "number": "22.2",
+              "title": "KKT conditions",
+              "status": "spine-only"
+            },
+            {
+              "number": "22.3",
+              "title": "Duality",
+              "status": "spine-only"
+            },
+            {
+              "number": "22.4",
+              "title": "Variational calculus",
+              "status": "spine-only"
+            }
+          ]
+        },
+        {
+          "number": 23,
+          "title": "Automatic Differentiation and Numerical Computation",
+          "path": "chapters/ch23-automatic-differentiation-and-numerical-computation/ch23.tex",
+          "sections": [
+            {
+              "number": "23.1",
+              "title": "Computational graphs",
+              "status": "spine-only"
+            },
+            {
+              "number": "23.2",
+              "title": "Forward-mode and reverse-mode autodiff",
+              "status": "spine-only"
+            },
+            {
+              "number": "23.3",
+              "title": "Numerical precision and stability",
+              "status": "spine-only"
+            },
+            {
+              "number": "23.4",
+              "title": "Vectorization and efficient computation",
+              "status": "spine-only"
+            }
+          ]
+        },
+        {
+          "number": 24,
+          "title": "Numerical Linear Algebra and Scientific Computing",
+          "path": "chapters/ch24-numerical-linear-algebra-and-scientific-computing/ch24.tex",
+          "sections": [
+            {
+              "number": "24.1",
+              "title": "Conditioning and ill-posedness",
+              "status": "spine-only"
+            },
+            {
+              "number": "24.2",
+              "title": "Matrix factorizations in computation",
+              "status": "spine-only"
+            },
+            {
+              "number": "24.3",
+              "title": "Solving large systems",
+              "status": "spine-only"
+            },
+            {
+              "number": "24.4",
+              "title": "Simulation, discretization, and error",
+              "status": "spine-only"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "label": "Volume V",
+      "title": "Dynamics, Signals, Graphs, and Control",
+      "chapters": [
+        {
+          "number": 25,
+          "title": "Ordinary Differential Equations and Dynamical Systems",
+          "path": "chapters/ch25-ordinary-differential-equations-and-dynamical-systems/ch25.tex",
+          "sections": [
+            {
+              "number": "25.1",
+              "title": "ODEs as laws of motion",
+              "status": "spine-only"
+            },
+            {
+              "number": "25.2",
+              "title": "Linear dynamical systems",
+              "status": "spine-only"
+            },
+            {
+              "number": "25.3",
+              "title": "Nonlinear dynamics",
+              "status": "spine-only"
+            },
+            {
+              "number": "25.4",
+              "title": "Gradient flows and energy landscapes",
+              "status": "spine-only"
+            }
+          ]
+        },
+        {
+          "number": 26,
+          "title": "Partial Differential Equations and Continuum Models",
+          "path": "chapters/ch26-partial-differential-equations-and-continuum-models/ch26.tex",
+          "sections": [
+            {
+              "number": "26.1",
+              "title": "PDEs and fields",
+              "status": "spine-only"
+            },
+            {
+              "number": "26.2",
+              "title": "Diffusion, heat, and wave equations",
+              "status": "spine-only"
+            },
+            {
+              "number": "26.3",
+              "title": "Reaction-diffusion and neural fields",
+              "status": "spine-only"
+            },
+            {
+              "number": "26.4",
+              "title": "Continuous-depth models",
+              "status": "spine-only"
+            }
+          ]
+        },
+        {
+          "number": 27,
+          "title": "Stochastic Processes, Markov Chains, and SDEs",
+          "path": "chapters/ch27-stochastic-processes-markov-chains-and-sdes/ch27.tex",
+          "sections": [
+            {
+              "number": "27.1",
+              "title": "Discrete-time stochastic processes",
+              "status": "spine-only"
+            },
+            {
+              "number": "27.2",
+              "title": "Markov chains",
+              "status": "spine-only"
+            },
+            {
+              "number": "27.3",
+              "title": "Continuous-time processes and SDEs",
+              "status": "spine-only"
+            },
+            {
+              "number": "27.4",
+              "title": "Filtering and state estimation",
+              "status": "spine-only"
+            }
+          ]
+        },
+        {
+          "number": 28,
+          "title": "Signals, Time Series, and Spectral Analysis",
+          "path": "chapters/ch28-signals-time-series-and-spectral-analysis/ch28.tex",
+          "sections": [
+            {
+              "number": "28.1",
+              "title": "Time-series representation",
+              "status": "spine-only"
+            },
+            {
+              "number": "28.2",
+              "title": "Spectral analysis",
+              "status": "spine-only"
+            },
+            {
+              "number": "28.3",
+              "title": "Linear filters",
+              "status": "spine-only"
+            },
+            {
+              "number": "28.4",
+              "title": "Neural signals",
+              "status": "spine-only"
+            }
+          ]
+        },
+        {
+          "number": 29,
+          "title": "Graphs, Networks, and Spectral Graph Theory",
+          "path": "chapters/ch29-graphs-networks-and-spectral-graph-theory/ch29.tex",
+          "sections": [
+            {
+              "number": "29.1",
+              "title": "Graph basics",
+              "status": "spine-only"
+            },
+            {
+              "number": "29.2",
+              "title": "Graph Laplacians",
+              "status": "spine-only"
+            },
+            {
+              "number": "29.3",
+              "title": "Spectral graph methods",
+              "status": "spine-only"
+            },
+            {
+              "number": "29.4",
+              "title": "Network science for neuroscience and ML",
+              "status": "spine-only"
+            }
+          ]
+        },
+        {
+          "number": 30,
+          "title": "Control Theory and Dynamic Programming",
+          "path": "chapters/ch30-control-theory-and-dynamic-programming/ch30.tex",
+          "sections": [
+            {
+              "number": "30.1",
+              "title": "Controlled dynamical systems",
+              "status": "spine-only"
+            },
+            {
+              "number": "30.2",
+              "title": "Optimal control",
+              "status": "spine-only"
+            },
+            {
+              "number": "30.3",
+              "title": "Dynamic programming",
+              "status": "spine-only"
+            },
+            {
+              "number": "30.4",
+              "title": "Control in biological systems",
+              "status": "spine-only"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "label": "Volume VI",
+      "title": "Machine Learning Mathematics",
+      "chapters": [
+        {
+          "number": 31,
+          "title": "Learning as Statistical Function Approximation",
+          "path": "chapters/ch31-learning-as-statistical-function-approximation/ch31.tex",
+          "sections": [
+            {
+              "number": "31.1",
+              "title": "Formal learning problem",
+              "status": "spine-only"
+            },
+            {
+              "number": "31.2",
+              "title": "Empirical risk minimization",
+              "status": "spine-only"
+            },
+            {
+              "number": "31.3",
+              "title": "Generalization",
+              "status": "spine-only"
+            },
+            {
+              "number": "31.4",
+              "title": "No-free-lunch and inductive bias",
+              "status": "spine-only"
+            }
+          ]
+        },
+        {
+          "number": 32,
+          "title": "Linear Models, GLMs, and Classification",
+          "path": "chapters/ch32-linear-models-glms-and-classification/ch32.tex",
+          "sections": [
+            {
+              "number": "32.1",
+              "title": "Linear regression revisited",
+              "status": "spine-only"
+            },
+            {
+              "number": "32.2",
+              "title": "Logistic regression and classification",
+              "status": "spine-only"
+            },
+            {
+              "number": "32.3",
+              "title": "Generalized linear models",
+              "status": "spine-only"
+            },
+            {
+              "number": "32.4",
+              "title": "Margins and support vector machines",
+              "status": "spine-only"
+            }
+          ]
+        },
+        {
+          "number": 33,
+          "title": "Regularization, Kernels, and Gaussian Processes",
+          "path": "chapters/ch33-regularization-kernels-and-gaussian-processes/ch33.tex",
+          "sections": [
+            {
+              "number": "33.1",
+              "title": "Regularization as prior knowledge",
+              "status": "spine-only"
+            },
+            {
+              "number": "33.2",
+              "title": "Kernel methods",
+              "status": "spine-only"
+            },
+            {
+              "number": "33.3",
+              "title": "Reproducing kernel Hilbert spaces",
+              "status": "spine-only"
+            },
+            {
+              "number": "33.4",
+              "title": "Gaussian processes",
+              "status": "spine-only"
+            }
+          ]
+        },
+        {
+          "number": 34,
+          "title": "Probabilistic Graphical Models and Latent Variables",
+          "path": "chapters/ch34-probabilistic-graphical-models-and-latent-variables/ch34.tex",
+          "sections": [
+            {
+              "number": "34.1",
+              "title": "Graphical models",
+              "status": "spine-only"
+            },
+            {
+              "number": "34.2",
+              "title": "Latent variable models",
+              "status": "spine-only"
+            },
+            {
+              "number": "34.3",
+              "title": "Expectation-maximization",
+              "status": "spine-only"
+            },
+            {
+              "number": "34.4",
+              "title": "Approximate inference",
+              "status": "spine-only"
+            }
+          ]
+        },
+        {
+          "number": 35,
+          "title": "Unsupervised Learning, Manifolds, and Representation",
+          "path": "chapters/ch35-unsupervised-learning-manifolds-and-representation/ch35.tex",
+          "sections": [
+            {
+              "number": "35.1",
+              "title": "Clustering",
+              "status": "spine-only"
+            },
+            {
+              "number": "35.2",
+              "title": "Dimensionality reduction",
+              "status": "spine-only"
+            },
+            {
+              "number": "35.3",
+              "title": "Manifold learning",
+              "status": "spine-only"
+            },
+            {
+              "number": "35.4",
+              "title": "Self-supervised learning preview",
+              "status": "spine-only"
+            }
+          ]
+        },
+        {
+          "number": 36,
+          "title": "Reinforcement Learning",
+          "path": "chapters/ch36-reinforcement-learning/ch36.tex",
+          "sections": [
+            {
+              "number": "36.1",
+              "title": "Markov decision processes",
+              "status": "spine-only"
+            },
+            {
+              "number": "36.2",
+              "title": "Value functions and Bellman equations",
+              "status": "spine-only"
+            },
+            {
+              "number": "36.3",
+              "title": "Policy optimization",
+              "status": "spine-only"
+            },
+            {
+              "number": "36.4",
+              "title": "RL and neuroscience",
+              "status": "spine-only"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "label": "Volume VII",
+      "title": "Deep Learning Mathematics",
+      "chapters": [
+        {
+          "number": 37,
+          "title": "Neural Networks as Parameterized Function Classes",
+          "path": "chapters/ch37-neural-networks-as-parameterized-function-classes/ch37.tex",
+          "sections": [
+            {
+              "number": "37.1",
+              "title": "Artificial neurons and layers",
+              "status": "spine-only"
+            },
+            {
+              "number": "37.2",
+              "title": "Expressivity",
+              "status": "spine-only"
+            },
+            {
+              "number": "37.3",
+              "title": "Parameter symmetries and identifiability",
+              "status": "spine-only"
+            },
+            {
+              "number": "37.4",
+              "title": "Neural networks as learned representations",
+              "status": "spine-only"
+            }
+          ]
+        },
+        {
+          "number": 38,
+          "title": "Backpropagation and Differentiable Programming",
+          "path": "chapters/ch38-backpropagation-and-differentiable-programming/ch38.tex",
+          "sections": [
+            {
+              "number": "38.1",
+              "title": "Chain rule for networks",
+              "status": "spine-only"
+            },
+            {
+              "number": "38.2",
+              "title": "Backpropagation algorithm",
+              "status": "spine-only"
+            },
+            {
+              "number": "38.3",
+              "title": "Differentiable programming",
+              "status": "spine-only"
+            },
+            {
+              "number": "38.4",
+              "title": "Gradient pathologies",
+              "status": "spine-only"
+            }
+          ]
+        },
+        {
+          "number": 39,
+          "title": "Deep Optimization and Training Dynamics",
+          "path": "chapters/ch39-deep-optimization-and-training-dynamics/ch39.tex",
+          "sections": [
+            {
+              "number": "39.1",
+              "title": "Loss landscapes",
+              "status": "spine-only"
+            },
+            {
+              "number": "39.2",
+              "title": "Initialization",
+              "status": "spine-only"
+            },
+            {
+              "number": "39.3",
+              "title": "Normalization and residual architectures",
+              "status": "spine-only"
+            },
+            {
+              "number": "39.4",
+              "title": "Implicit bias of optimization",
+              "status": "spine-only"
+            }
+          ]
+        },
+        {
+          "number": 40,
+          "title": "Deep Architectures: CNNs, RNNs, Transformers, and GNNs",
+          "path": "chapters/ch40-deep-architectures-cnns-rnns-transformers-and-gnns/ch40.tex",
+          "sections": [
+            {
+              "number": "40.1",
+              "title": "Convolutional neural networks",
+              "status": "spine-only"
+            },
+            {
+              "number": "40.2",
+              "title": "Recurrent neural networks and state-space models",
+              "status": "spine-only"
+            },
+            {
+              "number": "40.3",
+              "title": "Attention and transformers",
+              "status": "spine-only"
+            },
+            {
+              "number": "40.4",
+              "title": "Graph neural networks",
+              "status": "spine-only"
+            }
+          ]
+        },
+        {
+          "number": 41,
+          "title": "Generative Deep Learning",
+          "path": "chapters/ch41-generative-deep-learning/ch41.tex",
+          "sections": [
+            {
+              "number": "41.1",
+              "title": "Variational autoencoders",
+              "status": "spine-only"
+            },
+            {
+              "number": "41.2",
+              "title": "Normalizing flows",
+              "status": "spine-only"
+            },
+            {
+              "number": "41.3",
+              "title": "GANs",
+              "status": "spine-only"
+            },
+            {
+              "number": "41.4",
+              "title": "Diffusion and score-based models",
+              "status": "spine-only"
+            }
+          ]
+        },
+        {
+          "number": 42,
+          "title": "Representation Geometry, Robustness, and Interpretability",
+          "path": "chapters/ch42-representation-geometry-robustness-and-interpretability/ch42.tex",
+          "sections": [
+            {
+              "number": "42.1",
+              "title": "Geometry of learned representations",
+              "status": "spine-only"
+            },
+            {
+              "number": "42.2",
+              "title": "Robustness and adversarial examples",
+              "status": "spine-only"
+            },
+            {
+              "number": "42.3",
+              "title": "Interpretability",
+              "status": "spine-only"
+            },
+            {
+              "number": "42.4",
+              "title": "Scaling and emergence",
+              "status": "spine-only"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "label": "Volume VIII",
+      "title": "Computational Neuroscience Mathematics",
+      "chapters": [
+        {
+          "number": 43,
+          "title": "Neuronal Biophysics and Cable Theory",
+          "path": "chapters/ch43-neuronal-biophysics-and-cable-theory/ch43.tex",
+          "sections": [
+            {
+              "number": "43.1",
+              "title": "Electrical models of membranes",
+              "status": "spine-only"
+            },
+            {
+              "number": "43.2",
+              "title": "Ion channels and conductance models",
+              "status": "spine-only"
+            },
+            {
+              "number": "43.3",
+              "title": "Hodgkin-Huxley equations",
+              "status": "spine-only"
+            },
+            {
+              "number": "43.4",
+              "title": "Cable theory",
+              "status": "spine-only"
+            }
+          ]
+        },
+        {
+          "number": 44,
+          "title": "Point Neuron Models and Spiking Dynamics",
+          "path": "chapters/ch44-point-neuron-models-and-spiking-dynamics/ch44.tex",
+          "sections": [
+            {
+              "number": "44.1",
+              "title": "Integrate-and-fire models",
+              "status": "spine-only"
+            },
+            {
+              "number": "44.2",
+              "title": "Phase-plane analysis of neurons",
+              "status": "spine-only"
+            },
+            {
+              "number": "44.3",
+              "title": "Spike-frequency adaptation and bursting",
+              "status": "spine-only"
+            },
+            {
+              "number": "44.4",
+              "title": "Population rate models",
+              "status": "spine-only"
+            }
+          ]
+        },
+        {
+          "number": 45,
+          "title": "Synapses, Plasticity, and Learning Rules",
+          "path": "chapters/ch45-synapses-plasticity-and-learning-rules/ch45.tex",
+          "sections": [
+            {
+              "number": "45.1",
+              "title": "Synaptic transmission",
+              "status": "spine-only"
+            },
+            {
+              "number": "45.2",
+              "title": "Short-term plasticity",
+              "status": "spine-only"
+            },
+            {
+              "number": "45.3",
+              "title": "Hebbian learning and STDP",
+              "status": "spine-only"
+            },
+            {
+              "number": "45.4",
+              "title": "Plasticity and optimization",
+              "status": "spine-only"
+            }
+          ]
+        },
+        {
+          "number": 46,
+          "title": "Spike Trains, Point Processes, and Neural GLMs",
+          "path": "chapters/ch46-spike-trains-point-processes-and-neural-glms/ch46.tex",
+          "sections": [
+            {
+              "number": "46.1",
+              "title": "Spike trains as point processes",
+              "status": "spine-only"
+            },
+            {
+              "number": "46.2",
+              "title": "Inhomogeneous Poisson models",
+              "status": "spine-only"
+            },
+            {
+              "number": "46.3",
+              "title": "Neural generalized linear models",
+              "status": "spine-only"
+            },
+            {
+              "number": "46.4",
+              "title": "Model checking for spike models",
+              "status": "spine-only"
+            }
+          ]
+        },
+        {
+          "number": 47,
+          "title": "Neural Coding, Decoding, and Information",
+          "path": "chapters/ch47-neural-coding-decoding-and-information/ch47.tex",
+          "sections": [
+            {
+              "number": "47.1",
+              "title": "Tuning curves",
+              "status": "spine-only"
+            },
+            {
+              "number": "47.2",
+              "title": "Population coding",
+              "status": "spine-only"
+            },
+            {
+              "number": "47.3",
+              "title": "Decoding and reconstruction",
+              "status": "spine-only"
+            },
+            {
+              "number": "47.4",
+              "title": "Information in neural responses",
+              "status": "spine-only"
+            }
+          ]
+        },
+        {
+          "number": 48,
+          "title": "Population Geometry and Latent Neural Dynamics",
+          "path": "chapters/ch48-population-geometry-and-latent-neural-dynamics/ch48.tex",
+          "sections": [
+            {
+              "number": "48.1",
+              "title": "Neural state spaces",
+              "status": "spine-only"
+            },
+            {
+              "number": "48.2",
+              "title": "Dimensionality reduction for neural data",
+              "status": "spine-only"
+            },
+            {
+              "number": "48.3",
+              "title": "Latent dynamical systems",
+              "status": "spine-only"
+            },
+            {
+              "number": "48.4",
+              "title": "Neural manifolds and behavior",
+              "status": "spine-only"
+            }
+          ]
+        },
+        {
+          "number": 49,
+          "title": "Neural Circuits, Attractors, Oscillations, and Neural Fields",
+          "path": "chapters/ch49-neural-circuits-attractors-oscillations-and-neural-fields/ch49.tex",
+          "sections": [
+            {
+              "number": "49.1",
+              "title": "Recurrent neural circuits",
+              "status": "spine-only"
+            },
+            {
+              "number": "49.2",
+              "title": "Attractor networks",
+              "status": "spine-only"
+            },
+            {
+              "number": "49.3",
+              "title": "Oscillations and synchrony",
+              "status": "spine-only"
+            },
+            {
+              "number": "49.4",
+              "title": "Neural field models",
+              "status": "spine-only"
+            }
+          ]
+        },
+        {
+          "number": 50,
+          "title": "Decision-Making, Bayesian Brain, and Predictive Coding",
+          "path": "chapters/ch50-decision-making-bayesian-brain-and-predictive-coding/ch50.tex",
+          "sections": [
+            {
+              "number": "50.1",
+              "title": "Drift-diffusion and evidence accumulation",
+              "status": "spine-only"
+            },
+            {
+              "number": "50.2",
+              "title": "Bayesian models of perception",
+              "status": "spine-only"
+            },
+            {
+              "number": "50.3",
+              "title": "Predictive coding",
+              "status": "spine-only"
+            },
+            {
+              "number": "50.4",
+              "title": "Active inference and control",
+              "status": "spine-only"
+            }
+          ]
+        },
+        {
+          "number": 51,
+          "title": "Neural Data Analysis and Model Comparison",
+          "path": "chapters/ch51-neural-data-analysis-and-model-comparison/ch51.tex",
+          "sections": [
+            {
+              "number": "51.1",
+              "title": "Experimental data types",
+              "status": "spine-only"
+            },
+            {
+              "number": "51.2",
+              "title": "Encoding and decoding models",
+              "status": "spine-only"
+            },
+            {
+              "number": "51.3",
+              "title": "Model comparison and identifiability",
+              "status": "spine-only"
+            },
+            {
+              "number": "51.4",
+              "title": "Ethics and epistemology of neural modeling",
+              "status": "spine-only"
+            }
+          ]
+        },
+        {
+          "number": 52,
+          "title": "Bridges Between Biological and Artificial Intelligence",
+          "path": "chapters/ch52-bridges-between-biological-and-artificial-intelligence/ch52.tex",
+          "sections": [
+            {
+              "number": "52.1",
+              "title": "Artificial networks as brain models",
+              "status": "spine-only"
+            },
+            {
+              "number": "52.2",
+              "title": "Biological inspiration for ML",
+              "status": "spine-only"
+            },
+            {
+              "number": "52.3",
+              "title": "Deep learning tools for neuroscience",
+              "status": "spine-only"
+            },
+            {
+              "number": "52.4",
+              "title": "Open mathematical problems",
+              "status": "spine-only"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "label": "Volume IX",
+      "title": "Integration, Capstones, and Reference Material",
+      "chapters": [
+        {
+          "number": 53,
+          "title": "Integrated Mathematical Case Studies",
+          "path": "chapters/ch53-integrated-mathematical-case-studies/ch53.tex",
+          "sections": [
+            {
+              "number": "53.1",
+              "title": "From linear regression to deep networks",
+              "status": "spine-only"
+            },
+            {
+              "number": "53.2",
+              "title": "From PCA to neural manifolds",
+              "status": "spine-only"
+            },
+            {
+              "number": "53.3",
+              "title": "From Bayes to predictive coding",
+              "status": "spine-only"
+            },
+            {
+              "number": "53.4",
+              "title": "From stochastic processes to diffusion models and neural noise",
+              "status": "spine-only"
+            }
+          ]
+        },
+        {
+          "number": 54,
+          "title": "Mathematical Appendices",
+          "path": "chapters/ch54-mathematical-appendices/ch54.tex",
+          "sections": [
+            {
+              "number": "54.1",
+              "title": "Notation dictionary",
+              "status": "spine-only"
+            },
+            {
+              "number": "54.2",
+              "title": "Core theorem reference",
+              "status": "spine-only"
+            },
+            {
+              "number": "54.3",
+              "title": "Common derivations",
+              "status": "spine-only"
+            },
+            {
+              "number": "54.4",
+              "title": "Computational recipes",
+              "status": "spine-only"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

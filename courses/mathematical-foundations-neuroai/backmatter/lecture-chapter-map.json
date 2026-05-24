@@ -1,0 +1,652 @@
+{
+  "lectures": [
+    {
+      "lecture_slug": "chapter-01-mathematical-language-proof-and-abstraction",
+      "title": "Mathematical Language, Proof, and Abstraction",
+      "slide_filename": "chapter-01.pdf",
+      "chapter_paths": [
+        "chapters/ch01-mathematical-language-proof-and-abstraction/ch01.tex"
+      ],
+      "aliases": [
+        "Mathematical Language, Proof, and Abstraction",
+        "Chapter 1"
+      ]
+    },
+    {
+      "lecture_slug": "chapter-02-functions-transformations-and-coordinate-systems",
+      "title": "Functions, Transformations, and Coordinate Systems",
+      "slide_filename": "chapter-02.pdf",
+      "chapter_paths": [
+        "chapters/ch02-functions-transformations-and-coordinate-systems/ch02.tex"
+      ],
+      "aliases": [
+        "Functions, Transformations, and Coordinate Systems",
+        "Chapter 2"
+      ]
+    },
+    {
+      "lecture_slug": "chapter-03-vectors-geometry-and-vector-spaces",
+      "title": "Vectors, Geometry, and Vector Spaces",
+      "slide_filename": "chapter-03.pdf",
+      "chapter_paths": [
+        "chapters/ch03-vectors-geometry-and-vector-spaces/ch03.tex"
+      ],
+      "aliases": [
+        "Vectors, Geometry, and Vector Spaces",
+        "Chapter 3"
+      ]
+    },
+    {
+      "lecture_slug": "chapter-04-matrices-as-linear-maps",
+      "title": "Matrices as Linear Maps",
+      "slide_filename": "chapter-04.pdf",
+      "chapter_paths": [
+        "chapters/ch04-matrices-as-linear-maps/ch04.tex"
+      ],
+      "aliases": [
+        "Matrices as Linear Maps",
+        "Chapter 4"
+      ]
+    },
+    {
+      "lecture_slug": "chapter-05-orthogonality-projections-and-least-squares",
+      "title": "Orthogonality, Projections, and Least Squares",
+      "slide_filename": "chapter-05.pdf",
+      "chapter_paths": [
+        "chapters/ch05-orthogonality-projections-and-least-squares/ch05.tex"
+      ],
+      "aliases": [
+        "Orthogonality, Projections, and Least Squares",
+        "Chapter 5"
+      ]
+    },
+    {
+      "lecture_slug": "chapter-06-eigenvalues-svd-quadratic-forms-and-pca",
+      "title": "Eigenvalues, SVD, Quadratic Forms, and PCA",
+      "slide_filename": "chapter-06.pdf",
+      "chapter_paths": [
+        "chapters/ch06-eigenvalues-svd-quadratic-forms-and-pca/ch06.tex"
+      ],
+      "aliases": [
+        "Eigenvalues, SVD, Quadratic Forms, and PCA",
+        "Chapter 6"
+      ]
+    },
+    {
+      "lecture_slug": "chapter-07-tensors-multilinear-algebra-and-matrix-calculus",
+      "title": "Tensors, Multilinear Algebra, and Matrix Calculus",
+      "slide_filename": "chapter-07.pdf",
+      "chapter_paths": [
+        "chapters/ch07-tensors-multilinear-algebra-and-matrix-calculus/ch07.tex"
+      ],
+      "aliases": [
+        "Tensors, Multilinear Algebra, and Matrix Calculus",
+        "Chapter 7"
+      ]
+    },
+    {
+      "lecture_slug": "chapter-08-limits-continuity-derivatives-and-integrals",
+      "title": "Limits, Continuity, Derivatives, and Integrals",
+      "slide_filename": "chapter-08.pdf",
+      "chapter_paths": [
+        "chapters/ch08-limits-continuity-derivatives-and-integrals/ch08.tex"
+      ],
+      "aliases": [
+        "Limits, Continuity, Derivatives, and Integrals",
+        "Chapter 8"
+      ]
+    },
+    {
+      "lecture_slug": "chapter-09-multivariable-calculus",
+      "title": "Multivariable Calculus",
+      "slide_filename": "chapter-09.pdf",
+      "chapter_paths": [
+        "chapters/ch09-multivariable-calculus/ch09.tex"
+      ],
+      "aliases": [
+        "Multivariable Calculus",
+        "Chapter 9"
+      ]
+    },
+    {
+      "lecture_slug": "chapter-10-taylor-approximation-local-geometry-and-manifolds",
+      "title": "Taylor Approximation, Local Geometry, and Manifolds",
+      "slide_filename": "chapter-10.pdf",
+      "chapter_paths": [
+        "chapters/ch10-taylor-approximation-local-geometry-and-manifolds/ch10.tex"
+      ],
+      "aliases": [
+        "Taylor Approximation, Local Geometry, and Manifolds",
+        "Chapter 10"
+      ]
+    },
+    {
+      "lecture_slug": "chapter-11-measure-integration-and-change-of-variables",
+      "title": "Measure, Integration, and Change of Variables",
+      "slide_filename": "chapter-11.pdf",
+      "chapter_paths": [
+        "chapters/ch11-measure-integration-and-change-of-variables/ch11.tex"
+      ],
+      "aliases": [
+        "Measure, Integration, and Change of Variables",
+        "Chapter 11"
+      ]
+    },
+    {
+      "lecture_slug": "chapter-12-function-spaces-operators-and-fourier-analysis",
+      "title": "Function Spaces, Operators, and Fourier Analysis",
+      "slide_filename": "chapter-12.pdf",
+      "chapter_paths": [
+        "chapters/ch12-function-spaces-operators-and-fourier-analysis/ch12.tex"
+      ],
+      "aliases": [
+        "Function Spaces, Operators, and Fourier Analysis",
+        "Chapter 12"
+      ]
+    },
+    {
+      "lecture_slug": "chapter-13-probability-spaces-and-random-variables",
+      "title": "Probability Spaces and Random Variables",
+      "slide_filename": "chapter-13.pdf",
+      "chapter_paths": [
+        "chapters/ch13-probability-spaces-and-random-variables/ch13.tex"
+      ],
+      "aliases": [
+        "Probability Spaces and Random Variables",
+        "Chapter 13"
+      ]
+    },
+    {
+      "lecture_slug": "chapter-14-distributions-and-exponential-families",
+      "title": "Distributions and Exponential Families",
+      "slide_filename": "chapter-14.pdf",
+      "chapter_paths": [
+        "chapters/ch14-distributions-and-exponential-families/ch14.tex"
+      ],
+      "aliases": [
+        "Distributions and Exponential Families",
+        "Chapter 14"
+      ]
+    },
+    {
+      "lecture_slug": "chapter-15-expectation-conditioning-and-bayes",
+      "title": "Expectation, Conditioning, and Bayes",
+      "slide_filename": "chapter-15.pdf",
+      "chapter_paths": [
+        "chapters/ch15-expectation-conditioning-and-bayes/ch15.tex"
+      ],
+      "aliases": [
+        "Expectation, Conditioning, and Bayes",
+        "Chapter 15"
+      ]
+    },
+    {
+      "lecture_slug": "chapter-16-limit-theorems-concentration-and-high-dimensional-probability",
+      "title": "Limit Theorems, Concentration, and High-Dimensional Probability",
+      "slide_filename": "chapter-16.pdf",
+      "chapter_paths": [
+        "chapters/ch16-limit-theorems-concentration-and-high-dimensional-probability/ch16.tex"
+      ],
+      "aliases": [
+        "Limit Theorems, Concentration, and High-Dimensional Probability",
+        "Chapter 16"
+      ]
+    },
+    {
+      "lecture_slug": "chapter-17-statistical-inference-and-decision-theory",
+      "title": "Statistical Inference and Decision Theory",
+      "slide_filename": "chapter-17.pdf",
+      "chapter_paths": [
+        "chapters/ch17-statistical-inference-and-decision-theory/ch17.tex"
+      ],
+      "aliases": [
+        "Statistical Inference and Decision Theory",
+        "Chapter 17"
+      ]
+    },
+    {
+      "lecture_slug": "chapter-18-information-theory-and-information-geometry",
+      "title": "Information Theory and Information Geometry",
+      "slide_filename": "chapter-18.pdf",
+      "chapter_paths": [
+        "chapters/ch18-information-theory-and-information-geometry/ch18.tex"
+      ],
+      "aliases": [
+        "Information Theory and Information Geometry",
+        "Chapter 18"
+      ]
+    },
+    {
+      "lecture_slug": "chapter-19-causality-interventions-and-experimental-design",
+      "title": "Causality, Interventions, and Experimental Design",
+      "slide_filename": "chapter-19.pdf",
+      "chapter_paths": [
+        "chapters/ch19-causality-interventions-and-experimental-design/ch19.tex"
+      ],
+      "aliases": [
+        "Causality, Interventions, and Experimental Design",
+        "Chapter 19"
+      ]
+    },
+    {
+      "lecture_slug": "chapter-20-optimization-geometry-and-convexity",
+      "title": "Optimization Geometry and Convexity",
+      "slide_filename": "chapter-20.pdf",
+      "chapter_paths": [
+        "chapters/ch20-optimization-geometry-and-convexity/ch20.tex"
+      ],
+      "aliases": [
+        "Optimization Geometry and Convexity",
+        "Chapter 20"
+      ]
+    },
+    {
+      "lecture_slug": "chapter-21-gradient-methods-newton-methods-and-stochastic-optimization",
+      "title": "Gradient Methods, Newton Methods, and Stochastic Optimization",
+      "slide_filename": "chapter-21.pdf",
+      "chapter_paths": [
+        "chapters/ch21-gradient-methods-newton-methods-and-stochastic-optimization/ch21.tex"
+      ],
+      "aliases": [
+        "Gradient Methods, Newton Methods, and Stochastic Optimization",
+        "Chapter 21"
+      ]
+    },
+    {
+      "lecture_slug": "chapter-22-constrained-optimization-duality-and-variational-principles",
+      "title": "Constrained Optimization, Duality, and Variational Principles",
+      "slide_filename": "chapter-22.pdf",
+      "chapter_paths": [
+        "chapters/ch22-constrained-optimization-duality-and-variational-principles/ch22.tex"
+      ],
+      "aliases": [
+        "Constrained Optimization, Duality, and Variational Principles",
+        "Chapter 22"
+      ]
+    },
+    {
+      "lecture_slug": "chapter-23-automatic-differentiation-and-numerical-computation",
+      "title": "Automatic Differentiation and Numerical Computation",
+      "slide_filename": "chapter-23.pdf",
+      "chapter_paths": [
+        "chapters/ch23-automatic-differentiation-and-numerical-computation/ch23.tex"
+      ],
+      "aliases": [
+        "Automatic Differentiation and Numerical Computation",
+        "Chapter 23"
+      ]
+    },
+    {
+      "lecture_slug": "chapter-24-numerical-linear-algebra-and-scientific-computing",
+      "title": "Numerical Linear Algebra and Scientific Computing",
+      "slide_filename": "chapter-24.pdf",
+      "chapter_paths": [
+        "chapters/ch24-numerical-linear-algebra-and-scientific-computing/ch24.tex"
+      ],
+      "aliases": [
+        "Numerical Linear Algebra and Scientific Computing",
+        "Chapter 24"
+      ]
+    },
+    {
+      "lecture_slug": "chapter-25-ordinary-differential-equations-and-dynamical-systems",
+      "title": "Ordinary Differential Equations and Dynamical Systems",
+      "slide_filename": "chapter-25.pdf",
+      "chapter_paths": [
+        "chapters/ch25-ordinary-differential-equations-and-dynamical-systems/ch25.tex"
+      ],
+      "aliases": [
+        "Ordinary Differential Equations and Dynamical Systems",
+        "Chapter 25"
+      ]
+    },
+    {
+      "lecture_slug": "chapter-26-partial-differential-equations-and-continuum-models",
+      "title": "Partial Differential Equations and Continuum Models",
+      "slide_filename": "chapter-26.pdf",
+      "chapter_paths": [
+        "chapters/ch26-partial-differential-equations-and-continuum-models/ch26.tex"
+      ],
+      "aliases": [
+        "Partial Differential Equations and Continuum Models",
+        "Chapter 26"
+      ]
+    },
+    {
+      "lecture_slug": "chapter-27-stochastic-processes-markov-chains-and-sdes",
+      "title": "Stochastic Processes, Markov Chains, and SDEs",
+      "slide_filename": "chapter-27.pdf",
+      "chapter_paths": [
+        "chapters/ch27-stochastic-processes-markov-chains-and-sdes/ch27.tex"
+      ],
+      "aliases": [
+        "Stochastic Processes, Markov Chains, and SDEs",
+        "Chapter 27"
+      ]
+    },
+    {
+      "lecture_slug": "chapter-28-signals-time-series-and-spectral-analysis",
+      "title": "Signals, Time Series, and Spectral Analysis",
+      "slide_filename": "chapter-28.pdf",
+      "chapter_paths": [
+        "chapters/ch28-signals-time-series-and-spectral-analysis/ch28.tex"
+      ],
+      "aliases": [
+        "Signals, Time Series, and Spectral Analysis",
+        "Chapter 28"
+      ]
+    },
+    {
+      "lecture_slug": "chapter-29-graphs-networks-and-spectral-graph-theory",
+      "title": "Graphs, Networks, and Spectral Graph Theory",
+      "slide_filename": "chapter-29.pdf",
+      "chapter_paths": [
+        "chapters/ch29-graphs-networks-and-spectral-graph-theory/ch29.tex"
+      ],
+      "aliases": [
+        "Graphs, Networks, and Spectral Graph Theory",
+        "Chapter 29"
+      ]
+    },
+    {
+      "lecture_slug": "chapter-30-control-theory-and-dynamic-programming",
+      "title": "Control Theory and Dynamic Programming",
+      "slide_filename": "chapter-30.pdf",
+      "chapter_paths": [
+        "chapters/ch30-control-theory-and-dynamic-programming/ch30.tex"
+      ],
+      "aliases": [
+        "Control Theory and Dynamic Programming",
+        "Chapter 30"
+      ]
+    },
+    {
+      "lecture_slug": "chapter-31-learning-as-statistical-function-approximation",
+      "title": "Learning as Statistical Function Approximation",
+      "slide_filename": "chapter-31.pdf",
+      "chapter_paths": [
+        "chapters/ch31-learning-as-statistical-function-approximation/ch31.tex"
+      ],
+      "aliases": [
+        "Learning as Statistical Function Approximation",
+        "Chapter 31"
+      ]
+    },
+    {
+      "lecture_slug": "chapter-32-linear-models-glms-and-classification",
+      "title": "Linear Models, GLMs, and Classification",
+      "slide_filename": "chapter-32.pdf",
+      "chapter_paths": [
+        "chapters/ch32-linear-models-glms-and-classification/ch32.tex"
+      ],
+      "aliases": [
+        "Linear Models, GLMs, and Classification",
+        "Chapter 32"
+      ]
+    },
+    {
+      "lecture_slug": "chapter-33-regularization-kernels-and-gaussian-processes",
+      "title": "Regularization, Kernels, and Gaussian Processes",
+      "slide_filename": "chapter-33.pdf",
+      "chapter_paths": [
+        "chapters/ch33-regularization-kernels-and-gaussian-processes/ch33.tex"
+      ],
+      "aliases": [
+        "Regularization, Kernels, and Gaussian Processes",
+        "Chapter 33"
+      ]
+    },
+    {
+      "lecture_slug": "chapter-34-probabilistic-graphical-models-and-latent-variables",
+      "title": "Probabilistic Graphical Models and Latent Variables",
+      "slide_filename": "chapter-34.pdf",
+      "chapter_paths": [
+        "chapters/ch34-probabilistic-graphical-models-and-latent-variables/ch34.tex"
+      ],
+      "aliases": [
+        "Probabilistic Graphical Models and Latent Variables",
+        "Chapter 34"
+      ]
+    },
+    {
+      "lecture_slug": "chapter-35-unsupervised-learning-manifolds-and-representation",
+      "title": "Unsupervised Learning, Manifolds, and Representation",
+      "slide_filename": "chapter-35.pdf",
+      "chapter_paths": [
+        "chapters/ch35-unsupervised-learning-manifolds-and-representation/ch35.tex"
+      ],
+      "aliases": [
+        "Unsupervised Learning, Manifolds, and Representation",
+        "Chapter 35"
+      ]
+    },
+    {
+      "lecture_slug": "chapter-36-reinforcement-learning",
+      "title": "Reinforcement Learning",
+      "slide_filename": "chapter-36.pdf",
+      "chapter_paths": [
+        "chapters/ch36-reinforcement-learning/ch36.tex"
+      ],
+      "aliases": [
+        "Reinforcement Learning",
+        "Chapter 36"
+      ]
+    },
+    {
+      "lecture_slug": "chapter-37-neural-networks-as-parameterized-function-classes",
+      "title": "Neural Networks as Parameterized Function Classes",
+      "slide_filename": "chapter-37.pdf",
+      "chapter_paths": [
+        "chapters/ch37-neural-networks-as-parameterized-function-classes/ch37.tex"
+      ],
+      "aliases": [
+        "Neural Networks as Parameterized Function Classes",
+        "Chapter 37"
+      ]
+    },
+    {
+      "lecture_slug": "chapter-38-backpropagation-and-differentiable-programming",
+      "title": "Backpropagation and Differentiable Programming",
+      "slide_filename": "chapter-38.pdf",
+      "chapter_paths": [
+        "chapters/ch38-backpropagation-and-differentiable-programming/ch38.tex"
+      ],
+      "aliases": [
+        "Backpropagation and Differentiable Programming",
+        "Chapter 38"
+      ]
+    },
+    {
+      "lecture_slug": "chapter-39-deep-optimization-and-training-dynamics",
+      "title": "Deep Optimization and Training Dynamics",
+      "slide_filename": "chapter-39.pdf",
+      "chapter_paths": [
+        "chapters/ch39-deep-optimization-and-training-dynamics/ch39.tex"
+      ],
+      "aliases": [
+        "Deep Optimization and Training Dynamics",
+        "Chapter 39"
+      ]
+    },
+    {
+      "lecture_slug": "chapter-40-deep-architectures-cnns-rnns-transformers-and-gnns",
+      "title": "Deep Architectures: CNNs, RNNs, Transformers, and GNNs",
+      "slide_filename": "chapter-40.pdf",
+      "chapter_paths": [
+        "chapters/ch40-deep-architectures-cnns-rnns-transformers-and-gnns/ch40.tex"
+      ],
+      "aliases": [
+        "Deep Architectures: CNNs, RNNs, Transformers, and GNNs",
+        "Chapter 40"
+      ]
+    },
+    {
+      "lecture_slug": "chapter-41-generative-deep-learning",
+      "title": "Generative Deep Learning",
+      "slide_filename": "chapter-41.pdf",
+      "chapter_paths": [
+        "chapters/ch41-generative-deep-learning/ch41.tex"
+      ],
+      "aliases": [
+        "Generative Deep Learning",
+        "Chapter 41"
+      ]
+    },
+    {
+      "lecture_slug": "chapter-42-representation-geometry-robustness-and-interpretability",
+      "title": "Representation Geometry, Robustness, and Interpretability",
+      "slide_filename": "chapter-42.pdf",
+      "chapter_paths": [
+        "chapters/ch42-representation-geometry-robustness-and-interpretability/ch42.tex"
+      ],
+      "aliases": [
+        "Representation Geometry, Robustness, and Interpretability",
+        "Chapter 42"
+      ]
+    },
+    {
+      "lecture_slug": "chapter-43-neuronal-biophysics-and-cable-theory",
+      "title": "Neuronal Biophysics and Cable Theory",
+      "slide_filename": "chapter-43.pdf",
+      "chapter_paths": [
+        "chapters/ch43-neuronal-biophysics-and-cable-theory/ch43.tex"
+      ],
+      "aliases": [
+        "Neuronal Biophysics and Cable Theory",
+        "Chapter 43"
+      ]
+    },
+    {
+      "lecture_slug": "chapter-44-point-neuron-models-and-spiking-dynamics",
+      "title": "Point Neuron Models and Spiking Dynamics",
+      "slide_filename": "chapter-44.pdf",
+      "chapter_paths": [
+        "chapters/ch44-point-neuron-models-and-spiking-dynamics/ch44.tex"
+      ],
+      "aliases": [
+        "Point Neuron Models and Spiking Dynamics",
+        "Chapter 44"
+      ]
+    },
+    {
+      "lecture_slug": "chapter-45-synapses-plasticity-and-learning-rules",
+      "title": "Synapses, Plasticity, and Learning Rules",
+      "slide_filename": "chapter-45.pdf",
+      "chapter_paths": [
+        "chapters/ch45-synapses-plasticity-and-learning-rules/ch45.tex"
+      ],
+      "aliases": [
+        "Synapses, Plasticity, and Learning Rules",
+        "Chapter 45"
+      ]
+    },
+    {
+      "lecture_slug": "chapter-46-spike-trains-point-processes-and-neural-glms",
+      "title": "Spike Trains, Point Processes, and Neural GLMs",
+      "slide_filename": "chapter-46.pdf",
+      "chapter_paths": [
+        "chapters/ch46-spike-trains-point-processes-and-neural-glms/ch46.tex"
+      ],
+      "aliases": [
+        "Spike Trains, Point Processes, and Neural GLMs",
+        "Chapter 46"
+      ]
+    },
+    {
+      "lecture_slug": "chapter-47-neural-coding-decoding-and-information",
+      "title": "Neural Coding, Decoding, and Information",
+      "slide_filename": "chapter-47.pdf",
+      "chapter_paths": [
+        "chapters/ch47-neural-coding-decoding-and-information/ch47.tex"
+      ],
+      "aliases": [
+        "Neural Coding, Decoding, and Information",
+        "Chapter 47"
+      ]
+    },
+    {
+      "lecture_slug": "chapter-48-population-geometry-and-latent-neural-dynamics",
+      "title": "Population Geometry and Latent Neural Dynamics",
+      "slide_filename": "chapter-48.pdf",
+      "chapter_paths": [
+        "chapters/ch48-population-geometry-and-latent-neural-dynamics/ch48.tex"
+      ],
+      "aliases": [
+        "Population Geometry and Latent Neural Dynamics",
+        "Chapter 48"
+      ]
+    },
+    {
+      "lecture_slug": "chapter-49-neural-circuits-attractors-oscillations-and-neural-fields",
+      "title": "Neural Circuits, Attractors, Oscillations, and Neural Fields",
+      "slide_filename": "chapter-49.pdf",
+      "chapter_paths": [
+        "chapters/ch49-neural-circuits-attractors-oscillations-and-neural-fields/ch49.tex"
+      ],
+      "aliases": [
+        "Neural Circuits, Attractors, Oscillations, and Neural Fields",
+        "Chapter 49"
+      ]
+    },
+    {
+      "lecture_slug": "chapter-50-decision-making-bayesian-brain-and-predictive-coding",
+      "title": "Decision-Making, Bayesian Brain, and Predictive Coding",
+      "slide_filename": "chapter-50.pdf",
+      "chapter_paths": [
+        "chapters/ch50-decision-making-bayesian-brain-and-predictive-coding/ch50.tex"
+      ],
+      "aliases": [
+        "Decision-Making, Bayesian Brain, and Predictive Coding",
+        "Chapter 50"
+      ]
+    },
+    {
+      "lecture_slug": "chapter-51-neural-data-analysis-and-model-comparison",
+      "title": "Neural Data Analysis and Model Comparison",
+      "slide_filename": "chapter-51.pdf",
+      "chapter_paths": [
+        "chapters/ch51-neural-data-analysis-and-model-comparison/ch51.tex"
+      ],
+      "aliases": [
+        "Neural Data Analysis and Model Comparison",
+        "Chapter 51"
+      ]
+    },
+    {
+      "lecture_slug": "chapter-52-bridges-between-biological-and-artificial-intelligence",
+      "title": "Bridges Between Biological and Artificial Intelligence",
+      "slide_filename": "chapter-52.pdf",
+      "chapter_paths": [
+        "chapters/ch52-bridges-between-biological-and-artificial-intelligence/ch52.tex"
+      ],
+      "aliases": [
+        "Bridges Between Biological and Artificial Intelligence",
+        "Chapter 52"
+      ]
+    },
+    {
+      "lecture_slug": "chapter-53-integrated-mathematical-case-studies",
+      "title": "Integrated Mathematical Case Studies",
+      "slide_filename": "chapter-53.pdf",
+      "chapter_paths": [
+        "chapters/ch53-integrated-mathematical-case-studies/ch53.tex"
+      ],
+      "aliases": [
+        "Integrated Mathematical Case Studies",
+        "Chapter 53"
+      ]
+    },
+    {
+      "lecture_slug": "chapter-54-mathematical-appendices",
+      "title": "Mathematical Appendices",
+      "slide_filename": "chapter-54.pdf",
+      "chapter_paths": [
+        "chapters/ch54-mathematical-appendices/ch54.tex"
+      ],
+      "aliases": [
+        "Mathematical Appendices",
+        "Chapter 54"
+      ]
+    }
+  ]
+}
