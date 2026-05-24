@@ -1,0 +1,58 @@
+\chapter{Notation}
+
+The same clustered-network literature uses several overlapping symbols. These
+notes keep one primary convention and record source aliases when needed. The
+main rule is that total cell counts carry a superscript ``tot'', while
+per-cluster counts use lower-case \(n\). Some source-derived formulas and some
+early chapter prose use \(N_E,N_I\) for per-cluster counts; translate those
+local aliases to \(n_E,n_I\) unless a formula explicitly says ``total''.
+
+\begin{longtable}{@{}p{0.18\textwidth}p{0.30\textwidth}p{0.44\textwidth}@{}}
+\toprule
+\textbf{Symbol} & \textbf{Meaning} & \textbf{Comment} \\
+\midrule
+\endhead
+\(\alpha,\beta\) & Cell-type indices & \(\alpha,\beta\in\{E,I\}\). The first index on \(J^{\alpha\beta}\) is postsynaptic, the second presynaptic. \\
+\(a,b,c\) & Cluster indices & For paired E/I clusters, \(a,b,c\in\{1,\ldots,Q\}\). For type-specific clusterings, \(a\in\{1,\ldots,Q_\alpha\}\). \\
+\(P=(a,\alpha)\) & Population label & One mesoscale population: cell type \(\alpha\) in cluster \(a\). \\
+\(Q_E,Q_I\) & Number of E and I clusters & Paired E/I models usually set \(Q_E=Q_I=Q\). Source notation may use \(C_E,C_I\) or a single \(C\). \\
+\(Q\), \(C\) & Paired-cluster count & \(Q\) is preferred in these notes. \(C\) is a source alias in methods-style sections. \\
+\(n_E,n_I\) & E and I neurons per cluster & Preferred local sizes. At fixed local E/I fraction, \(n_E=\gamma n_c\) and \(n_I=(1-\gamma)n_c\). \\
+\(n_c\), \(N_Q\), \(N_c\) & Neurons per paired cluster & \(n_c=n_E+n_I\) is preferred. \(N_Q=N/Q\) and \(N_c\) appear as source aliases for cluster size; do not confuse them with the number of clusters. \\
+\(N_E^{\mathrm{tot}},N_I^{\mathrm{tot}}\) & Total E and I population sizes & In a paired model, \(N_E^{\mathrm{tot}}=Q n_E\) and \(N_I^{\mathrm{tot}}=Q n_I\). \\
+\(N^{\mathrm{tot}}\) & Total network size & \(N^{\mathrm{tot}}=N_E^{\mathrm{tot}}+N_I^{\mathrm{tot}}=Q(n_E+n_I)\) in the paired model. \\
+\(N_E,N_I\) & Context-dependent aliases & Avoid in new derivations unless quoting a source or local chapter convention. If used with \(\xi=1/\sqrt{N_E}\), \(N_E\) means the local excitatory cluster size \(n_E\). \\
+\(\gamma\) & Local excitatory fraction & \(\gamma=n_E/(n_E+n_I)\), not \(N_E^{\mathrm{tot}}/N^{\mathrm{tot}}\) unless all clusters share the same E/I fraction. \\
+\(s_i(t)\), \(s_{a,i}^{\alpha}(t)\) & Spike train & A sum of Dirac delta events at spike times. \\
+\(\epsilon(t)\) & Synaptic filter & Usually \(\epsilon(t)=\tau_s^{-1}e^{-t/\tau_s}H(t)\), where \(H\) is the Heaviside step function. \\
+\(A_a^\alpha(t)\) & Raw population activity & Cluster-population spike train averaged over neurons. \\
+\(r_a^\alpha(t)\), \(R_a^\alpha(t)\) & Filtered rate or activity & A continuous mesoscopic variable obtained by filtering or smoothing spike trains. \\
+\(y_a^\alpha(t)\) & Raw synaptic drive & Weighted sum of presynaptic spike trains before synaptic filtering. \\
+\(I_a^\alpha(t)\) & Filtered synaptic current & The convolution \(I_a^\alpha=\epsilon*y_a^\alpha\). \\
+\(V_i,u_i\) & Membrane or effective voltage & \(u_i\) is used when the exact voltage variable includes filtering, adaptation, or rescaling. \\
+\(\theta_i,\vartheta_i\) & Threshold or effective threshold & Dynamic thresholds and refractory kernels enter GIF escape-rate models through this variable. \\
+\(\lambda_i(t)\), \(\lambda^\alpha(\ell,t)\) & Conditional intensity or hazard & Instantaneous spike probability per unit time. The age variable \(\ell\) is time since the last spike, kept distinct from cluster labels \(a,b\). \\
+\(q^\alpha(\ell,t)\) & Age density & Density of neurons of type \(\alpha\) whose last spike occurred \(\ell\) time units ago. \\
+\(S^\alpha(\ell,t)\), \(f^\alpha(\ell,t)\) & Survival and ISI density & Renewal-theory objects used to derive population activity equations. \\
+\(\widehat J^{\alpha\beta}\) & Intra-cluster coupling & Weight from presynaptic type \(\beta\) in the same cluster to postsynaptic type \(\alpha\). \\
+\(\check J_{ab}^{\alpha\beta}\) & Inter-cluster coupling & Weight from presynaptic cluster \(b\), type \(\beta\), to postsynaptic cluster \(a\), type \(\alpha\). \\
+\(K,K_E,K_I,f\) & Fixed in-degree quantities & \(K_E=fK\) excitatory and \(K_I=(1-f)K\) inhibitory outside-cluster inputs in sparse cluster graphs. \\
+\(J_E^+,J_I^+\) & Potentiated E and I cluster strengths & Tilo notation for strengthened within-pair interactions. \\
+\(J_E^-,J_I^-\) & Depression factors & Inter-cluster factors chosen to compensate potentiation and preserve average drive. \\
+\(R\), \(R_J\) & Relative inhibitory cluster strength & \(J_I^+=1+R(J_E^+-1)\). The source alternates between \(R\) and \(R_J\). \\
+\(g\), \(\check g\) & Inhibitory balance gains & Bare \(g\) is reserved for inhibitory strength in balance formulas; \(\check g=fg/(1-f)\) in the sparse fixed-in-degree convention. \\
+\(\xi_\alpha\), \(\xi\) & Finite-size noise coordinates & \(\xi_E=1/\sqrt{n_E}\), \(\xi_I=1/\sqrt{n_I}\). A bare \(\xi\) usually means \(\xi_E\), the excitatory cluster sampling scale. \\
+\(\eta_a^\alpha(t)\), \(\zeta_a^\alpha(t)\) & Dynamic finite-size noise & Annealed noise processes in mesoscopic activity equations. Their amplitudes scale with \(\xi_\alpha\). \\
+\(\kappa\) & Quenched heterogeneity coordinate & Scalar measure of frozen inter-cluster variability that does not vanish when \(n_E,n_I\to\infty\) at fixed disorder strength. \\
+\(\sigma_{\alpha\beta}^{\mathrm{het}}\), \(G_{ab}^{\alpha\beta}\) & Channel-specific quenched disorder & \(G\) is an order-one frozen draw; \(\sigma_{\alpha\beta}^{\mathrm{het}}\) or \(\kappa\) sets its amplitude. \\
+\(\Phi_\alpha\), \(\phi\) & Transfer function & Maps input statistics to an expected firing rate. \(\Phi_\alpha\) emphasizes cell type. \\
+\(C_X(\tau)\), \(\rho_X(\tau)\) & Autocovariance and normalized autocorrelation & Used to diagnose memory, zero-lag kinks, and chaotic correlation times. \\
+\(\lambda_{\max}\) & Largest Lyapunov exponent & Positive values indicate deterministic sensitive dependence on initial conditions. \\
+\bottomrule
+\end{longtable}
+
+The most important convention is conceptual rather than typographical:
+\(\xi\) measures finite population sampling noise and decreases with the
+number of neurons in the relevant cluster, while \(\kappa\) measures frozen
+inter-cluster disorder and can remain present when \(\xi\to 0\). The
+distinction drives the diagnostic logic of the course.

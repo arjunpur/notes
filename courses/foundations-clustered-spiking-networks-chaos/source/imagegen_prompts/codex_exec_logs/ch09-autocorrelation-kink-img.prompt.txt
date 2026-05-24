@@ -1,0 +1,36 @@
+You are a non-interactive Codex image generation worker for one lecture-note diagram.
+
+Use the imagegen skill and the built-in Codex image_gen image generation tool available in this Codex session. This must use the user's Codex subscription path.
+
+Do not use OPENAI_API_KEY.
+Do not call the OpenAI API directly.
+Do not call /Users/arjun/.codex/skills/.system/imagegen/scripts/image_gen.py.
+Do not synthesize the final image with Python/Pillow/SVG/canvas.
+
+Task:
+1. Generate exactly one raster image using the prompt below.
+2. Save or copy the final generated image to this exact workspace path:
+   /Users/arjun/repos/lecture-notes/courses/foundations-clustered-spiking-networks-chaos/figures/imagegen/ch09-autocorrelation-kink-img.png
+3. Create parent directories if needed. Overwrite only this exact output path if needed.
+4. Write the path of the original generated image cache file, if known, to:
+   /Users/arjun/repos/lecture-notes/courses/foundations-clustered-spiking-networks-chaos/figures/imagegen/ch09-autocorrelation-kink-img.source.txt
+5. Verify that the output path exists and is non-empty.
+
+Asset id: ch09-autocorrelation-kink-img
+Target filename: figures/imagegen/ch09-autocorrelation-kink-img.png
+Caption intent: Show the zero-lag autocorrelation discriminator: finite-size OU-like noise creates a cusp, smooth deterministic chaos has zero slope at zero lag, and observed traces may mix both components.
+Overlay suggestion for later exact labels: Overlay `C(tau)`, `tau=0`, `finite-size kink`, and `smooth chaos` if needed; keep `A_xi exp(-|tau|/tau_xi)` and derivative equations in the caption or notes.
+Review notes: Check that the finite-size curve has a real cusp at zero lag and that the smooth chaotic curve has zero apparent slope at zero lag. Check that the mixed curve does not look like a noisy measurement.
+
+Prompt to use with image_gen:
+Use case: scientific-educational
+Asset type: lecture-note raster infographic
+Primary request: Create a schematic autocorrelation diagnostic comparing finite-size noise, smooth chaotic rates, and a mixed measured autocorrelation. The central teaching point is that the finite-size contribution has a visible zero-lag cusp, while the chaotic contribution is smooth at zero lag.
+Composition: 16:10 horizontal composition suitable for a PDF figure. Use three small aligned curve panels or one wide panel with three clearly separated curves. Center the zero-lag vertical guide and keep labels sparse enough for PDF readability.
+Required visual elements: A sharp cusp curve centered at tau zero, a smooth broad even curve with a rounded top at tau zero, and a mixed curve showing a broad component with a small cusp. Add a subtle visual indicator that the cusp amplitude shrinks with increasing network size. Make all curves schematic, not measured data.
+Sparse in-image labels: `C(tau)`, `tau`, `kink`, `smooth`, `mixed`, `N up`
+Style: Clean, modern, textbook-quality scientific diagram with generous whitespace, high contrast, crisp curves, restrained color, no watermark, no logos, no decorative stock imagery.
+Avoid: Exact autocorrelation formulas inside the image, dense legends, fake sampled data points, noisy empirical traces, many tick labels, and any implication that the cusp is a generic signature of chaos.
+
+When finished, reply only with compact JSON like:
+{"status":"generated","asset_id":"ch09-autocorrelation-kink-img","path":"/Users/arjun/repos/lecture-notes/courses/foundations-clustered-spiking-networks-chaos/figures/imagegen/ch09-autocorrelation-kink-img.png"}

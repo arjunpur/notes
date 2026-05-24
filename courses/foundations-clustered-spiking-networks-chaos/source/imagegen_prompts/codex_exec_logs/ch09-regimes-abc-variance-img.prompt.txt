@@ -1,0 +1,36 @@
+You are a non-interactive Codex image generation worker for one lecture-note diagram.
+
+Use the imagegen skill and the built-in Codex image_gen image generation tool available in this Codex session. This must use the user's Codex subscription path.
+
+Do not use OPENAI_API_KEY.
+Do not call the OpenAI API directly.
+Do not call /Users/arjun/.codex/skills/.system/imagegen/scripts/image_gen.py.
+Do not synthesize the final image with Python/Pillow/SVG/canvas.
+
+Task:
+1. Generate exactly one raster image using the prompt below.
+2. Save or copy the final generated image to this exact workspace path:
+   /Users/arjun/repos/lecture-notes/courses/foundations-clustered-spiking-networks-chaos/figures/imagegen/ch09-regimes-abc-variance-img.png
+3. Create parent directories if needed. Overwrite only this exact output path if needed.
+4. Write the path of the original generated image cache file, if known, to:
+   /Users/arjun/repos/lecture-notes/courses/foundations-clustered-spiking-networks-chaos/figures/imagegen/ch09-regimes-abc-variance-img.source.txt
+5. Verify that the output path exists and is non-empty.
+
+Asset id: ch09-regimes-abc-variance-img
+Target filename: figures/imagegen/ch09-regimes-abc-variance-img.png
+Caption intent: Summarize scaling regimes A, B, and C by separating finite-size variance, quenched inter-cluster variance, and whether a many-unit DMFT-like chaos limit is available.
+Overlay suggestion for later exact labels: Overlay `Q -> infinity`, `N_c -> infinity`, `xi -> 0`, and `kappa remains` where needed; keep the full variance decomposition and regime definitions in LaTeX text.
+Review notes: Check that regime C shows both many clusters and large clusters. Check that finite-size variance is not shown as remaining in C, and that quenched variance is not drawn as a signed quantity that cancels.
+
+Prompt to use with image_gen:
+Use case: scientific-educational
+Asset type: lecture-note raster infographic
+Primary request: Create a schematic grouped comparison of fully connected scaling regimes A, B, and C for clustered networks. The diagram should show how finite-size variance, quenched variance, cluster count, and cluster size behave in each limit, emphasizing that regime C is the clean target for macroscopic chaos without finite-size noise.
+Composition: 16:10 horizontal composition suitable for a PDF figure. Use three vertical columns labeled A, B, and C, each with a compact network-size icon above and a small stacked variance bar below. Use consistent visual encoding across columns and ample whitespace.
+Required visual elements: Regime A: many clusters with fixed small cluster size and nonvanishing finite-size component. Regime B: few large clusters with finite-size component vanished but only a few random couplings. Regime C: many large clusters, finite-size component vanished, quenched variance remaining, and a many-unit DMFT target cue. Make the bars schematic rather than quantitative.
+Sparse in-image labels: `A`, `B`, `C`, `xi`, `kappa`, `DMFT`
+Style: Clean, modern, textbook-quality scientific diagram with high contrast, simple matrix or cluster icons, crisp stacked bars, generous whitespace, no watermark, no logos, no decorative stock imagery.
+Avoid: Full variance equations in the image, numerical bar heights, fake data axes, overloaded legends, excessive cluster dots, photorealistic neuron imagery, and implying that regime B is already a many-unit DMFT limit.
+
+When finished, reply only with compact JSON like:
+{"status":"generated","asset_id":"ch09-regimes-abc-variance-img","path":"/Users/arjun/repos/lecture-notes/courses/foundations-clustered-spiking-networks-chaos/figures/imagegen/ch09-regimes-abc-variance-img.png"}

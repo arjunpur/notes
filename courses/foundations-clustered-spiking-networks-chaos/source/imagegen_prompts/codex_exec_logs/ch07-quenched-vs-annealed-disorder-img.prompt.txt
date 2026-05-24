@@ -1,0 +1,36 @@
+You are a non-interactive Codex image generation worker for one lecture-note diagram.
+
+Use the imagegen skill and the built-in Codex image_gen image generation tool available in this Codex session. This must use the user's Codex subscription path.
+
+Do not use OPENAI_API_KEY.
+Do not call the OpenAI API directly.
+Do not call /Users/arjun/.codex/skills/.system/imagegen/scripts/image_gen.py.
+Do not synthesize the final image with Python/Pillow/SVG/canvas.
+
+Task:
+1. Generate exactly one raster image using the prompt below.
+2. Save or copy the final generated image to this exact workspace path:
+   /Users/arjun/repos/lecture-notes/courses/foundations-clustered-spiking-networks-chaos/figures/imagegen/ch07-quenched-vs-annealed-disorder-img.png
+3. Create parent directories if needed. Overwrite only this exact output path if needed.
+4. Write the path of the original generated image cache file, if known, to:
+   /Users/arjun/repos/lecture-notes/courses/foundations-clustered-spiking-networks-chaos/figures/imagegen/ch07-quenched-vs-annealed-disorder-img.source.txt
+5. Verify that the output path exists and is non-empty.
+
+Asset id: ch07-quenched-vs-annealed-disorder-img
+Target filename: figures/imagegen/ch07-quenched-vs-annealed-disorder-img.png
+Caption intent: Show that quenched disorder is a frozen recurrent structure that shapes one deterministic vector field, while annealed disorder is redrawn over time or trials and therefore represents a different kind of variability.
+Overlay suggestion for later exact labels: If text is unreliable, overlay only `quenched`, `annealed`, `fixed J`, and `new J(t)`; keep the detailed definition of quenched versus annealed disorder in the caption.
+Review notes: Check that the quenched side uses the same fixed matrix throughout, while the annealed side visibly redraws the matrix. Check that the visual distinction is structural, not merely two different noise traces.
+
+Prompt to use with image_gen:
+Use case: scientific-educational
+Asset type: lecture-note raster infographic
+Primary request: Create a conceptual side-by-side comparison of quenched versus annealed disorder in recurrent neural dynamics. The left side should show one fixed random connectivity matrix feeding a stable state-space flow with repeated trajectories shaped by the same frozen geometry. The right side should show a sequence of changing matrices feeding a unit over time or trials, making the input variability look redrawn rather than embedded in one vector field.
+Composition: 16:10 horizontal composition suitable for a PDF figure. Divide the canvas into two balanced panels with a clear central gutter; use arrows from matrices to flow or trace sketches, with generous whitespace and a calm textbook layout.
+Required visual elements: Left panel: one matrix block with fixed speckled entries, a small state-space path, and multiple trajectories passing through the same flow. Right panel: three small matrix blocks in a time sequence, each slightly different, feeding a simple time trace or representative unit. Make the figure explicitly schematic, not measured data.
+Sparse in-image labels: `quenched`, `annealed`, `fixed J`, `new J`, `t`
+Style: Clean, modern, textbook-quality scientific diagram with high contrast, crisp vector-like forms rendered as raster, restrained color, generous whitespace, no watermark, no logos, no decorative stock imagery.
+Avoid: Dense paragraphs, exact equations, fake numerical data, photorealistic brains, decorative network art, illegible matrix text, cluttered arrows, and any implication that the traces are measured experimental recordings.
+
+When finished, reply only with compact JSON like:
+{"status":"generated","asset_id":"ch07-quenched-vs-annealed-disorder-img","path":"/Users/arjun/repos/lecture-notes/courses/foundations-clustered-spiking-networks-chaos/figures/imagegen/ch07-quenched-vs-annealed-disorder-img.png"}

@@ -1,0 +1,36 @@
+You are a non-interactive Codex image generation worker for one lecture-note diagram.
+
+Use the imagegen skill and the built-in Codex image_gen image generation tool available in this Codex session. This must use the user's Codex subscription path.
+
+Do not use OPENAI_API_KEY.
+Do not call the OpenAI API directly.
+Do not call /Users/arjun/.codex/skills/.system/imagegen/scripts/image_gen.py.
+Do not synthesize the final image with Python/Pillow/SVG/canvas.
+
+Task:
+1. Generate exactly one raster image using the prompt below.
+2. Save or copy the final generated image to this exact workspace path:
+   /Users/arjun/repos/lecture-notes/courses/foundations-clustered-spiking-networks-chaos/figures/imagegen/ch08-quenched-amplification-img.png
+3. Create parent directories if needed. Overwrite only this exact output path if needed.
+4. Write the path of the original generated image cache file, if known, to:
+   /Users/arjun/repos/lecture-notes/courses/foundations-clustered-spiking-networks-chaos/figures/imagegen/ch08-quenched-amplification-img.source.txt
+5. Verify that the output path exists and is non-empty.
+
+Asset id: ch08-quenched-amplification-img
+Target filename: figures/imagegen/ch08-quenched-amplification-img.png
+Caption intent: Show why paired E/I networks can amplify quenched variability: mean excitation and inhibition may cancel, but variance squares the large inhibitory coupling and can make inhibitory heterogeneity dominate.
+Overlay suggestion for later exact labels: Overlay `kappa`, `xi`, `E`, and `I` labels if needed; add exact expressions such as `xi=1/sqrt(N_E)` and the squared inhibitory variance term only in LaTeX caption text.
+Review notes: Check that the variance display does not imply sign cancellation. Check that the inhibitory contribution is larger because of squared magnitude, not because inhibition is drawn as a negative bar.
+
+Prompt to use with image_gen:
+Use case: scientific-educational
+Asset type: lecture-note raster infographic
+Primary request: Create a conceptual comparison of input-variance components in an E-only clustered architecture versus a paired E/I clustered architecture. The E/I case should show a much larger quenched inhibitory contribution because variance depends on squared coupling magnitude, while finite-size variability is shown as a separate shrinking contribution.
+Composition: 16:10 horizontal composition suitable for a PDF figure. Use two grouped schematic bars or stacked blocks side by side, with a small balanced-current inset showing large opposing E and I currents cancelling in the mean. Keep the design sparse and explanatory.
+Required visual elements: Left group: E-only architecture with mostly excitatory quenched variance and a small finite-size component. Right group: paired E/I architecture with a prominent inhibitory quenched component. Include a small inset where large positive and negative currents nearly cancel, visually separate from the variance bars. Mark the bars as schematic rather than measured.
+Sparse in-image labels: `E-only`, `E/I`, `E`, `I`, `kappa`, `xi`
+Style: Clean, modern, textbook-quality scientific diagram with high contrast, generous whitespace, restrained color, no watermark, no logos, no decorative stock imagery.
+Avoid: Numeric y-axis values, fake data points, dense equations, long labels, visual clutter, and any suggestion that positive and negative variance components cancel.
+
+When finished, reply only with compact JSON like:
+{"status":"generated","asset_id":"ch08-quenched-amplification-img","path":"/Users/arjun/repos/lecture-notes/courses/foundations-clustered-spiking-networks-chaos/figures/imagegen/ch08-quenched-amplification-img.png"}

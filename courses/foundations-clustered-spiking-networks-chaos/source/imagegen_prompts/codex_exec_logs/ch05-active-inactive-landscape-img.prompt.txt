@@ -1,0 +1,36 @@
+You are a non-interactive Codex image generation worker for one lecture-note diagram.
+
+Use the imagegen skill and the built-in Codex image_gen image generation tool available in this Codex session. This must use the user's Codex subscription path.
+
+Do not use OPENAI_API_KEY.
+Do not call the OpenAI API directly.
+Do not call /Users/arjun/.codex/skills/.system/imagegen/scripts/image_gen.py.
+Do not synthesize the final image with Python/Pillow/SVG/canvas.
+
+Task:
+1. Generate exactly one raster image using the prompt below.
+2. Save or copy the final generated image to this exact workspace path:
+   /Users/arjun/repos/lecture-notes/courses/foundations-clustered-spiking-networks-chaos/figures/imagegen/ch05-active-inactive-landscape-img.png
+3. Create parent directories if needed. Overwrite only this exact output path if needed.
+4. Write the path of the original generated image cache file, if known, to:
+   /Users/arjun/repos/lecture-notes/courses/foundations-clustered-spiking-networks-chaos/figures/imagegen/ch05-active-inactive-landscape-img.source.txt
+5. Verify that the output path exists and is non-empty.
+
+Asset id: ch05-active-inactive-landscape-img
+Target filename: figures/imagegen/ch05-active-inactive-landscape-img.png
+Caption intent: Explain active-cluster patterns as metastable basins in a coarse state space, with finite-size fluctuations occasionally pushing the system across a saddle into a different active set.
+Overlay suggestion for later exact labels: Replace generated basin labels if needed with exact active-set examples such as `S={1,4}` and `S={2,3,5}`, plus the fluctuation label `\xi`.
+Review notes: Check that the image reads as a schematic high-dimensional projection, that basin hopping is caused by finite-size fluctuation rather than deterministic chaos, and that labels stay sparse and legible.
+
+Prompt to use with image_gen:
+Use case: scientific-educational
+Asset type: lecture-note raster infographic
+Primary request: Create a conceptual basin-landscape diagram for clustered attractor dynamics. Show several metastable basins representing different active-cluster patterns, with a trajectory that dwells in one basin, crosses a saddle under finite-size fluctuation, and settles into another basin. Make the landscape explicitly schematic.
+Composition: 16:10 horizontal composition suitable for a PDF figure. Use a smooth three-basin landscape or projected state-space surface spanning the full width, with basin minima separated by low ridges and a clear hopping trajectory from left basin to center or right basin.
+Required visual elements: three distinct basins, small state marker or trajectory path, one saddle or basin boundary, subtle arrows showing relaxation within basins, a larger arrow showing a noise-driven hop, and simple cluster-state glyphs near each basin with active clusters highlighted.
+Sparse in-image labels: S1, S2, S3, saddle, xi
+Style: clean, modern, textbook-quality lecture-note raster infographic with generous whitespace, high contrast, no watermark, no logos, and no decorative stock imagery. Use muted basin shading with a bright path arrow so the dynamical story is obvious.
+Avoid: photorealistic landscapes, dense equations, long active-set text, overly literal 3D terrain, decorative particles, measured-data styling, and any implication that the system is a true low-dimensional gradient landscape.
+
+When finished, reply only with compact JSON like:
+{"status":"generated","asset_id":"ch05-active-inactive-landscape-img","path":"/Users/arjun/repos/lecture-notes/courses/foundations-clustered-spiking-networks-chaos/figures/imagegen/ch05-active-inactive-landscape-img.png"}

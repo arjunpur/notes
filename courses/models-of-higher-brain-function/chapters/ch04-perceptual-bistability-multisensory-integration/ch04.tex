@@ -6,6 +6,8 @@ The useful mental model is that the brain receives ambiguous evidence, maintains
 
 \subsection{Ambiguity and bistability}
 
+The problem solved by a bistability model is persistence without commitment. The sensory input does not change, but perception must occupy one interpretation at a time and still remain able to switch when the current interpretation becomes unstable.
+
 In bistable perception, the physical stimulus can remain fixed while experience alternates between two interpretations. The Necker cube is the canonical example: the same line drawing can be seen with either face in front. Binocular rivalry is a related case in which the two eyes receive very different images, so the visual system alternates between dominance of one image and dominance of the other.
 
 The important modeling question is not only why two interpretations exist. It is why both interpretations are not experienced equally at the same moment. The lecture's first answer is competition: each perceptual interpretation is represented by a population, and those populations inhibit one another.
@@ -21,13 +23,13 @@ If population \(A\) is active enough, it suppresses population \(B\), so percept
 
 \begin{figure}[!htbp]
 \centering
-\includegraphics[width=0.92\textwidth]{figures/mhbf-bistable-attractor-switching.png}
-\caption{Bistable perception can be pictured as motion between two attractor basins. Competition makes one percept dominate at a time; slow adaptation reshapes the currently occupied basin; noise can then push the state across the barrier into the other interpretation.}
+\includegraphics[width=0.96\textwidth]{figures/mhbf-lecture3-bistability-mechanisms.png}
+\caption{Four linked mechanisms for bistable perception. Competition prevents both interpretations from dominating together, adaptation weakens the active interpretation, noise can push the system across an attractor barrier, and a sampling view interprets switches as visits to different modes of a posterior over percepts.}
 \end{figure}
 
 \subsection{A two-population competition model}
 
-A minimal rate model uses two activity variables, \(u_1(t)\) and \(u_2(t)\), for the two perceptual populations:
+The problem now is to turn the qualitative word ``competition'' into state variables that can be simulated, fit, and related to neural activity. A minimal rate model uses two activity variables, \(u_1(t)\) and \(u_2(t)\), for the two perceptual populations:
 \[
 \tau_u \frac{d u_1}{dt}
 =
@@ -86,14 +88,17 @@ These correspond to percept \(A\) on or percept \(B\) on. Mutual inhibition make
     \node at (0,1.05) {\(\beta\)};
     \node at (0,-1.05) {\(\beta\)};
 
-    \node[align=center] at (0,-2.95) {self-excitation stabilizes each percept; mutual inhibition prevents both from dominating together};
+    \node[align=center] at (0,-2.95) {self-excitation stabilizes each percept; mutual inhibition prevents joint dominance};
 \end{tikzpicture}
 \caption{Two-population competition model for bistable perception. The variables \(u_1,u_2\) are fast activities, while \(a_1,a_2\) are slower adaptation variables that weaken the currently active population.}
 \end{figure}
 
+\paragraph{Practical implication.}
+To analyze a bistable-perception model, first identify which variables are fast activities, which variables are slow fatigue or synaptic-depression states, and which parameters change the stability of the mixed state. The measurable outputs are dominance fractions, switch rates, and the distribution of dominance durations, not just the existence of two fixed points.
+
 \subsection{Mechanism 1: adaptation as a deterministic switch}
 
-Adaptation means that a strongly active population becomes less effective over time. This can be implemented as neuronal fatigue or synaptic depression. A simple adaptation equation is
+The problem adaptation solves is the otherwise unexplained end of a stable percept. If competition and self-excitation alone make one state persistent, some slow negative feedback is needed to make the currently dominant state lose its advantage. Adaptation means that a strongly active population becomes less effective over time. This can be implemented as neuronal fatigue or synaptic depression. A simple adaptation equation is
 \[
 \tau_a \frac{d a_i}{dt}
 =
@@ -117,9 +122,12 @@ A \text{ dominates}
 \]
 The strength of the adaptation model is that it explains why switches happen even without external stimulus changes. Its weakness is that a purely deterministic oscillator tends to produce too-regular alternations. Real percept durations are variable.
 
+\paragraph{Practical implication.}
+If the observed switches are nearly periodic, a deterministic adaptation oscillator may be sufficient. If the switch times are broadly distributed, adaptation should be treated as a changing hazard or barrier height rather than as a clock that directly triggers every transition.
+
 \subsection{Percept durations and the gamma distribution}
 
-The lecture emphasizes that percept durations are often fit by a gamma distribution:
+The problem solved by duration statistics is model discrimination. A model can produce perceptual alternations but still fail if it predicts the wrong shape of dominance times. The lecture emphasizes that percept durations are often fit by a gamma distribution:
 \[
 p(T)
 =
@@ -167,7 +175,7 @@ which is the special memoryless case. The gamma-like empirical shape suggests th
 
 \subsection{Mechanism 2: noise-driven attractor transitions}
 
-The second mechanism is noise. Neural activity fluctuates. Even if percept \(A\) is currently dominant, a fluctuation can make \(A\) temporarily less suppressive or make \(B\) temporarily stronger. If the fluctuation is large enough, the system crosses the boundary between attractors.
+The problem noise solves is trial-to-trial irregularity. Neural activity fluctuates. Even if percept \(A\) is currently dominant, a fluctuation can make \(A\) temporarily less suppressive or make \(B\) temporarily stronger. If the fluctuation is large enough, the system crosses the boundary between attractors.
 
 A compact one-dimensional description uses a state variable
 \[
@@ -214,9 +222,12 @@ This model makes two intuitions explicit:
 
 Moreno-Bote, Rinzel, and Rubin's account combines the two mechanisms: adaptation alone is not strong enough to force every transition, but it reduces the barrier so that noise-triggered transitions become more likely. That hybrid model explains both persistence and variability.
 
+\paragraph{Practical implication.}
+When comparing adaptation-only, noise-only, and hybrid models, compute both the mean dominance time and the full distribution. The hybrid account is attractive because it predicts a changing escape probability: early after a switch the active attractor is protected, later it is easier for noise to carry the state across the barrier.
+
 \subsection{Bayesian sampling interpretation}
 
-The Bayesian sampling view reframes bistability as approximate inference. Let \(h\) denote a possible perceptual interpretation and \(s\) the sensory data. The posterior distribution is
+The problem solved by the Bayesian sampling view is how to read perceptual alternation as inference rather than as a defect. Let \(h\) denote a possible perceptual interpretation and \(s\) the sensory data. The posterior distribution is
 \[
 p(h\mid s)
 \propto
@@ -231,7 +242,9 @@ Attractor models and sampling models are not opposites. A neural attractor can i
 
 \subsection{Multisensory integration as inference}
 
-The second half of the lecture turns to a different ambiguity: different sensory modalities provide different noisy measurements of the same world property. For example, vision and touch can both provide information about object size. The problem is to infer the hidden world state \(h\) from sensory observations \(s_1\) and \(s_2\).
+The second half of the lecture turns to a different ambiguity: different sensory modalities provide different noisy measurements of the same world property. For example, vision and touch can both provide information about object size. The problem is to infer the hidden world state \(h\) from sensory observations \(s_1\) and \(s_2\), while respecting that some cues are more reliable than others.
+
+The mental model is a measurement device with multiple sensors. Each cue gives a noisy measurement of the same latent world variable; inference should let precise sensors pull the estimate more strongly and should reduce uncertainty when the cues are compatible.
 
 The generative model is
 \[
@@ -276,9 +289,15 @@ p(s_1\mid h)p(s_2\mid h).
 \caption{Generative model for cue integration. The world state causes sensory measurements, and inference runs in the opposite direction: combine the cues to estimate the hidden state.}
 \end{figure}
 
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.96\textwidth]{figures/mhbf-lecture3-cue-integration.png}
+\caption{Cue integration as a sequence of inference checks. A hidden state causes modality-specific cues, reliable cues pull the fused estimate more strongly, psychometric PSEs and thresholds reveal the weights and precision, and a causal-inference gate determines whether the cues should be fused or kept separate.}
+\end{figure}
+
 \subsection{Maximum-likelihood cue combination}
 
-The lecture derives the maximum-likelihood estimate under three assumptions:
+The problem solved by maximum-likelihood cue combination is how to make the word ``reliability'' quantitative. The lecture derives the estimate under three assumptions:
 \begin{itemize}
     \item the prior is flat, so all values of \(h\) are initially equally plausible;
     \item each cue is Gaussian around the true state;
@@ -381,6 +400,9 @@ Because \(p_1+p_2\) is larger than either precision alone, the combined variance
 \end{figure}
 
 This is the core normative prediction of multisensory integration: if the nervous system combines cues optimally, then behavior should show both reliability-weighted bias and improved discrimination precision.
+
+\paragraph{Practical implication.}
+Given unimodal thresholds, convert each threshold into a variance or precision, predict the bimodal weight and threshold, and compare those predictions with the observed PSE shift and discrimination slope. This turns a qualitative statement about integration into a falsifiable residual check.
 
 \subsection{Psychometric functions, PSEs, and thresholds}
 

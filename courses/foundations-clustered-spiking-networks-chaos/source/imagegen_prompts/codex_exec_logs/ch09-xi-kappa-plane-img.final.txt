@@ -1,0 +1,1 @@
+{"status":"generated","asset_id":"ch09-xi-kappa-plane-img","path":"/Users/arjun/repos/lecture-notes/courses/foundations-clustered-spiking-networks-chaos/figures/imagegen/ch09-xi-kappa-plane-img.png"}

@@ -1,0 +1,36 @@
+You are a non-interactive Codex image generation worker for one lecture-note diagram.
+
+Use the imagegen skill and the built-in Codex image_gen image generation tool available in this Codex session. This must use the user's Codex subscription path.
+
+Do not use OPENAI_API_KEY.
+Do not call the OpenAI API directly.
+Do not call /Users/arjun/.codex/skills/.system/imagegen/scripts/image_gen.py.
+Do not synthesize the final image with Python/Pillow/SVG/canvas.
+
+Task:
+1. Generate exactly one raster image using the prompt below.
+2. Save or copy the final generated image to this exact workspace path:
+   /Users/arjun/repos/lecture-notes/courses/foundations-clustered-spiking-networks-chaos/figures/imagegen/ch06-scs-autocorrelation-transition-img.png
+3. Create parent directories if needed. Overwrite only this exact output path if needed.
+4. Write the path of the original generated image cache file, if known, to:
+   /Users/arjun/repos/lecture-notes/courses/foundations-clustered-spiking-networks-chaos/figures/imagegen/ch06-scs-autocorrelation-transition-img.source.txt
+5. Verify that the output path exists and is non-empty.
+
+Asset id: ch06-scs-autocorrelation-transition-img
+Target filename: figures/imagegen/ch06-scs-autocorrelation-transition-img.png
+Caption intent: Show autocorrelation as the observable that changes across the SCS transition: fast decay below threshold, broadening near criticality, and a smooth zero-lag chaotic shoulder above threshold.
+Overlay suggestion for later exact labels: Add exact labels after generation if needed: `C_r(\tau)`, `g<g_c`, `g\simeq g_c`, `g>g_c`, and `C_r'(0)=0` near the smooth chaotic peak.
+Review notes: Check that the supercritical curve is smooth at zero lag, the near-critical curve is visibly broadened, and the subcritical curve is interpreted as decay or response rather than self-sustained chaotic autocorrelation.
+
+Prompt to use with image_gen:
+Use case: scientific-educational
+Asset type: lecture-note raster infographic
+Primary request: Create a schematic autocorrelation comparison across the SCS transition. Show three clean curves: subcritical fast decay, near-critical broad decay, and supercritical chaotic autocorrelation with a smooth rounded peak at zero lag. Explicitly make it a conceptual diagnostic plot, not measured data.
+Composition: 16:10 horizontal composition suitable for a PDF figure. Use one wide plot with three color-separated curves over lag, or three small aligned panels sharing the same vertical scale. Reserve whitespace around the zero-lag region so smoothness versus sharp kinks is visually clear.
+Required visual elements: central zero-lag peak, curve that decays quickly, broader near-critical curve, smooth chaotic curve, visual indication that correlation width increases near transition, and a subtle callout around zero lag showing no cusp for the chaotic rate curve.
+Sparse in-image labels: C(tau), tau, g<1, g~1, g>1, smooth
+Style: clean, modern, textbook-quality lecture-note raster infographic with generous whitespace, high contrast, no watermark, no logos, no decorative stock imagery. Use crisp curves, minimal axes, and sparse labels only.
+Avoid: exact equations inside the generated image, noisy empirical-looking traces, tick-heavy scientific plotting, sharp cusp on the chaotic curve, long legends, and implying the subcritical curve is self-sustained deterministic chaos.
+
+When finished, reply only with compact JSON like:
+{"status":"generated","asset_id":"ch06-scs-autocorrelation-transition-img","path":"/Users/arjun/repos/lecture-notes/courses/foundations-clustered-spiking-networks-chaos/figures/imagegen/ch06-scs-autocorrelation-transition-img.png"}

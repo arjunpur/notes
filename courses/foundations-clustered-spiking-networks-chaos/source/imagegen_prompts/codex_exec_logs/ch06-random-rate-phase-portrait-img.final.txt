@@ -1,0 +1,1 @@
+{"status":"generated","asset_id":"ch06-random-rate-phase-portrait-img","path":"/Users/arjun/repos/lecture-notes/courses/foundations-clustered-spiking-networks-chaos/figures/imagegen/ch06-random-rate-phase-portrait-img.png"}

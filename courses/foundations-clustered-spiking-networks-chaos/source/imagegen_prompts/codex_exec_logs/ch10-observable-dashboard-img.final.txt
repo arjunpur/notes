@@ -1,0 +1,1 @@
+{"status":"generated","asset_id":"ch10-observable-dashboard-img","path":"/Users/arjun/repos/lecture-notes/courses/foundations-clustered-spiking-networks-chaos/figures/imagegen/ch10-observable-dashboard-img.png"}

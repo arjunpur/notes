@@ -1,0 +1,36 @@
+You are a non-interactive Codex image generation worker for one lecture-note diagram.
+
+Use the imagegen skill and the built-in Codex image_gen image generation tool available in this Codex session. This must use the user's Codex subscription path.
+
+Do not use OPENAI_API_KEY.
+Do not call the OpenAI API directly.
+Do not call /Users/arjun/.codex/skills/.system/imagegen/scripts/image_gen.py.
+Do not synthesize the final image with Python/Pillow/SVG/canvas.
+
+Task:
+1. Generate exactly one raster image using the prompt below.
+2. Save or copy the final generated image to this exact workspace path:
+   /Users/arjun/repos/lecture-notes/courses/foundations-clustered-spiking-networks-chaos/figures/imagegen/ch08-cluster-rate-unit-img.png
+3. Create parent directories if needed. Overwrite only this exact output path if needed.
+4. Write the path of the original generated image cache file, if known, to:
+   /Users/arjun/repos/lecture-notes/courses/foundations-clustered-spiking-networks-chaos/figures/imagegen/ch08-cluster-rate-unit-img.source.txt
+5. Verify that the output path exists and is non-empty.
+
+Asset id: ch08-cluster-rate-unit-img
+Target filename: figures/imagegen/ch08-cluster-rate-unit-img.png
+Caption intent: Introduce the minimal paired-cluster rate-unit abstraction: spikes from E and I populations are averaged and filtered into two rates whose dynamics are driven by within-pair coupling, quenched inter-pair input, and finite-size fluctuations.
+Overlay suggestion for later exact labels: Overlay `r_a^E`, `r_a^I`, `xi`, and `kappa` if needed; keep `r_a(t)=(r_a^E,r_a^I)` and `xi=1/sqrt(N_E)` in the caption or surrounding notes.
+Review notes: Check that the image clearly shows averaging/filtering before the rate-unit abstraction. Check that `xi` is associated with finite-size fluctuations and `kappa` with frozen inter-cluster input.
+
+Prompt to use with image_gen:
+Use case: scientific-educational
+Asset type: lecture-note raster infographic
+Primary request: Create a minimal abstraction diagram showing how a paired E/I spiking cluster becomes an effective two-dimensional cluster-rate unit. The visual should move from microscopic spike rasters through population averaging and filtering into a compact state variable with E and I rate components, then show inputs from other cluster-rate units.
+Composition: 16:10 horizontal composition suitable for a PDF figure. Use a left-to-right teaching flow: spike rasters on the left, a filter/averaging stage in the middle, and a clean rate-unit icon on the right with incoming and outgoing inter-cluster arrows.
+Required visual elements: Two small raster strips for E and I spikes, a simple smoothing/filter icon, two smooth rate traces, a final paired rate unit with internal E/I coupling, a small finite-size fluctuation mark, and a frozen inter-cluster input arrow from neighboring units. Make the figure conceptual and not a measured recording.
+Sparse in-image labels: `E`, `I`, `r_E`, `r_I`, `xi`, `kappa`
+Style: Clean, modern, textbook-quality scientific diagram with high contrast, generous whitespace, crisp arrows, no watermark, no logos, no decorative stock imagery.
+Avoid: Dense derivations, exact equations inside the image, photorealistic cells, decorative stock imagery, fake experimental axes, and ambiguous flow direction from spikes to rates.
+
+When finished, reply only with compact JSON like:
+{"status":"generated","asset_id":"ch08-cluster-rate-unit-img","path":"/Users/arjun/repos/lecture-notes/courses/foundations-clustered-spiking-networks-chaos/figures/imagegen/ch08-cluster-rate-unit-img.png"}

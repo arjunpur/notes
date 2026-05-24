@@ -1,0 +1,36 @@
+You are a non-interactive Codex image generation worker for one lecture-note diagram.
+
+Use the imagegen skill and the built-in Codex image_gen image generation tool available in this Codex session. This must use the user's Codex subscription path.
+
+Do not use OPENAI_API_KEY.
+Do not call the OpenAI API directly.
+Do not call /Users/arjun/.codex/skills/.system/imagegen/scripts/image_gen.py.
+Do not synthesize the final image with Python/Pillow/SVG/canvas.
+
+Task:
+1. Generate exactly one raster image using the prompt below.
+2. Save or copy the final generated image to this exact workspace path:
+   /Users/arjun/repos/lecture-notes/courses/foundations-clustered-spiking-networks-chaos/figures/imagegen/ch09-xi-kappa-plane-img.png
+3. Create parent directories if needed. Overwrite only this exact output path if needed.
+4. Write the path of the original generated image cache file, if known, to:
+   /Users/arjun/repos/lecture-notes/courses/foundations-clustered-spiking-networks-chaos/figures/imagegen/ch09-xi-kappa-plane-img.source.txt
+5. Verify that the output path exists and is non-empty.
+
+Asset id: ch09-xi-kappa-plane-img
+Target filename: figures/imagegen/ch09-xi-kappa-plane-img.png
+Caption intent: Explain the xi-kappa diagnostic plane as the organizing test for separating finite-size metastable switching from switching that persists when population sampling noise is removed.
+Overlay suggestion for later exact labels: Overlay exact axis labels `xi=1/sqrt(N_E)` and `kappa`, plus optional region labels `finite-size escape`, `mixed`, and `xi -> 0 chaos`; keep switching-time scaling equations in the caption.
+Review notes: Check that lower xi is visually associated with increasing network size and that the chaotic region persists near the xi-zero edge. Check that the phase boundaries look schematic rather than like fitted data.
+
+Prompt to use with image_gen:
+Use case: scientific-educational
+Asset type: lecture-note raster infographic
+Primary request: Create a schematic diagnostic phase plane for clustered spiking network dynamics with finite-size amplitude xi on the horizontal axis and quenched heterogeneity kappa on the vertical axis. The visual should show that moving toward smaller xi tests whether switching disappears, slows dramatically, or reaches a kappa-controlled plateau near the large-network limit.
+Composition: 16:10 horizontal composition suitable for a PDF figure. Use one large phase-plane plot with four softly colored conceptual regions and a few arrows indicating size-scaling trajectories toward xi near zero. Keep margins generous and the axes uncluttered.
+Required visual elements: Horizontal xi axis, vertical kappa axis, a lower finite-size metastability region, an upper region where mesoscopic chaos persists near xi near zero, a mixed intermediate band, and a scaling-test arrow pointing toward the xi near zero edge. Mark the diagram as schematic and conceptual, not measured data.
+Sparse in-image labels: `xi`, `kappa`, `finite-size`, `mixed`, `chaos`, `plateau`
+Style: Clean, modern, textbook-quality scientific diagram with generous whitespace, high contrast, crisp phase regions, restrained color, no watermark, no logos, no decorative stock imagery.
+Avoid: Exact equations inside the image, dense callouts, fake numerical ticks, measured-data heatmaps, ornamental neural backgrounds, cluttered legends, and implying that the region boundaries are empirically measured.
+
+When finished, reply only with compact JSON like:
+{"status":"generated","asset_id":"ch09-xi-kappa-plane-img","path":"/Users/arjun/repos/lecture-notes/courses/foundations-clustered-spiking-networks-chaos/figures/imagegen/ch09-xi-kappa-plane-img.png"}

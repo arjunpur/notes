@@ -1,0 +1,187 @@
+\chapter{Numerical Diagnostic Protocols}
+\label{app:numerical-diagnostic-protocols}
+
+This appendix collects the numerical protocols used by
+Chapters~\ref{ch:diagnosing-multistability-chaos} and
+\ref{ch:research-program}. It is written as an implementation checklist rather
+than as a second exposition of the theory. The values in the protocol are
+templates for course notebooks unless a specific simulation study supplies
+different calibrated values.
+
+\section{Run Manifest}
+\label{appC:run-manifest}
+
+Every simulation should produce a manifest with the following fields:
+\begin{enumerate}
+    \item architecture: E-only, paired E/I, fully connected cluster graph,
+    neuron-level Erdos-Renyi graph, or cluster-level Erdos-Renyi graph;
+    \item sizes: cluster count \(Q\), local counts \(n_E,n_I\), total counts,
+    and the finite-size coordinate used in the plot;
+    \item weights: baseline \(J_{\alpha\beta}\), potentiation factors,
+    depression factors, fixed indegrees, realized in-degree histograms, and
+    heterogeneity amplitudes \(\sigma_{\alpha\beta}^{\mathrm{het}}\);
+    \item seeds: connectivity seed, initial-condition seed, and replayable
+    stochastic-stream seed;
+    \item numerical settings: time step, burn-in, recording length, bin width,
+    rate filter, threshold rule, hysteresis width, and minimum dwell time;
+    \item outputs: spike file, filtered-rate file, state-transition table,
+    current-component file, and perturbation-growth file when available.
+\end{enumerate}
+The manifest is the unit of reproducibility. A diagnostic plot should be
+traceable to a list of manifests, not only to a plotting script.
+
+\section{Network Generation}
+\label{appC:network-generation}
+
+The generator should be deterministic given the manifest seed.
+\begin{enumerate}
+    \item Create labels \((a,\alpha,i)\), where \(a\in\{1,\ldots,Q\}\),
+    \(\alpha\in\{E,I\}\), and \(i\) indexes neurons inside a cluster.
+    \item For each postsynaptic block \((a,\alpha)\) and presynaptic type
+    \(\beta\), construct the within-cluster input set and the outside-cluster
+    input sets. For fixed indegree, sample without replacement and verify the
+    realized indegree exactly.
+    \item Apply within-cluster potentiation factors to the appropriate E/E,
+    E/I, I/E, and I/I blocks. Apply compensating depression factors to
+    outside-cluster blocks so that the intended mean input is preserved.
+    \item Draw quenched outside-cluster factors \(\check j_{ab}^{\alpha\beta}\)
+    or adjacency variables. If the model excludes sign-changing weights, record
+    whether negative draws are resampled, clipped, or sampled from a truncated
+    distribution.
+    \item Write block summaries: mean weight, standard deviation, number of
+    nonzero entries, and in-degree distribution for each
+    \((\alpha,\beta,\mathrm{in/out})\) block.
+\end{enumerate}
+
+\section{Spike-to-Rate Pipeline}
+\label{appC:spike-rate-pipeline}
+
+For each cluster \(a\) and type \(\alpha\), compute binned activity
+\[
+    B_{a,m}^{\alpha}
+    =
+    \frac{1}{n_\alpha\Delta_b}
+    \sum_{i=1}^{n_\alpha}
+    \int_{m\Delta_b}^{(m+1)\Delta_b}s_{a,i}^{\alpha}(t)\,dt .
+\]
+Then compute a filtered rate
+\[
+    r_{a,m}^{\alpha}
+    =
+    e^{-\Delta_b/\tau_f}r_{a,m-1}^{\alpha}
+    +
+    \left(1-e^{-\Delta_b/\tau_f}\right)B_{a,m}^{\alpha}.
+\]
+The first several filter constants after burn-in should be discarded. If an
+offline acausal smoother is used for state detection, keep the causal filtered
+rate as a separate diagnostic channel so perturbation timing is not blurred by
+future data.
+
+\section{Cluster-State Detector}
+\label{appC:state-detector}
+
+The detector converts \(r_a^E(t)\) into a binary state vector \(S_a(t)\).
+\begin{enumerate}
+    \item Pool the post-burn-in rates across clusters and times, then choose
+    \(r_0\) from a distribution valley, a fitted mixture model, or a fixed
+    quantile specified before the sweep.
+    \item Set hysteresis thresholds \(r_{\mathrm{on}}>r_0>r_{\mathrm{off}}\).
+    A cluster turns on at an upward crossing of \(r_{\mathrm{on}}\) and turns
+    off at a downward crossing of \(r_{\mathrm{off}}\).
+    \item Remove events shorter than \(T_{\min}\) and merge interruptions
+    shorter than \(T_{\min}\). The value of \(T_{\min}\) should be tied to the
+    filter width rather than tuned per trace.
+    \item Store transition time, direction, cluster id, pre-state, post-state,
+    active-cluster count, and whether the event is isolated.
+\end{enumerate}
+For sensitivity analysis, rerun the detector over a small grid of thresholds
+and dwell times and require the phase label to be stable.
+
+\section{Autocorrelation, HWHM, and Kink}
+\label{appC:autocorrelation}
+
+For each filtered rate trace \(r_m\), estimate
+\[
+    \widehat C[\ell]
+    =
+    \frac{1}{M-\ell}
+    \sum_{m=0}^{M-\ell-1}
+    (r_m-\overline r)(r_{m+\ell}-\overline r).
+\]
+Normalize by \(\widehat C[0]\). The HWHM is the first positive lag at which the
+normalized autocorrelation crosses one half, with linear interpolation between
+adjacent bins. If no crossing occurs, report a censored lower bound.
+
+For the zero-lag kink, remove the raw same-bin spike-count peak and fit
+\[
+    \rho(\tau)\approx 1-k_\xi|\tau|+\frac{1}{2}b\tau^2
+\]
+on several small windows \(0<|\tau|\le w\). The finite-size contribution
+should shrink with \(n_E\). A broad autocorrelation that remains smooth at zero
+lag and persists as \(n_E\) grows is more consistent with deterministic
+mesoscopic dynamics than with finite-size hopping.
+
+\section{Transition-Triggered Analysis}
+\label{appC:transition-triggered}
+
+For every isolated event \(t_m\), align traces on \(t_m\) and compute:
+\begin{enumerate}
+    \item mean cluster-rate trajectory and active-count trajectory;
+    \item mean current components
+    \(I_{\mathrm{in}}^E,I_{\mathrm{in}}^I,I_{\mathrm{out}}^E,I_{\mathrm{out}}^I\);
+    \item spatial variances of the same four current components across
+    excitatory neurons in the focus cluster;
+    \item Fano factors in sliding windows around the transition, with
+    rate-matched non-transition control windows;
+    \item raw and residual participation-ratio dimensionality of the
+    transition cloud.
+\end{enumerate}
+Conditioning matters. Off-to-on and on-to-off transitions should be separated,
+and a specific state transition \(A\to B\) should be analyzed separately when
+there are enough events. The directional coordinate is
+\[
+    z_{\parallel}(t)
+    =
+    \frac{(r_B-r_A)^{\mathsf T}(r(t)-r_A)}{\|r_B-r_A\|}.
+\]
+
+\section{Lyapunov Protocols}
+\label{appC:lyapunov}
+
+For a deterministic mesoscopic model \(\dot x=F(x)\), use the tangent equation
+\(\dot U=D F(x)U\). At times separated by \(\Delta_R\), factor \(U=QR\),
+replace \(U\leftarrow Q\), and accumulate
+\[
+    \widehat\lambda_j
+    =
+    \frac{1}{M\Delta_R}\sum_{m=1}^M\log |R_{jj}^{(m)}|.
+\]
+For only the largest exponent, a single perturbation vector and repeated
+renormalization are sufficient. Convergence checks should vary time step,
+\(\Delta_R\), norm, transient length, and perturbation dimension.
+
+For spiking simulations, use common-noise perturbations:
+\begin{enumerate}
+    \item replay the same connectivity and stochastic streams in two copies;
+    \item clone the full state after burn-in;
+    \item perturb one membrane potential, all neurons in one cluster, one
+    spike, or all neurons in one cluster by one spike;
+    \item measure filtered-rate distance before saturation;
+    \item repeat across perturbation amplitudes and local population sizes.
+\end{enumerate}
+Independent-noise divergence is a control for stochastic variability, not a
+Lyapunov exponent.
+
+\section{Decision Criteria}
+\label{appC:decision-criteria}
+
+A parameter point is classified as finite-size hopping when switch times grow
+rapidly with \(n_E\), perturbations recover inside a state, the kink amplitude
+shrinks with size, and deterministic or common-noise Lyapunov estimates are not
+positive in the large-cluster limit. A parameter point is classified as
+mesoscopic-chaos evidence when switch times plateau as \(n_E\) grows, small
+perturbations separate, the broad autocorrelation persists without a
+finite-size kink, the Lyapunov estimate is positive with convergence checks,
+and the behavior appears in a deterministic mesoscopic reduction or survives
+the \(\xi\to 0\) scaling. Mixed cases should be reported as mixed; they are
+often the scientifically useful boundary of the phase diagram.

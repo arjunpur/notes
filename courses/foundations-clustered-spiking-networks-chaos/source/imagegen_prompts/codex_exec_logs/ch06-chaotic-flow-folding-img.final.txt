@@ -1,0 +1,1 @@
+{"status":"generated","asset_id":"ch06-chaotic-flow-folding-img","path":"/Users/arjun/repos/lecture-notes/courses/foundations-clustered-spiking-networks-chaos/figures/imagegen/ch06-chaotic-flow-folding-img.png"}

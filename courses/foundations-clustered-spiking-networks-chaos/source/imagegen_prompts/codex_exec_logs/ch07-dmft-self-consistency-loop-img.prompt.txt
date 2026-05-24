@@ -1,0 +1,36 @@
+You are a non-interactive Codex image generation worker for one lecture-note diagram.
+
+Use the imagegen skill and the built-in Codex image_gen image generation tool available in this Codex session. This must use the user's Codex subscription path.
+
+Do not use OPENAI_API_KEY.
+Do not call the OpenAI API directly.
+Do not call /Users/arjun/.codex/skills/.system/imagegen/scripts/image_gen.py.
+Do not synthesize the final image with Python/Pillow/SVG/canvas.
+
+Task:
+1. Generate exactly one raster image using the prompt below.
+2. Save or copy the final generated image to this exact workspace path:
+   /Users/arjun/repos/lecture-notes/courses/foundations-clustered-spiking-networks-chaos/figures/imagegen/ch07-dmft-self-consistency-loop-img.png
+3. Create parent directories if needed. Overwrite only this exact output path if needed.
+4. Write the path of the original generated image cache file, if known, to:
+   /Users/arjun/repos/lecture-notes/courses/foundations-clustered-spiking-networks-chaos/figures/imagegen/ch07-dmft-self-consistency-loop-img.source.txt
+5. Verify that the output path exists and is non-empty.
+
+Asset id: ch07-dmft-self-consistency-loop-img
+Target filename: figures/imagegen/ch07-dmft-self-consistency-loop-img.png
+Caption intent: Present DMFT as a closure loop: assumed network statistics define an effective stochastic unit, the unit produces mean activity and autocorrelation, and those output statistics must reproduce the input statistics that drove it.
+Overlay suggestion for later exact labels: Overlay `eta_0`, `zeta(t)`, `m`, and `C_r(tau)` if needed; reserve equations such as `<eta_0^2>=g^2 m^2` and `<zeta(t)zeta(t+tau)>=g^2 C_r(tau)` for the LaTeX caption or nearby notes.
+Review notes: Check that the figure reads as a self-consistency cycle rather than a one-way pipeline. Check that static bias and dynamic fluctuation are visually distinct.
+
+Prompt to use with image_gen:
+Use case: scientific-educational
+Asset type: lecture-note raster infographic
+Primary request: Create a schematic DMFT self-consistency loop for a random recurrent rate network. The diagram should make clear that a high-dimensional random network is replaced by one representative effective unit driven by a mean input, a static quenched bias, and a dynamic fluctuation, then the unit's output statistics close the loop.
+Composition: 16:10 horizontal composition suitable for a PDF figure. Use a clockwise loop with four stations: network statistics, effective unit, output traces/statistics, and covariance closure returning to the input. Keep the loop open and readable with broad whitespace.
+Required visual elements: A compact random network icon or matrix block, a single effective unit with an input arrow, a small static offset symbol beside a wavy dynamic trace, and an output autocorrelation curve feeding back to the input statistics. Make all curves schematic and smooth.
+Sparse in-image labels: `network`, `unit`, `eta0`, `zeta(t)`, `m`, `C(tau)`
+Style: Clean, modern, textbook-quality scientific diagram with high contrast, crisp arrows, generous whitespace, no watermark, no logos, no decorative stock imagery.
+Avoid: Exact closure equations inside the image, dense explanatory text, fake measured axes, excessive labels, decorative neural-network wallpaper, and ambiguous arrows that do not form a closed loop.
+
+When finished, reply only with compact JSON like:
+{"status":"generated","asset_id":"ch07-dmft-self-consistency-loop-img","path":"/Users/arjun/repos/lecture-notes/courses/foundations-clustered-spiking-networks-chaos/figures/imagegen/ch07-dmft-self-consistency-loop-img.png"}

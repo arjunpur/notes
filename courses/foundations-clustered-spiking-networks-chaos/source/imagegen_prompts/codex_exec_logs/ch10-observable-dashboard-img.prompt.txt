@@ -1,0 +1,36 @@
+You are a non-interactive Codex image generation worker for one lecture-note diagram.
+
+Use the imagegen skill and the built-in Codex image_gen image generation tool available in this Codex session. This must use the user's Codex subscription path.
+
+Do not use OPENAI_API_KEY.
+Do not call the OpenAI API directly.
+Do not call /Users/arjun/.codex/skills/.system/imagegen/scripts/image_gen.py.
+Do not synthesize the final image with Python/Pillow/SVG/canvas.
+
+Task:
+1. Generate exactly one raster image using the prompt below.
+2. Save or copy the final generated image to this exact workspace path:
+   /Users/arjun/repos/lecture-notes/courses/foundations-clustered-spiking-networks-chaos/figures/imagegen/ch10-observable-dashboard-img.png
+3. Create parent directories if needed. Overwrite only this exact output path if needed.
+4. Write the path of the original generated image cache file, if known, to:
+   /Users/arjun/repos/lecture-notes/courses/foundations-clustered-spiking-networks-chaos/figures/imagegen/ch10-observable-dashboard-img.source.txt
+5. Verify that the output path exists and is non-empty.
+
+Asset id: ch10-observable-dashboard-img
+Target filename: figures/imagegen/ch10-observable-dashboard-img.png
+Caption intent: Present the common observable dashboard as a compact set of diagnostics combining timescales, state statistics, variability, dimensionality, and instability for regime classification.
+Overlay suggestion for later exact labels: Overlay exact labels `tau_i`, `tau_c`, `T_C`, `M(t)`, `F_i(T)`, and `lambda_max` if needed; keep HWHM definitions and participation-ratio equations in LaTeX text.
+Review notes: Check that all six diagnostics remain legible at PDF figure size and that the mini-plots look schematic. Check that perturbation growth is not confused with an ordinary firing-rate trace.
+
+Prompt to use with image_gen:
+Use case: scientific-educational
+Asset type: lecture-note raster infographic
+Primary request: Create a schematic observable dashboard for clustered spiking network simulations. The figure should show that regime classification should combine multiple diagnostics rather than rely on a single example trace.
+Composition: 16:10 horizontal composition suitable for a PDF figure. Arrange six compact dashboard tiles in a clean 3-by-2 grid with consistent spacing and no nested cards. Each tile should contain one simple glyph or mini-plot, with a shared visual style.
+Required visual elements: Tile for autocorrelation HWHM, tile for cluster lifetimes, tile for active-cluster count distribution, tile for Fano or variability, tile for dimensionality, and tile for perturbation or Lyapunov growth. Use schematic curves and bars only; do not present the dashboard as measured data.
+Sparse in-image labels: `tau_i`, `tau_c`, `T_C`, `M(t)`, `Fano`, `lambda`
+Style: Clean, modern, textbook-quality scientific diagram with high contrast, crisp mini-plots, generous whitespace, restrained color accents, no watermark, no logos, no decorative stock imagery.
+Avoid: Dense formulas inside tiles, fake numerical data, tiny unreadable axes, long explanatory tile titles, photorealistic laboratory imagery, decorative stock dashboards, and visual hierarchy that makes one diagnostic look sufficient by itself.
+
+When finished, reply only with compact JSON like:
+{"status":"generated","asset_id":"ch10-observable-dashboard-img","path":"/Users/arjun/repos/lecture-notes/courses/foundations-clustered-spiking-networks-chaos/figures/imagegen/ch10-observable-dashboard-img.png"}

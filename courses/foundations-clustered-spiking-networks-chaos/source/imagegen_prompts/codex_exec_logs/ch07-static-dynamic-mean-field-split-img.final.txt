@@ -1,0 +1,1 @@
+{"status":"generated","asset_id":"ch07-static-dynamic-mean-field-split-img","path":"/Users/arjun/repos/lecture-notes/courses/foundations-clustered-spiking-networks-chaos/figures/imagegen/ch07-static-dynamic-mean-field-split-img.png"}

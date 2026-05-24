@@ -1,6 +1,6 @@
-\section{Mathematical Synthesis: Spectral Structure and Online Learning}
+\section{Mathematical Synthesis: Spectra, Independence, and Latent Structure}
 
-Machine Intelligence II begins from unsupervised structure: what can be learned when the data arrive without labels? Principal component analysis is the clean prototype because every step is visible. Center the data, measure covariance, diagonalize the covariance, project onto the strongest directions, and track exactly what variance was kept or discarded. Hebbian learning then asks how the same directions can be found online, one sample at a time.
+Machine Intelligence II begins from unsupervised structure: what can be learned when the data arrive without labels? Principal component analysis is the clean prototype because every step is visible. Center the data, measure covariance, diagonalize the covariance, project onto the strongest directions, and track exactly what variance was kept or discarded. Hebbian learning then asks how the same directions can be found online, one sample at a time. Hidden Markov Models and Independent Component Analysis then broaden the same question: which latent variables explain the observations, and which diagnostic says the representation is useful?
 
 \begin{figure}[h]
 \centering
@@ -93,3 +93,43 @@ The mathematical virtue of PCA is that it solves two problems at once. It maximi
   \|X-\hat{X}\|_F^2.
 \]
 By the Eckart--Young theorem, the solution is the truncated singular value decomposition. This makes PCA the reference point for later factor models, autoencoders, manifold learning, and probabilistic latent-variable models.
+
+\subsection{ICA Extends PCA From Covariance To Density}
+
+PCA makes the covariance matrix diagonal. ICA asks for a stronger property: the recovered coordinates should be statistically independent. In notation,
+\[
+  \hat{s}=Wx,
+  \qquad
+  p_{\hat{s}}(\hat{s})
+  \approx
+  \prod_i p_{\hat{s}_i}(\hat{s}_i).
+\]
+The comparison with PCA is precise. Whitening uses the PCA spectrum to transform the covariance to the identity. After whitening, second-order information has been exhausted; if the data are Gaussian, every orthogonal rotation is equally plausible. ICA can continue only when non-Gaussian structure remains in the density.
+
+Infomax turns that density goal into an optimization problem. With \(y=Wx\) and \(u_i=f_i(y_i)\), the trainable part of output entropy is
+\[
+  E(W)
+  =
+  \ln|\det W|
+  +
+  \mathbb{E}_x
+  \sum_i
+  \ln f_i'\bigl(w_i^{\mathsf{T}}x\bigr).
+\]
+The determinant term keeps the linear transform from collapsing volume. The nonlinear term scores each recovered component under the chosen marginal source model. Natural-gradient learning then updates \(W\) in relative coordinates, so a learning step means a comparable change of the current unmixing transform rather than a comparable change of raw matrix entries.
+
+The practical diagnostic changes with the objective. PCA reports a spectrum and a reconstruction residual. ICA reports convergence of the Infomax objective, residual dependence between recovered components, non-Gaussian marginal histograms, and, when ground truth is available, whether \(WA\) is close to a scaled permutation matrix.
+
+\subsection{Latent Variables Reappear In Different Forms}
+
+HMMs and ICA both introduce hidden variables, but they use different structure. In an HMM, the latent state is discrete and dynamical:
+\[
+  m^{(t-1)}\to m^{(t)}\to m^{(t+1)}.
+\]
+The retained state variable explains temporal dependence in the observations. In ICA, the latent state is continuous and instantaneous:
+\[
+  x=As.
+\]
+The retained source vector explains cross-channel dependence in a single observation.
+
+The common modeling lesson is that the useful representation is judged by the residual dependence it leaves behind. HMM inference should leave observations conditionally independent given the hidden state sequence. ICA should leave recovered components as independent as possible after unmixing. PCA should leave only small orthogonal residual variance after projection. Across the course, the mathematical object changes, but the diagnostic pattern stays recognizable: define the latent structure, fit the parameters, and inspect what dependence or residual remains unexplained.

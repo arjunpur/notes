@@ -1,0 +1,36 @@
+You are a non-interactive Codex image generation worker for one lecture-note diagram.
+
+Use the imagegen skill and the built-in Codex image_gen image generation tool available in this Codex session. This must use the user's Codex subscription path.
+
+Do not use OPENAI_API_KEY.
+Do not call the OpenAI API directly.
+Do not call /Users/arjun/.codex/skills/.system/imagegen/scripts/image_gen.py.
+Do not synthesize the final image with Python/Pillow/SVG/canvas.
+
+Task:
+1. Generate exactly one raster image using the prompt below.
+2. Save or copy the final generated image to this exact workspace path:
+   /Users/arjun/repos/lecture-notes/courses/foundations-clustered-spiking-networks-chaos/figures/imagegen/ch10-research-workflow-img.png
+3. Create parent directories if needed. Overwrite only this exact output path if needed.
+4. Write the path of the original generated image cache file, if known, to:
+   /Users/arjun/repos/lecture-notes/courses/foundations-clustered-spiking-networks-chaos/figures/imagegen/ch10-research-workflow-img.source.txt
+5. Verify that the output path exists and is non-empty.
+
+Asset id: ch10-research-workflow-img
+Target filename: figures/imagegen/ch10-research-workflow-img.png
+Caption intent: Show the intended research loop from model choice through simulation, observable diagnostics, scaling tests, theory comparison, and interpretation of dynamic regimes.
+Overlay suggestion for later exact labels: Overlay `model`, `parameters`, `simulation`, `diagnostics`, `scaling`, and `theory` if generated text is unreliable; keep detailed lists of observables and parameters in the chapter text.
+Review notes: Check that the workflow forms a loop with feedback from interpretation to model choice. Check that theory comparison is visually connected to both diagnostics and phase-diagram interpretation.
+
+Prompt to use with image_gen:
+Use case: scientific-educational
+Asset type: lecture-note raster infographic
+Primary request: Create a schematic research workflow loop for the clustered spiking network program. The figure should connect model architecture, simulation outputs, diagnostic dashboards, scaling experiments, mesoscale or DMFT theory, and final regime interpretation.
+Composition: 16:10 horizontal composition suitable for a PDF figure. Use a clockwise loop or left-to-right looped pipeline with six stations, broad arrows, and clear whitespace. The workflow should feel like a rigorous scientific procedure, not a project-management chart.
+Required visual elements: Station for choosing E-only or paired E/I architecture, station for selecting parameters, station for simulating spikes and rates, station for computing diagnostics, station for repeating size scaling, station for comparing to theory and interpreting the phase diagram. Include a feedback arrow from interpretation back to model and parameter choice.
+Sparse in-image labels: `model`, `parameters`, `simulation`, `diagnostics`, `scaling`, `theory`
+Style: Clean, modern, textbook-quality scientific workflow diagram with high contrast, crisp arrows, generous whitespace, restrained color, no watermark, no logos, no decorative stock imagery.
+Avoid: Exact equations inside the workflow, long checklist text, software logos, cloud or lab-stock imagery, Gantt-chart styling, fake screenshots, cluttered icons, and presenting the loop as a linear one-pass procedure.
+
+When finished, reply only with compact JSON like:
+{"status":"generated","asset_id":"ch10-research-workflow-img","path":"/Users/arjun/repos/lecture-notes/courses/foundations-clustered-spiking-networks-chaos/figures/imagegen/ch10-research-workflow-img.png"}

@@ -1,0 +1,36 @@
+You are a non-interactive Codex image generation worker for one lecture-note diagram.
+
+Use the imagegen skill and the built-in Codex image_gen image generation tool available in this Codex session. This must use the user's Codex subscription path.
+
+Do not use OPENAI_API_KEY.
+Do not call the OpenAI API directly.
+Do not call /Users/arjun/.codex/skills/.system/imagegen/scripts/image_gen.py.
+Do not synthesize the final image with Python/Pillow/SVG/canvas.
+
+Task:
+1. Generate exactly one raster image using the prompt below.
+2. Save or copy the final generated image to this exact workspace path:
+   /Users/arjun/repos/lecture-notes/courses/foundations-clustered-spiking-networks-chaos/figures/imagegen/ch06-random-rate-phase-portrait-img.png
+3. Create parent directories if needed. Overwrite only this exact output path if needed.
+4. Write the path of the original generated image cache file, if known, to:
+   /Users/arjun/repos/lecture-notes/courses/foundations-clustered-spiking-networks-chaos/figures/imagegen/ch06-random-rate-phase-portrait-img.source.txt
+5. Verify that the output path exists and is non-empty.
+
+Asset id: ch06-random-rate-phase-portrait-img
+Target filename: figures/imagegen/ch06-random-rate-phase-portrait-img.png
+Caption intent: Contrast subcritical random-rate dynamics that contract to a fixed point with supercritical dynamics where recurrent amplification creates local expansion, nonlinear folding, and bounded irregular motion.
+Overlay suggestion for later exact labels: Add exact labels after generation if needed: `g<g_c`, `g>g_c`, `\lambda_{\max}<0`, `\lambda_{\max}>0`, and projected axes `x_1`, `x_2`.
+Review notes: Check that the left panel clearly contracts, the right panel shows both stretching and bounded folding, and the image does not confuse deterministic chaos with unbounded divergence.
+
+Prompt to use with image_gen:
+Use case: scientific-educational
+Asset type: lecture-note raster infographic
+Primary request: Create a schematic phase-portrait comparison for the SCS random rate transition. Show the left regime contracting toward a stable fixed point when recurrent gain is below criticality, and the right regime expanding and folding into bounded irregular motion when recurrent gain is above criticality. Make clear this is a two-dimensional projection of high-dimensional dynamics.
+Composition: 16:10 horizontal composition suitable for a PDF figure. Use two side-by-side panels with matching axes and visual scale: left panel has a vector field spiraling or flowing inward to a fixed point; right panel has local expansion arrows, a folded ribbon-like trajectory, and bounded state-space containment.
+Required visual elements: stable fixed point on the left, inward arrows, supercritical trajectory on the right, local stretching arrows, nonlinear folding, and a soft boundary indicating bounded activity due to saturation.
+Sparse in-image labels: g<1, g>1, x1, x2, lambda<0, lambda>0
+Style: clean, modern, textbook-quality lecture-note raster infographic with generous whitespace, high contrast, no watermark, no logos, no decorative stock imagery. Use restrained colors to separate contraction from chaos and keep labels short.
+Avoid: exact SCS equations in the image, dense vector fields, chaotic scribbles without folding structure, implying the real SCS state space is only two-dimensional, decorative fractal art, and measured simulation traces.
+
+When finished, reply only with compact JSON like:
+{"status":"generated","asset_id":"ch06-random-rate-phase-portrait-img","path":"/Users/arjun/repos/lecture-notes/courses/foundations-clustered-spiking-networks-chaos/figures/imagegen/ch06-random-rate-phase-portrait-img.png"}

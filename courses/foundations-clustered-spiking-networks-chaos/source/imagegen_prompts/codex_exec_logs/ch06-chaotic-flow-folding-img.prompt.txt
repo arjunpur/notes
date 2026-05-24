@@ -1,0 +1,36 @@
+You are a non-interactive Codex image generation worker for one lecture-note diagram.
+
+Use the imagegen skill and the built-in Codex image_gen image generation tool available in this Codex session. This must use the user's Codex subscription path.
+
+Do not use OPENAI_API_KEY.
+Do not call the OpenAI API directly.
+Do not call /Users/arjun/.codex/skills/.system/imagegen/scripts/image_gen.py.
+Do not synthesize the final image with Python/Pillow/SVG/canvas.
+
+Task:
+1. Generate exactly one raster image using the prompt below.
+2. Save or copy the final generated image to this exact workspace path:
+   /Users/arjun/repos/lecture-notes/courses/foundations-clustered-spiking-networks-chaos/figures/imagegen/ch06-chaotic-flow-folding-img.png
+3. Create parent directories if needed. Overwrite only this exact output path if needed.
+4. Write the path of the original generated image cache file, if known, to:
+   /Users/arjun/repos/lecture-notes/courses/foundations-clustered-spiking-networks-chaos/figures/imagegen/ch06-chaotic-flow-folding-img.source.txt
+5. Verify that the output path exists and is non-empty.
+
+Asset id: ch06-chaotic-flow-folding-img
+Target filename: figures/imagegen/ch06-chaotic-flow-folding-img.png
+Caption intent: Illustrate the Lyapunov mechanism behind deterministic chaos: nearby trajectories separate along expanding directions, then nonlinear saturation folds them back into a bounded region so trajectories diverge without blowing up.
+Overlay suggestion for later exact labels: Add exact labels after generation if needed: `\delta x(t)`, `\lambda_{\max}>0`, and optionally `\|\delta x(t)\|` for the small growth cue.
+Review notes: Check that the mechanism reads as local divergence plus global boundedness, not just tangled lines; ensure the two nearby trajectories are initially close and only later separate.
+
+Prompt to use with image_gen:
+Use case: scientific-educational
+Asset type: lecture-note raster infographic
+Primary request: Create a conceptual state-space flow diagram showing stretch-and-fold dynamics for a chaotic rate network. Show a tiny bundle of nearby initial conditions separating along an unstable direction, then folding back inside a bounded region due to nonlinear saturation. Mark the diagram as schematic rather than a measured trajectory.
+Composition: 16:10 horizontal composition suitable for a PDF figure. Use a left-to-right progression across a single projected state space: small nearby bundle on the left, stretched sheet or ribbon in the center, folded bounded ribbon on the right. Include arrows for the flow direction and leave generous whitespace for later captioning.
+Required visual elements: nearby initial points, growing separation, elongated ribbon, folded return path, bounded state-space envelope, and a small diagnostic inset or visual cue for positive Lyapunov growth.
+Sparse in-image labels: x(t), delta x, lambda>0, stretch, fold, bounded
+Style: clean, modern, textbook-quality lecture-note raster infographic with generous whitespace, high contrast, no watermark, no logos, no decorative stock imagery. Use crisp vector-like forms rendered as raster and restrained color coding for the two nearby trajectories.
+Avoid: exact equations in the image, decorative fractals, fluid turbulence imagery, dense phase-space scribbles, unbounded explosion visuals, and any claim that the drawing is a numerical simulation.
+
+When finished, reply only with compact JSON like:
+{"status":"generated","asset_id":"ch06-chaotic-flow-folding-img","path":"/Users/arjun/repos/lecture-notes/courses/foundations-clustered-spiking-networks-chaos/figures/imagegen/ch06-chaotic-flow-folding-img.png"}

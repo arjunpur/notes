@@ -1,0 +1,641 @@
+\chapter{The Research Program}
+\label{ch:research-program}
+
+The course has now built the mathematical foundation for a concrete research
+program. The program is not merely to simulate clustered spiking networks until
+interesting traces appear. It is to decide whether paired E/I clustered spiking
+circuits realize a genuine mesoscale chaotic regime, to separate that regime
+from finite-size multistability, and to explain why inhibitory clustering
+changes the answer.
+
+\section*{Learning Goals}
+
+After this chapter you should be able to:
+\begin{itemize}
+    \item formulate phase diagrams over cluster strength, inhibitory clustering,
+    heterogeneity, and network size;
+    \item define the core observables needed to classify asynchronous,
+    attractor, chaotic, and transient-chaotic regimes;
+    \item compare the expected scaling behavior of E-only and paired E/I
+    clustered networks;
+    \item state what evidence would support mesoscopic chaos in a clustered
+    spiking circuit.
+\end{itemize}
+
+\section{Central Questions}
+\label{sec:ch10-central-questions}
+
+The roadmap can be organized around four questions.
+\begin{enumerate}
+    \item Does mesoscopic chaos exist in clustered spiking circuits after
+    finite-size effects are removed?
+    \item Can one discriminate finite-size multistability from mesoscopic chaos
+    using scaling, perturbation, autocorrelation, and Lyapunov diagnostics?
+    \item Why should paired E/I clustered networks show stronger quenched
+    mesoscale variability than E-only clustered networks with homogeneous
+    inhibition?
+    \item Can a mesoscale theory reproduce the same regimes and observables as
+    the spiking network?
+\end{enumerate}
+These questions are linked. A positive answer to the first is not convincing
+without the second. The third supplies the mechanism. The fourth makes the
+claim mathematical rather than purely numerical.
+
+\section{Parameter Axes and Phase Diagrams}
+\label{sec:ch10-phase-diagrams}
+
+The main phase diagrams should be built over cluster strength and inter-cluster
+heterogeneity. A reduced two-parameter plane uses
+\begin{equation}
+    s \quad \text{or} \quad J_E^+
+    \qquad \text{and} \qquad
+    \kappa \quad \text{or} \quad g_{\mathrm{het}} .
+    \label{eq:ch10-phase-axes}
+\end{equation}
+Here \(s\) is a cluster-strength parameter, often proportional to a potentiated
+within-cluster weight such as \(J_E^+\). The parameter \(\kappa\), or
+\(g_{\mathrm{het}}\) in older shorthand, controls quenched inter-cluster
+heterogeneity, either in weights or in connectivity. Bare \(g\) is reserved for
+inhibitory balance gains such as those in Chapter~\ref{ch:ei-clustered-networks}.
+Additional axes include the inhibitory clustering ratio \(R\), the number of
+clusters \(Q\), local population counts \(n_E,n_I\), and the finite-size
+amplitude \(\xi=1/\sqrt{n_E}=(\gamma n_c)^{-1/2}\) at fixed local E/I fraction
+\(n_c=n_E+n_I\), \(n_E=\gamma n_c\), \(n_I=(1-\gamma)n_c\). When total counts
+are needed, write them explicitly as \(N_E^{\mathrm{tot}}=Qn_E\) and
+\(N_I^{\mathrm{tot}}=Qn_I\).
+
+\begin{table}[t]
+\centering
+\small
+\begin{tabularx}{\textwidth}{@{}p{0.24\textwidth}p{0.32\textwidth}X@{}}
+\toprule
+\textbf{Phase label} & \textbf{Operational signature} & \textbf{Primary discriminator} \\
+\midrule
+Asynchronous irregular & Weak cluster modulation and no long cluster lifetimes & Low state occupancy structure and short autocorrelation. \\
+Activated attractor & Stable active-cluster states with rare or absent switching & Switches disappear as \(n_E\) grows unless finite-size noise is retained. \\
+Mesoscopic chaos & Persistent irregular cluster switching at small \(\xi\) & Positive mesoscale instability and switch-time plateau over the size ladder. \\
+Transient chaos & Long irregular episodes followed by settling or restricted state exploration & Lifetime of the transient and state coverage must be measured separately. \\
+\bottomrule
+\end{tabularx}
+\caption{Phase-diagram labels are assigned by diagnostics rather than by
+example traces. Each grid point should carry the same observable bundle so that
+neighboring regions can be compared reproducibly.}
+\label{tab:ch10-phase-diagram}
+\end{table}
+
+\begin{table}[t]
+\centering
+\small
+\begin{tabularx}{\textwidth}{@{}p{0.24\textwidth}p{0.28\textwidth}X@{}}
+\toprule
+\textbf{Quantity} & \textbf{Pedagogical default or sweep} & \textbf{Reason to record it} \\
+\midrule
+Architecture & E-only control and paired E/I clusters & Separates finite-size attractor switching from E/I quenched-disorder mechanisms. \\
+Cluster count & \(Q\in\{10,20,40\}\), plus larger \(Q\) for regime C & Tests few-cluster sample-specific behavior versus many-unit cluster statistics. \\
+Local population size & \(n_E:n_I=4:1\); sweep \(n_E\) by factors of two & Controls \(\xi=1/\sqrt{n_E}\) when testing finite-size scaling. \\
+Connectivity construction & Fixed indegree or fully connected cluster-pair template from Chapter~\ref{ch:ei-clustered-networks} & Keeps mean input and realized indegrees from drifting across sweeps. \\
+Cluster strength & Grid in \(J_E^+\) or \(s\); paired inhibitory strength via \(R\) & Locates asynchronous, attractor, chaotic, and transient regimes. \\
+Quenched heterogeneity & Grid in \(\kappa\) or channel-specific \(\sigma_{\alpha\beta}^{\mathrm{het}}\) & Separates frozen inter-cluster disorder from finite-size sampling noise. \\
+Integrator and recording & \(\Delta t=0.05\)--\(0.1\) ms; discard \(5\)--\(10\) s burn-in; record until at least dozens of transitions or report censoring & Prevents numerical and sampling choices from defining the phase label. \\
+Rate extraction & \(\Delta_b=1\)--\(5\) ms bins; rate filter \(\tau_f=10\)--\(25\) ms; state detector with hysteresis and dwell time & Gives reproducible cluster rates, lifetimes, autocorrelations, and transition times. \\
+Replicates & Multiple connectivity realizations and replayable stochastic streams per grid point & Separates within-realization dynamics from sample-to-sample quenched bias. \\
+Perturbation ladder & Membrane-voltage perturbation, one-spike perturbation, whole-cluster perturbation, deterministic rate perturbation & Tests recovery, basin crossing, and infinitesimal sensitivity on comparable axes. \\
+\bottomrule
+\end{tabularx}
+\caption{Canonical simulation template for the course project. The numbers are
+pedagogical defaults for notebooks and smoke tests, not claims about the exact
+settings used in any specific Tilo simulation. Publication-quality runs should
+justify the grid, recording length, and thresholds from convergence checks.}
+\label{tab:ch10-canonical-config}
+\end{table}
+
+A useful first classification has four regimes:
+\begin{enumerate}
+    \item \textbf{Asynchronous irregular regime.} Cluster strength is too weak
+    to activate assemblies. Rates are low or weakly modulated, pairwise
+    correlations are small, and no cluster has a long lifetime.
+    \item \textbf{Attractor regime.} Cluster strength is large enough to create
+    stable active-cluster states. At small \(\kappa\), switching is absent in
+    the large-network limit or is driven by finite-size noise.
+    \item \textbf{Chaotic regime.} Cluster strength and heterogeneity are large
+    enough that the cluster-rate dynamics remains irregular as
+    \(\xi\to 0\), with positive mesoscale Lyapunov exponent.
+    \item \textbf{Transient-chaotic regime.} For very strong coupling, the
+    network may show long chaotic transients before settling, or it may visit
+    only a subset of active-cluster configurations. This regime should be
+    treated as a hypothesis to test, not as an assumed phase.
+\end{enumerate}
+
+The roadmap makes two concrete trend predictions that should be checked on the
+phase diagram rather than inferred from isolated traces. In paired E/I networks
+with large cluster strength and large inter-cluster heterogeneity, the cluster
+autocorrelation time \(\tau_c\) and cluster lifetime \(T_C\) should become
+shorter as \(\kappa\) increases, as in random rate networks where stronger
+disorder accelerates chaotic decorrelation. The same chaotic phase should be weakly
+sensitive to network size when \(Q\) is fixed and \(n_c\) grows. In E-only
+clustered networks, by contrast, the metastable window in cluster strength is
+expected to be narrow, the timescales should be less controlled by \(\kappa\),
+and transitions should be much more sensitive to cluster size because the
+dominant escape source is finite-size noise.
+
+\section{E-Only Versus E/I-Clustered Networks}
+\label{sec:ch10-e-vs-ei}
+
+The comparison between E-only and paired E/I networks is the core control
+experiment. In an E-only clustered network, excitatory clusters are potentiated
+but inhibition remains homogeneous. The expected mechanism for switching is
+finite-size destabilization of stable attractors. As the number of neurons per
+cluster grows at fixed number of clusters, the finite-size amplitude decreases
+and transitions should become rarer or disappear.
+
+In a paired E/I clustered network, each effective rate unit contains both an
+excitatory and an inhibitory population. Quenched variability in inhibitory
+inter-cluster structure can contribute strongly to input variability. A useful
+schematic channel score is
+\begin{equation}
+    H_\alpha^{\mathrm{E/I}}
+    =
+    f_E
+    (\sigma_{\alpha E}^{\mathrm{het}})^2
+    j_{\alpha E}^2 r_E
+    +
+    f_I
+    (\sigma_{\alpha I}^{\mathrm{het}})^2
+    j_{\alpha I}^2 r_I.
+    \label{eq:ch10-ei-heterogeneity-score}
+\end{equation}
+Here \(f_\beta=n_\beta/n_c\) is the local population fraction. This score ranks
+channels after the connectivity and weight normalization have been fixed; it is
+not by itself an implementable variance formula. The implementable quantity is
+the empirical split of stored input currents into outside-cluster E and I
+components, with within-realization temporal variability separated from
+between-realization quenched bias.
+Because inhibition-stabilized networks can have large \(|j_{\alpha I}|\), the
+second term can dominate. The prediction is therefore qualitative as well as
+quantitative: E/I clustering should preserve irregular cluster switching in
+large clusters over a broader parameter range than E-only clustering.
+
+\section{Observable Dashboard}
+\label{sec:ch10-observable-dashboard}
+
+Every simulation should produce a common set of observables. The point is to
+avoid judging regimes from example traces alone.
+
+\begin{table}[t]
+\centering
+\small
+\begin{tabularx}{\textwidth}{@{}p{0.25\textwidth}p{0.28\textwidth}X@{}}
+\toprule
+\textbf{Observable family} & \textbf{Stored output} & \textbf{Question answered} \\
+\midrule
+Timescales & \(\tau_i\), \(\tau_c\), cluster lifetimes, switch rates & Are slow dynamics single-cell, cluster-level, or state-transition dominated? \\
+State statistics & \(S_a(t)\), active-count distribution, transition table & Which active-cluster configurations are visited and how often? \\
+Variability & Fano factors, current-component means and variances & Which source of input variability grows before transitions? \\
+Dimensionality & Raw and residual participation ratios & Are transitions stereotyped paths or high-dimensional excursions? \\
+Instability & Common-noise perturbation growth and mesoscale Lyapunov estimates & Do nearby trajectories recover or separate at small \(\xi\)? \\
+\bottomrule
+\end{tabularx}
+\caption{Observable dashboard for each phase-diagram grid point. The same
+bundle should be produced for spiking simulations, deterministic mesoscopic
+runs, and synthetic validation traces.}
+\label{tab:ch10-observable-dashboard}
+\end{table}
+
+\paragraph{Single-neuron autocorrelation time \(\tau_i\).}
+The single-neuron observable starts from binned spike counts or instantaneous
+single-neuron rates \(r_i^{(u)}(t)\) on trial \(u\), often using 5 ms bins. Its
+raw trial-averaged autocorrelation is corrected by a shift predictor. For
+positive lags \(0\le \tau<T\), all finite-window averages use the valid overlap
+\([0,T-\tau]\), not the unavailable part of the trace. The shift-corrected
+autocorrelation is
+\begin{equation}
+    a_i^{\mathrm{corr}}(\tau)
+    =
+    \frac{1}{n_{\mathrm{tr}}}
+    \sum_{u=1}^{n_{\mathrm{tr}}}
+    \frac{1}{T-\tau}
+    \int_0^{T-\tau}
+    r_i^{(u)}(t)r_i^{(u)}(t+\tau)\,dt
+    -
+    a_i^{(0)}(\tau),
+    \label{eq:ch10-single-neuron-autocorrelation}
+\end{equation}
+where
+\begin{equation}
+    a_i^{(0)}(\tau)
+    =
+    \frac{1}{n_{\mathrm{tr}}}
+    \sum_{u=1}^{n_{\mathrm{tr}}}
+    \frac{1}{T-\tau}
+    \int_0^{T-\tau}
+    r_i^{(u)}(t)r_i^{(\pi(u))}(t+\tau)\,dt
+    \label{eq:ch10-shift-predictor}
+\end{equation}
+uses a random permutation \(\pi\) of trial labels. The central spike-count peak
+at \(\tau=0\) is the Poisson-like same-bin contribution of discrete spikes; it
+must be removed before measuring the slow rate autocorrelation. Let
+\(a_i^{\mathrm{rate}}(\tau)\) denote this central-peak-removed function, and
+measure HWHM on the normalized autocorrelation
+\[
+    \rho_i^{\mathrm{rate}}(\tau)
+    =
+    \frac{a_i^{\mathrm{rate}}(\tau)}
+    {a_i^{\mathrm{rate}}(0^+)}.
+\]
+The single-neuron time \(\tau_i\) is
+\begin{equation}
+    \tau_i
+    =
+    \inf\{\tau>0:\rho_i^{\mathrm{rate}}(\tau)\le 1/2\}.
+    \label{eq:ch10-single-neuron-hwhm}
+\end{equation}
+This keeps a fast counting artifact from being mistaken for a slow metastable
+or chaotic timescale.
+
+\paragraph{Cluster autocorrelation time \(\tau_c\).}
+For a cluster rate \(r_c(t)\), define
+\begin{equation}
+\begin{aligned}
+    C_c(\tau)
+    &=
+    \frac{1}{T-\tau}
+    \int_0^{T-\tau}
+    \delta r_c(t)\delta r_c(t+\tau)\,dt,
+    \\
+    \delta r_c(t)
+    &=
+    r_c(t)-\overline r_c,
+    \qquad
+    \overline r_c
+    =
+    \frac{1}{T}\int_0^T r_c(t)\,dt .
+\end{aligned}
+    \label{eq:ch10-autocorrelation}
+\end{equation}
+The cluster HWHM is also measured on the normalized autocorrelation
+\(\rho_c(\tau)=C_c(\tau)/C_c(0)\). The cluster autocorrelation time
+\(\tau_c\) is the smallest positive lag at which this normalized
+autocorrelation has fallen to one half:
+\begin{equation}
+    \tau_c
+    =
+    \inf\{\tau>0:\rho_c(\tau)\le 1/2\}.
+    \label{eq:ch10-cluster-hwhm}
+\end{equation}
+This is the HWHM autocorrelation time used to compare clustered networks with
+SCS and self-coupled rate models. Unlike \(\tau_i\), it is computed directly
+from the population rate of a cluster and does not contain the single-spike
+central peak.
+
+\paragraph{Cluster lifetimes.}
+Choose a threshold \(r_0\) separating inactive and active cluster rates. A
+cluster lifetime \(T_C\) is the length of a contiguous interval on which
+\begin{equation}
+    r_c(t)>r_0.
+    \label{eq:ch10-cluster-lifetime}
+\end{equation}
+The lifetime distribution distinguishes rare noise-driven escapes from faster
+chaotic switching, especially when measured across network sizes.
+
+\paragraph{Firing-rate distributions and active-cluster counts.}
+The marginal distribution of \(r_c(t)\) reports whether clusters are mostly
+silent, bimodal, broadly distributed, or saturated. The active-cluster count
+\begin{equation}
+    M(t)=\sum_{c=1}^{Q}\mathbf{1}\{r_c(t)>r_0\}
+    \label{eq:ch10-active-cluster-count}
+\end{equation}
+summarizes how many assemblies participate at a time. Attractor regimes often
+have preferred counts; chaotic regimes may have broader or parameter-dependent
+count distributions.
+
+\paragraph{Fano factors.}
+For a spike count \(N_i(T)\) in a window of length \(T\), the Fano factor is
+\begin{equation}
+    F_i(T)
+    =
+    \frac{\operatorname{Var}[N_i(T)]}{\mathbb{E}[N_i(T)]}.
+    \label{eq:ch10-fano}
+\end{equation}
+A Poisson process has \(F=1\). Deviations reflect rate modulation, correlations,
+and state switching. Fano factors are especially useful because metastable
+activity was originally linked to changes in variability during cortical state
+transitions and task engagement.
+
+\paragraph{Dimensionality.}
+Let \(C\) be the pairwise covariance or correlation matrix of cluster firing
+rates. The participation-ratio dimensionality is
+\begin{equation}
+    d
+    =
+    \frac{\operatorname{Tr}(C)^2}{\operatorname{Tr}(C^2)}.
+    \label{eq:ch10-dimensionality}
+\end{equation}
+If activity lies along one dominant mode, \(d\) is small. If many cluster modes
+participate, \(d\) is larger. A chaotic regime should be characterized not only
+by positive Lyapunov exponent but also by the dimension of the activity it
+explores.
+
+\paragraph{Transition-triggered variability and cross-correlations.}
+Detect isolated off-to-on and on-to-off transitions of a focus cluster \(c\):
+within \([t_m-T_C,t_m+T_C]\), no other cluster should cross the activity
+threshold. For transition times \(t_m\), compute
+\begin{equation}
+    \operatorname{TTA}_{\sigma^2}(\tau)
+    =
+    \frac{1}{M}\sum_{m=1}^M \sigma^2(t_m+\tau),
+    \label{eq:ch10-tta-variability}
+\end{equation}
+where \(\sigma^2\) should be split into spatial input-current variance
+components across the excitatory neurons of cluster \(c\):
+\begin{equation}
+    \sigma_{\mathrm{in}}^E,\quad
+    \sigma_{\mathrm{in}}^I,\quad
+    \sigma_{\mathrm{out}}^E,\quad
+    \sigma_{\mathrm{out}}^I .
+    \label{eq:ch10-transition-sigma-components}
+\end{equation}
+For \(x\in\{\mathrm{in},\mathrm{out}\}\) and \(\beta\in\{E,I\}\), each
+component means
+\begin{equation}
+    \left(\sigma_x^\beta(t)\right)^2
+    =
+    \frac{1}{n_E}
+    \sum_{i=1}^{n_E}
+    \left(
+        I_{x,i}^{\beta}(t)-\overline I_x^\beta(t)
+    \right)^2 .
+    \label{eq:ch10-transition-sigma-definition}
+\end{equation}
+The matching mean current components should also be triggered. This asks which
+source drives the transition: within-cluster excitation, within-cluster
+inhibition, outside-cluster excitation, or outside-cluster inhibition.
+
+For a specific state transition \(A\to B\), also project the triggered rate
+trajectory onto the transition direction
+\begin{equation}
+    e_{AB}=\frac{r_B-r_A}{\|r_B-r_A\|},
+    \qquad
+    z_{\parallel}(t)=e_{AB}^{\mathsf T}(r(t)-r_A),
+    \label{eq:ch10-transition-direction}
+\end{equation}
+and compare it with the orthogonal displacement
+\begin{equation}
+    z_{\perp}^2(t)
+    =
+    \|r(t)-r_A\|^2-z_{\parallel}^2(t).
+    \label{eq:ch10-transition-orthogonal}
+\end{equation}
+The predicted signature of a directional transition is a pre-crossing increase
+along \(r_B-r_A\) without a comparable increase in orthogonal directions.
+Cross-correlations between rate changes and the four variance components test
+whether fluctuations precede transitions or merely follow them.
+
+\paragraph{Mesoscale Lyapunov exponents.}
+Estimate \(\lambda_{\max}\) from the cluster-rate dynamics using perturbation
+growth or tangent dynamics:
+\begin{equation}
+    \lambda_{\max}
+    =
+    \lim_{t\to\infty}
+    \frac{1}{t}
+    \log
+    \frac{\|\delta r(t)\|}{\|\delta r(0)\|}.
+    \label{eq:ch10-lyapunov}
+\end{equation}
+This observable is the most direct test for rate chaos. It should be reported
+with the network-size scaling of the same parameter point.
+
+\section{Scaling Experiments}
+\label{sec:ch10-scaling-experiments}
+
+The roadmap proposes three complementary scalings.
+
+\paragraph{Fixed cluster size, increasing number of clusters.}
+Hold \(n_c\) fixed and increase \(Q\). Finite-size effects remain because each
+cluster is still estimated from the same number of neurons. This scaling is
+useful for studying many-cluster statistics but cannot eliminate finite-size
+switching.
+
+\paragraph{Fixed number of clusters, increasing cluster size.}
+Hold \(Q\) fixed and increase \(n_c\). With fixed local E/I fraction
+\(n_E=\gamma n_c\), this scaling suppresses
+\(\xi=1/\sqrt{n_E}=(\gamma n_c)^{-1/2}\). It is the decisive test for whether
+transitions in E-only networks are finite-size driven. In paired E/I networks,
+persistence of switching under this scaling supports a quenched mesoscale
+mechanism.
+
+\paragraph{Increasing both clusters and cluster size.}
+Let both \(Q\) and \(n_c\) grow, for example
+\(Q=(N^{\mathrm{tot}})^\rho\) and
+\(n_c=(N^{\mathrm{tot}})^{1-\rho}\) with \(0<\rho<1\). This is the scaling that
+connects the spiking network to a many-unit dynamic mean-field theory. The
+finite-size amplitude vanishes while the number of quenched cluster couplings
+grows.
+
+\section{Simulation and Theory Workflow}
+\label{sec:ch10-workflow}
+
+A rigorous project loop should have the following structure.
+\begin{enumerate}
+    \item Choose architecture: E-only or paired E/I clusters; fully connected,
+    neuron-level Erdos-Renyi, or cluster-level Erdos-Renyi inter-cluster
+    variability.
+    \item Choose parameters: \(J_E^+\), \(R\), depression factors
+    \(J_E^-,J_I^-\), heterogeneity amplitude \(\kappa\) or \(g_{\mathrm{het}}\),
+    number of clusters \(Q\), and neurons per cluster \(n_c\).
+    \item Simulate spiking dynamics and record spike trains, filtered rates,
+    input-current components, and cluster labels.
+    \item Compute the observable dashboard: autocorrelations, HWHM times,
+    lifetimes, rate distributions, active-cluster counts, Fano factors,
+    dimensionality, transition-triggered variability, cross-correlations, and
+    perturbation growth.
+    \item Repeat across network sizes to separate \(\xi\)-dependent behavior
+    from \(\kappa\)-dependent behavior.
+    \item Compare the spiking network to the mesoscale theory and, where
+    possible, to a dynamic mean-field self-consistency calculation.
+\end{enumerate}
+
+\paragraph{Minimum run products.}
+Every run should write a machine-readable manifest and a compact analysis
+bundle. The manifest records architecture, \(Q\), \(n_E\), \(n_I\), all weight
+and depression factors, fixed indegrees, heterogeneity amplitudes, random
+seeds, integration step, burn-in, recording length, filter widths, threshold
+rules, and software version. The analysis bundle stores cluster-rate traces,
+state vectors \(S_a(t)\), transition tables, autocorrelations, HWHM estimates,
+Fano curves, dimensionality curves, input-current variance decompositions, and
+perturbation-growth summaries. A phase diagram assembled without these run
+products is not reproducible enough to support a mechanism claim.
+
+The research loop is:
+\begin{enumerate}
+    \item choose the model architecture, \(Q,n_E,n_I\), cluster strength,
+    inhibitory clustering, and heterogeneity grid;
+    \item run simulations with manifests and replayable stochastic streams;
+    \item build the common dashboard of rates, states, autocorrelations,
+    transition statistics, perturbation growth, and current decompositions;
+    \item repeat the dashboard across the \(n_E\), \(Q\), and \(\kappa\)
+    scaling experiments;
+    \item compare the resulting phase labels with deterministic mesoscopic or
+    DMFT predictions before refining the next sweep.
+\end{enumerate}
+
+The workflow is intentionally redundant. If a parameter point is truly chaotic,
+it should not rely on one fragile signature. It should show persistent switching
+as \(\xi\to 0\), positive mesoscale Lyapunov exponent, smooth broad
+autocorrelation, and a stable location in the phase diagram.
+
+\section{Contribution-Level Research Questions}
+\label{sec:ch10-contribution-questions}
+
+The program naturally separates into publishable contributions.
+
+\paragraph{Mechanism.}
+Can the channel score in \eqref{eq:ch10-ei-heterogeneity-score}, together with
+empirical current decompositions, predict where E/I clustering amplifies
+quenched disorder enough to destabilize attractors?
+
+\paragraph{Diagnostics.}
+Can switch-time plateaus, perturbation divergence, zero-lag autocorrelation
+shape, and mesoscale Lyapunov exponents be made consistent on the same
+parameter grid?
+
+\paragraph{Theory.}
+Can one derive a dynamic mean-field theory for paired E/I cluster units in the
+large-\(Q\), large-\(n_c\) limit and obtain a self-consistency equation for
+\(C(\tau)\)?
+
+\paragraph{Comparison.}
+Can the E-only and E/I-clustered networks be matched in mean firing rate and
+cluster lifetime while differing in their large-\(n_c\) scaling? This would be
+a strong demonstration that similar phenomenology can arise from different
+mechanisms.
+
+\paragraph{Neuroscience.}
+Can the model explain why metastable cortical activity is useful for state-
+dependent variability, expectation, attention, and decision timing while also
+predicting when such activity should recover from perturbation versus diverge?
+
+\section{Checkpoint Exercises and Notebook Prompts}
+\label{sec:ch10-checkpoint-exercises}
+
+The fastest route into the project is a sequence of notebooks that each
+produces one reusable diagnostic artifact. The checkpoints below are stated as
+implementation exercises because the research bottleneck is usually not the
+definition of an observable; it is making that observable robust enough to
+survive parameter sweeps.
+
+\paragraph{Checkpoint 1: spike-to-rate extraction.}
+Implement the binner and exponential filter in
+\eqref{eq:ch09-discrete-rate-filter}. Validate units with a homogeneous
+Poisson process: the mean filtered rate should equal the imposed rate, and the
+Fano factor should be near one before any state modulation is introduced. The
+notebook output is a rate table indexed by time, cluster, and cell type.
+
+\paragraph{Checkpoint 2: state detector and lifetime table.}
+Use synthetic two-state traces with known dwell times to tune threshold,
+hysteresis, and minimum-dwell rules. Then apply the detector to one E-only and
+one paired E/I simulation at matched mean rate. The notebook output is a table
+of on/off events, active-state vectors, active-cluster counts, and lifetime
+distributions with threshold-sensitivity bands.
+
+\paragraph{Checkpoint 3: autocorrelation, HWHM, and kink estimator.}
+Compute valid-overlap autocorrelations, HWHM times, and the small-lag kink fit
+from \eqref{eq:ch09-kink-fit}. Validate on three signals: Poisson counts,
+Ornstein-Uhlenbeck rates, and a smooth deterministic chaotic or quasiperiodic
+test trace. The notebook output is a plot of \(k_\xi\) and
+\(\tau_{\mathrm{HWHM}}\) versus local population size.
+
+\paragraph{Checkpoint 4: transition-triggered variability.}
+For isolated transitions, compute triggered means and variances of
+\(I_{\mathrm{in}}^E\), \(I_{\mathrm{in}}^I\), \(I_{\mathrm{out}}^E\), and
+\(I_{\mathrm{out}}^I\), plus transition-triggered Fano factors with
+rate-matched control windows. The notebook output is an aligned transition
+panel that states whether the leading signature is increased excitation,
+decreased inhibition, increased spatial variance, or no reliable precursor.
+
+\paragraph{Checkpoint 5: dimensionality of state exploration.}
+Build the cluster-rate covariance matrix for whole recordings and for
+transition-aligned windows. Report participation-ratio dimensionality before
+and after subtracting the triggered mean path. The notebook output is a
+dimension curve over \(J_E^+\), \(R\), and \(\kappa\), with bootstrap intervals
+over network realizations.
+
+\paragraph{Checkpoint 6: finite-size scaling decision.}
+Run a size ladder at fixed \(Q\) and fixed cluster-level parameters. Fit both
+templates in \eqref{eq:ch09-size-scaling-fits}, report right-censored lifetimes
+explicitly, and show whether the same grid point keeps its autocorrelation
+timescale and active-state statistics as \(n_E\) grows. The notebook output is
+a finite-size decision plot: escape-like divergence, plateau-like persistence,
+or inconclusive mixed behavior.
+
+\paragraph{Checkpoint 7: quenched-disorder sweep.}
+At large \(n_E\), sweep \(\kappa\) while saving each connectivity manifest.
+Decompose variability into within-realization temporal variance and
+between-realization quenched bias using
+\eqref{eq:ch09-time-realization-variance-split}. The notebook output is a
+phase strip that shows where increasing \(\kappa\) creates temporal switching
+rather than merely selecting static high-rate clusters.
+
+\paragraph{Checkpoint 8: Lyapunov implementation.}
+Validate the Benettin or QR code on a stable linear system and on a reference
+chaotic rate model. Then apply it to the deterministic mesoscopic cluster
+model. In spiking simulations, run the common-noise perturbation ladder and
+compare projected growth rates across \(n_E\). The notebook output is a
+convergence panel for \(\widehat\lambda_{\max}(T)\), including sensitivity to
+time step, renormalization interval, perturbation size, and norm.
+
+\paragraph{Checkpoint 9: spiking-to-mesoscopic comparison.}
+Choose a small set of matched parameter points and compare spiking observables
+with the deterministic or stochastic mesoscopic reduction: mean rates,
+autocorrelation widths, active-count distributions, transition rates, and
+Lyapunov estimates. The notebook output is a mismatch table that identifies
+which terms in the mesoscopic theory need refinement before the model can be
+used predictively.
+
+\begin{conceptquestions}
+    \item Which checkpoint would fail first if finite-size hopping were being
+    mistaken for mesoscopic chaos, and why?
+    \item Which observable is most sensitive to the threshold \(r_0\), and how
+    would you design a robustness plot that does not hide that sensitivity?
+    \item In a paired E/I network with persistent switching at large \(n_E\),
+    what extra evidence is needed before calling the regime deterministic
+    chaos?
+\end{conceptquestions}
+
+\section{What Would Count as Evidence?}
+\label{sec:ch10-evidence}
+
+The strongest evidence for mesoscopic chaos in paired E/I clustered spiking
+networks would be the following package:
+\begin{enumerate}
+    \item Switching persists as \(n_c\) increases and
+    \(\xi=(\gamma n_c)^{-1/2}\to 0\).
+    \item The switch-time curve approaches a plateau controlled by \(\kappa\).
+    \item Small perturbations grow with a positive mesoscale Lyapunov exponent.
+    \item The cluster-rate autocorrelation keeps a broad timescale without a
+    finite-size zero-lag kink.
+    \item The same parameter regime appears in a mesoscale or DMFT reduction.
+    \item The effect is stronger in paired E/I clusters than in E-only clusters
+    with homogeneous inhibition.
+\end{enumerate}
+This package would support the claim that paired E/I spiking networks implement
+a biologically plausible version of SCS-like rate chaos at the mesoscale.
+
+\section{Chapter Summary}
+\label{sec:ch10-summary}
+
+The research program maps clustered spiking networks by cluster strength,
+quenched heterogeneity, inhibitory clustering ratio, and network size. Its
+observables include single-neuron \(\tau_i\), cluster HWHM autocorrelation
+time \(\tau_c\), cluster lifetimes, firing-rate distributions,
+active-cluster counts, Fano factors, dimensionality, transition-triggered
+variability, scaling properties, and mesoscale Lyapunov exponents. The key
+comparison is E-only versus paired E/I clustering. The key classification is
+asynchronous, attractor, chaotic, or transient-chaotic. The key claim is
+mechanistic: paired inhibitory structure can amplify quenched inter-cluster
+variability enough to produce macroscopic switching without finite-size noise.
+The canonical simulation template and checkpoint notebooks turn that claim into
+a rotation plan: build the rate and state pipeline, validate every diagnostic
+on synthetic controls, sweep \(\xi\) and \(\kappa\), and require Lyapunov,
+autocorrelation, transition, dimensionality, and scaling evidence to agree
+before assigning a chaotic phase label.

@@ -1,0 +1,36 @@
+You are a non-interactive Codex image generation worker for one lecture-note diagram.
+
+Use the imagegen skill and the built-in Codex image_gen image generation tool available in this Codex session. This must use the user's Codex subscription path.
+
+Do not use OPENAI_API_KEY.
+Do not call the OpenAI API directly.
+Do not call /Users/arjun/.codex/skills/.system/imagegen/scripts/image_gen.py.
+Do not synthesize the final image with Python/Pillow/SVG/canvas.
+
+Task:
+1. Generate exactly one raster image using the prompt below.
+2. Save or copy the final generated image to this exact workspace path:
+   /Users/arjun/repos/lecture-notes/courses/foundations-clustered-spiking-networks-chaos/figures/imagegen/ch10-phase-diagram-dashboard-img.png
+3. Create parent directories if needed. Overwrite only this exact output path if needed.
+4. Write the path of the original generated image cache file, if known, to:
+   /Users/arjun/repos/lecture-notes/courses/foundations-clustered-spiking-networks-chaos/figures/imagegen/ch10-phase-diagram-dashboard-img.source.txt
+5. Verify that the output path exists and is non-empty.
+
+Asset id: ch10-phase-diagram-dashboard-img
+Target filename: figures/imagegen/ch10-phase-diagram-dashboard-img.png
+Caption intent: Synthesize the research phase diagram as a dynamic-regime map over cluster strength and heterogeneity, with classifications based on behavior rather than only mean firing rate.
+Overlay suggestion for later exact labels: Overlay exact labels `J_E+ or s`, `kappa`, `AI`, `attractor`, `chaos`, and `transient?`; keep discussion of `xi`, `lambda_max`, and trend predictions in caption text.
+Review notes: Check that the figure reads as a dashboard for dynamic classification, not a firing-rate heatmap. Check that the transient-chaotic region is visually marked as tentative.
+
+Prompt to use with image_gen:
+Use case: scientific-educational
+Asset type: lecture-note raster infographic
+Primary request: Create a schematic research phase-diagram dashboard for clustered spiking networks over cluster strength and quenched heterogeneity. The diagram should classify asynchronous, attractor, chaotic, and possible transient-chaotic regimes and include small observable cues that show the classification is based on dynamics.
+Composition: 16:10 horizontal composition suitable for a PDF figure. Use a large central phase diagram with a narrow side strip of three miniature diagnostic glyphs. Keep the central map dominant, with clean axes and softly separated regions.
+Required visual elements: Horizontal cluster-strength axis, vertical kappa or heterogeneity axis, four conceptual regions for asynchronous irregular activity, activated attractor or finite-size metastability, mesoscopic chaos, and possible transient chaos at strong coupling. Add small diagnostic glyphs for autocorrelation width, perturbation growth, and size scaling. Mark the map as schematic, not measured data.
+Sparse in-image labels: `strength`, `kappa`, `AI`, `attractor`, `chaos`, `transient`
+Style: Clean, modern, textbook-quality scientific diagram with generous whitespace, high contrast, readable region shapes, restrained color, no watermark, no logos, no decorative stock imagery.
+Avoid: Exact equations, long region descriptions, fake heatmap measurements, numerical phase boundaries, decorative neural network art, cluttered legends, and implying transient chaos is established rather than a hypothesis to test.
+
+When finished, reply only with compact JSON like:
+{"status":"generated","asset_id":"ch10-phase-diagram-dashboard-img","path":"/Users/arjun/repos/lecture-notes/courses/foundations-clustered-spiking-networks-chaos/figures/imagegen/ch10-phase-diagram-dashboard-img.png"}

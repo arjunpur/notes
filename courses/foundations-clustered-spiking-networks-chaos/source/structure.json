@@ -1,0 +1,196 @@
+{
+  "title": "The Foundations of Clustered Spiking Networks, Mesoscopic Theory, and Chaos",
+  "course_slug": "foundations-clustered-spiking-chaos",
+  "public_slug": "foundations-clustered-spiking-networks-chaos",
+  "source_pdf": "/Users/arjun/Downloads/clusters(6).pdf",
+  "build_output_pdf": "foundations-clustered-spiking-networks-chaos-lecture-notes.pdf",
+  "chapters": [
+    {
+      "number": 1,
+      "title": "Dynamical Systems Language",
+      "path": "chapters/ch01-dynamical-systems-language/ch01.tex",
+      "figures": [
+        "figures/imagegen/ch01-jacobian-eigenvalues-img.png",
+        "figures/imagegen/ch01-attractor-landscape-img.png",
+        "figures/imagegen/ch01-lyapunov-stretch-fold-img.png"
+      ],
+      "core_topics": [
+        "state spaces and trajectories",
+        "fixed points and attractors",
+        "stability, Jacobians, and eigenvalues",
+        "bifurcations, multistability, chaos, and Lyapunov exponents"
+      ]
+    },
+    {
+      "number": 2,
+      "title": "Stochastic Processes for Neural Dynamics",
+      "path": "chapters/ch02-stochastic-processes-neural-dynamics/ch02.tex",
+      "figures": [
+        "figures/imagegen/ch02-spike-filtering-img.png",
+        "figures/imagegen/ch02-autocorrelation-signatures-img.png",
+        "figures/imagegen/ch02-noise-scaling-img.png"
+      ],
+      "core_topics": [
+        "spike trains and point processes",
+        "Poisson variability and shot noise",
+        "synaptic filtering and autocorrelations",
+        "finite-size scaling with xi"
+      ]
+    },
+    {
+      "number": 3,
+      "title": "Single-Neuron and Population Models",
+      "path": "chapters/ch03-single-neuron-population-models/ch03.tex",
+      "figures": [
+        "figures/imagegen/ch03-lif-threshold-reset-img.png",
+        "figures/imagegen/ch03-transfer-function-img.png",
+        "figures/imagegen/ch03-gif-adaptation-img.png"
+      ],
+      "core_topics": [
+        "LIF and stochastic LIF neurons",
+        "GIF adaptation and dynamic threshold",
+        "transfer functions",
+        "population firing rates"
+      ]
+    },
+    {
+      "number": 4,
+      "title": "Balanced Excitatory/Inhibitory Networks",
+      "path": "chapters/ch04-balanced-excitatory-inhibitory-networks/ch04.tex",
+      "figures": [
+        "figures/imagegen/ch04-balance-cancellation-img.png",
+        "figures/imagegen/ch04-sparse-fixed-indegree-img.png",
+        "figures/imagegen/ch04-inhibition-stabilized-loop-img.png"
+      ],
+      "core_topics": [
+        "E/I balance",
+        "sparse fixed-in-degree recurrence",
+        "asynchronous irregular activity",
+        "inhibition-stabilized dynamics"
+      ]
+    },
+    {
+      "number": 5,
+      "title": "Clustered Attractor Networks",
+      "path": "chapters/ch05-clustered-attractor-networks/ch05.tex",
+      "figures": [
+        "figures/imagegen/ch05-clustered-connectivity-matrix-img.png",
+        "figures/imagegen/ch05-active-inactive-landscape-img.png",
+        "figures/imagegen/ch05-size-dependent-switching-img.png"
+      ],
+      "core_topics": [
+        "cell assemblies",
+        "within-cluster potentiation and between-cluster depression",
+        "active and inactive clusters",
+        "finite-size metastable switching"
+      ]
+    },
+    {
+      "number": 6,
+      "title": "Random Rate Networks and SCS Chaos",
+      "path": "chapters/ch06-random-rate-networks-scs-chaos/ch06.tex",
+      "figures": [
+        "figures/imagegen/ch06-random-rate-phase-portrait-img.png",
+        "figures/imagegen/ch06-scs-autocorrelation-transition-img.png",
+        "figures/imagegen/ch06-chaotic-flow-folding-img.png"
+      ],
+      "core_topics": [
+        "random recurrent rate equations",
+        "SCS transition",
+        "chaotic autocorrelations",
+        "self-coupled and cluster-level rate models"
+      ]
+    },
+    {
+      "number": 7,
+      "title": "Mean-Field and Dynamic Mean-Field Theory",
+      "path": "chapters/ch07-mean-field-dynamic-mean-field-theory/ch07.tex",
+      "figures": [
+        "figures/imagegen/ch07-quenched-vs-annealed-disorder-img.png",
+        "figures/imagegen/ch07-static-dynamic-mean-field-split-img.png",
+        "figures/imagegen/ch07-dmft-self-consistency-loop-img.png"
+      ],
+      "core_topics": [
+        "static mean field",
+        "DMFT effective stochastic processes",
+        "quenched versus annealed disorder",
+        "self-consistency for autocorrelations"
+      ]
+    },
+    {
+      "number": 8,
+      "title": "E/I Clustered Networks",
+      "path": "chapters/ch08-ei-clustered-networks/ch08.tex",
+      "figures": [
+        "figures/imagegen/ch08-paired-ei-clusters-img.png",
+        "figures/imagegen/ch08-cluster-rate-unit-img.png",
+        "figures/imagegen/ch08-quenched-amplification-img.png"
+      ],
+      "core_topics": [
+        "paired E/I clusters",
+        "Tilo notation and cluster-strength parameters",
+        "finite-size versus quenched variability",
+        "Erdos-Renyi and weight heterogeneity"
+      ]
+    },
+    {
+      "number": 9,
+      "title": "Diagnosing Multistability Versus Chaos",
+      "path": "chapters/ch09-diagnosing-multistability-versus-chaos/ch09.tex",
+      "figures": [
+        "figures/imagegen/ch09-xi-kappa-plane-img.png",
+        "figures/imagegen/ch09-perturbation-divergence-img.png",
+        "figures/imagegen/ch09-autocorrelation-kink-img.png",
+        "figures/imagegen/ch09-regimes-abc-variance-img.png"
+      ],
+      "core_topics": [
+        "xi-kappa scaling tests",
+        "perturbation recovery versus divergence",
+        "autocorrelation zero-lag diagnostics",
+        "fully connected scaling regimes A/B/C"
+      ]
+    },
+    {
+      "number": 10,
+      "title": "The Research Program",
+      "path": "chapters/ch10-research-program/ch10.tex",
+      "figures": [
+        "figures/imagegen/ch10-phase-diagram-dashboard-img.png",
+        "figures/imagegen/ch10-observable-dashboard-img.png",
+        "figures/imagegen/ch10-research-workflow-img.png"
+      ],
+      "core_topics": [
+        "phase diagrams",
+        "observables and scaling experiments",
+        "E-only versus E/I clustered networks",
+        "contribution-level research questions"
+      ]
+    }
+  ],
+  "appendices": [
+    {
+      "letter": "A",
+      "title": "Finite-Size Mesoscopic Theory Bridge",
+      "path": "appendices/appA-finite-size-mesoscopic-theory.tex",
+      "core_topics": [
+        "hazard and escape-rate formulation",
+        "age-density and renewal equations",
+        "finite-size activity noise and filtering",
+        "LIF/GIF-to-cluster population bridge"
+      ]
+    },
+    {
+      "letter": "B",
+      "title": "Numerical Diagnostic Protocols",
+      "path": "appendices/appC-numerical-diagnostic-protocols.tex",
+      "core_topics": [
+        "run manifests and network generation",
+        "spike-to-rate pipeline and state detection",
+        "autocorrelation, HWHM, kink, and transition-triggered analyses",
+        "Lyapunov protocols and decision criteria"
+      ]
+    }
+  ],
+  "coverage_audit": "source/roadmap-coverage.md",
+  "figure_metadata": "figures/figure-metadata.md"
+}

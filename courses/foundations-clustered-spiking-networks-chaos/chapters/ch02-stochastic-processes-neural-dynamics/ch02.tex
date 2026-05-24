@@ -1,0 +1,395 @@
+\chapter{Stochastic Processes for Neural Dynamics}
+\label{ch:stochastic-processes-neural-dynamics}
+
+\textit{Chapter~\ref{ch:dynamical-systems-language} described deterministic trajectories in state space. Spiking networks add a second layer: neurons communicate by discrete events. This chapter explains how spike trains become stochastic processes, how synaptic filtering turns events into continuous activities, and why finite populations fluctuate with size $1/\sqrt{N_E}$.}
+
+The goal is not to replace the dynamical-systems picture. The goal is to identify which parts of a spiking trace come from stochastic sampling of finite populations and which parts can be treated as mesoscopic state variables. By the end of the chapter, the reader should be able to write the spike-train notation used in the roadmap, compute the baseline size of population fluctuations, and interpret the zero-lag structure of an autocorrelation.
+
+% ============================================================
+\section{From Trajectories to Random Spike Trains}
+\label{sec:from-trajectories-to-spikes}
+% ============================================================
+
+A deterministic rate variable can be plotted as a smooth curve. A spike train is different: it is a set of event times. For neuron $i$, write those times as $\{t_{i,k}\}_{k\in\mathbb{Z}}$. The standard mathematical representation is
+%
+\begin{equation}
+  s_i(t) = \sum_k \delta(t-t_{i,k}),
+  \label{eq:single-spike-train}
+\end{equation}
+%
+where $\delta$ is the Dirac delta distribution. This notation is not just formal. If we integrate over a time window $[t,t+\Delta]$, we recover the spike count:
+%
+\begin{equation}
+  N_i(t,\Delta)
+  =
+  \int_t^{t+\Delta} s_i(u)\,du.
+  \label{eq:spike-count-window}
+\end{equation}
+%
+Thus $s_i(t)$ has units of spikes per unit time, while its integral is a dimensionless count.
+
+In a clustered E/I network, we attach indices for cluster and cell type:
+%
+\begin{equation}
+  s_{a,i}^{\alpha}(t)
+  =
+  \sum_k \delta\!\left(t-t_{a,i,k}^{\alpha}\right),
+  \qquad
+  \alpha\in\{E,I\},
+  \qquad
+  a=1,\ldots,Q.
+  \label{eq:clustered-spike-train}
+\end{equation}
+%
+Here $Q$ is the number of clusters and $N_c$ is the number of neurons per cluster. In the paired E/I cluster notation used throughout the course,
+%
+\begin{equation}
+  N_E=\gamma N_c,
+  \qquad
+  N_I=(1-\gamma)N_c,
+  \qquad
+  N_c=N_E+N_I,
+  \qquad
+  N=Q N_c,
+  \label{eq:cluster-size-relations}
+\end{equation}
+%
+with $0<\gamma<1$. Thus $N_E$ and $N_I$ are \emph{per-cluster} excitatory and inhibitory counts in this notation; the global E and I counts are $Q N_E$ and $Q N_I$. This convention makes the later finite-size coordinate $\xi=1/\sqrt{N_E}$ unambiguously a per-excitatory-cluster noise coordinate. It is also the notation needed for paired E/I clusters, intra-cluster weights $\hat{J}$, inter-cluster weights $\check{J}$, and sparse models with fixed in-degree $K$.
+
+% ============================================================
+\section{Point Processes and Poisson Variability}
+\label{sec:point-processes-poisson}
+% ============================================================
+
+A spike train becomes a \emph{point process} when the spike times are random. The most useful local descriptor is the conditional intensity $\lambda_i(t\mid\mathcal{H}_t)$, defined by
+%
+\begin{equation}
+  \Pr\{N_i(t,dt)=1\mid\mathcal{H}_t\}
+  =
+  \lambda_i(t\mid\mathcal{H}_t)\,dt + o(dt),
+  \label{eq:conditional-intensity}
+\end{equation}
+%
+Here $N_i(t,dt)$ is the number of spikes emitted by neuron $i$ in the interval $[t,t+dt)$, $dt$ is the width of that small interval, and $\mathcal{H}_t$ is the spiking history before time $t$. The notation $o(dt)$ denotes terms that vanish faster than $dt$ as $dt\to 0$, so the chance of two or more spikes in the same infinitesimal interval is negligible at first order. Intuitively, $\lambda_i(t\mid\mathcal{H}_t)$ is the instantaneous firing rate after accounting for the past.
+
+The homogeneous Poisson process is the simplest point process:
+%
+\begin{equation}
+  \lambda_i(t\mid\mathcal{H}_t)=r
+  \quad \text{constant}.
+  \label{eq:poisson-intensity}
+\end{equation}
+%
+For a window of length $\Delta$, the count $N_i(t,\Delta)$ has
+%
+\begin{equation}
+  \mathbb{E}[N_i(t,\Delta)] = r\Delta,
+  \qquad
+  \mathrm{Var}[N_i(t,\Delta)] = r\Delta.
+  \label{eq:poisson-count-moments}
+\end{equation}
+%
+The equality of mean and variance is the baseline meaning of Poisson variability. It does not say cortical neurons are exactly Poisson. It gives a reference scale for asking whether observed variability is smaller, larger, or structured by network dynamics.
+
+For an inhomogeneous Poisson process, the intensity $r(t)$ varies in time. Conditional on $r(t)$, counts in disjoint windows are independent. This model separates two sources of variability: randomness of spike generation around a rate, and fluctuations of the rate itself. Later, clustered networks will use both ideas: neurons spike stochastically, while cluster-level rates can also wander because of finite-size noise or deterministic chaos.
+
+% ============================================================
+\section{Synaptic Filtering and Shot Noise}
+\label{sec:synaptic-filtering-shot-noise}
+% ============================================================
+
+A postsynaptic neuron does not receive an abstract delta pulse forever. A presynaptic spike produces a synaptic current with a time course. A common normalized exponential kernel is
+%
+\begin{equation}
+  \epsilon(t)
+  =
+  \frac{1}{\tau_s}e^{-t/\tau_s}H(t),
+  \label{eq:exponential-synaptic-kernel}
+\end{equation}
+%
+where $\tau_s$ is the synaptic time constant and $H(t)$ is the Heaviside step function. The normalization gives $\int_0^\infty \epsilon(t)\,dt=1$.
+
+The filtered activity of neuron $i$ is the convolution
+%
+\begin{equation}
+  r_i(t)
+  =
+  (\epsilon*s_i)(t)
+  =
+  \int_{-\infty}^{t} \epsilon(t-u)s_i(u)\,du
+  =
+  \sum_k \epsilon(t-t_{i,k}).
+  \label{eq:filtered-spike-train}
+\end{equation}
+%
+Each spike adds a synaptic pulse; the sum of many pulses is \emph{shot noise}. The same definition can be written as a differential equation,
+%
+\begin{equation}
+  \tau_s \frac{d r_i}{dt} = -r_i(t) + s_i(t).
+  \label{eq:filtered-spike-ode}
+\end{equation}
+%
+Between spikes, $r_i$ decays exponentially. At a spike time, it receives an impulse.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{figures/imagegen/ch02-spike-filtering-img.png}
+\caption{A spike train $s_i(t)$ is a sum of point events. Synaptic filtering with $\epsilon(t)$ turns it into a continuous activity trace $r_i(t)=(\epsilon*s_i)(t)$. Averaging filtered traces over neurons in a cluster gives $R_a^\alpha(t)$, a continuous population activity that can be used as a mesoscopic state variable.}
+\label{fig:ch02-spike-filtering}
+\end{figure}
+
+This filtering step connects Chapter~\ref{ch:dynamical-systems-language} to spiking models. The state vector in a mesoscopic theory is not usually made of raw delta functions. It is made of filtered or binned population activities, which are continuous enough to support autocorrelations, perturbation tests, and effective dynamical equations.
+
+% ============================================================
+\section{Population Activities in Clustered Networks}
+\label{sec:population-activities}
+% ============================================================
+
+For excitatory neurons in cluster $a$, define the raw population spike train
+%
+\begin{equation}
+  A_a^E(t)
+  =
+  \frac{1}{N_E}
+  \sum_{i=1}^{N_E} s_{a,i}^E(t),
+  \qquad
+  A_a^I(t)
+  =
+  \frac{1}{N_I}
+  \sum_{i=1}^{N_I} s_{a,i}^I(t).
+  \label{eq:raw-population-activities}
+\end{equation}
+%
+When a continuous trace is required, we use the filtered version
+%
+\begin{equation}
+  R_a^\alpha(t)
+  =
+  (\epsilon*A_a^\alpha)(t)
+  =
+  \frac{1}{N_\alpha}
+  \sum_{i=1}^{N_\alpha} r_{a,i}^{\alpha}(t),
+  \qquad \alpha\in\{E,I\}.
+  \label{eq:filtered-population-activities}
+\end{equation}
+%
+Many papers and simulations write $A_a^\alpha(t)$ for smoothed population activity after filtering or binning. In these notes we use a fixed convention: $s$ is a point process, $r$ is a filtered single-neuron activity, $A$ is the raw population spike train, and $R$ is the explicitly filtered population activity. When a later source uses $A$ for a continuous mesoscopic rate, we translate that object to $R$.
+
+The synaptic input current is built from weighted sums of these spike trains. In the notation used later, intra-cluster and inter-cluster contributions are separated schematically as
+%
+\begin{equation}
+  y_a^\alpha(t)
+  =
+  \sum_{\beta\in\{E,I\}}
+  \hat{J}^{\alpha\beta}
+  \sum_{j=1}^{N_\beta} s_{a,j}^{\beta}(t)
+  +
+  \sum_{b\ne a}
+  \sum_{\beta\in\{E,I\}}
+  \check{J}_{ab}^{\alpha\beta}
+  \sum_{j=1}^{N_\beta} s_{b,j}^{\beta}(t).
+  \label{eq:schematic-input-current}
+\end{equation}
+%
+The hats mark within-cluster weights; the checks mark between-cluster weights. In the schematic equation, inhibitory signs and any normalization factors, such as $1/\sqrt{N}$, $1/N_\beta$, or fixed-in-degree normalizations, are absorbed into $\hat{J}^{\alpha\beta}$ and $\check{J}_{ab}^{\alpha\beta}$. This keeps~\eqref{eq:schematic-input-current} focused on the stochastic bookkeeping: finite-size noise and quenched inter-cluster variability enter through different parts of the sum. The actual postsynaptic current is the filtered version,
+%
+\begin{equation}
+  I_a^\alpha(t)
+  =
+  \int_{-\infty}^{t}\epsilon(t-u)y_a^\alpha(u)\,du.
+  \label{eq:filtered-input-current}
+\end{equation}
+%
+The form of~\eqref{eq:filtered-input-current} is the same as the single-neuron filtering equation. Only the source process $y_a^\alpha(t)$ is more structured.
+
+For example, a sparse fixed-in-degree convention used later can be written as
+%
+\begin{equation}
+\begin{aligned}
+  y_a^\alpha(t)
+  =
+  \hat{J}
+  \left[
+    \sum_{j=1}^{N_E}s_{a,j}^{E}(t)
+    -
+    g\sum_{j=1}^{N_I}s_{a,j}^{I}(t)
+  \right]
+  +
+  \check{J}\sum_{b\ne a}
+  \left[
+    \Gamma_{ab}^{\alpha E}\sum_{j=1}^{N_E}s_{b,j}^{E}(t)
+    -
+    \check{g}\,\Gamma_{ab}^{\alpha I}\sum_{j=1}^{N_I}s_{b,j}^{I}(t)
+  \right].
+\end{aligned}
+\label{eq:sparse-fixed-indegree-current}
+\end{equation}
+%
+Equivalently, this corresponds to $\hat{J}^{\alpha E}=\hat{J}$, $\hat{J}^{\alpha I}=-g\hat{J}$, $\check{J}_{ab}^{\alpha E}=\check{J}\Gamma_{ab}^{\alpha E}$, and $\check{J}_{ab}^{\alpha I}=-\check{g}\check{J}\Gamma_{ab}^{\alpha I}$. The adjacency variable $\Gamma_{ab}^{\alpha\beta}$ records whether population $(b,\beta)$ projects to population $(a,\alpha)$. A fixed in-degree $K$ means each target population receives only $K$ outside-cluster population inputs, often split into $K_E=fK$ excitatory and $K_I=(1-f)K$ inhibitory sources. In the limit $Q\to\infty$ with fixed $K$, different source populations are treated as asymptotically independent; this is the assumption used when input autocorrelations are written as sums of population autocorrelations.
+
+% ============================================================
+\section{Autocorrelations}
+\label{sec:autocorrelations}
+% ============================================================
+
+An autocorrelation asks how much a signal remembers its past. For a stationary signal $X(t)$ with mean $\bar{X}$, define the fluctuation $\delta X(t)=X(t)-\bar{X}$ and
+%
+\begin{equation}
+  C_X(\tau)
+  =
+  \left\langle
+  \delta X(t)\,\delta X(t+\tau)
+  \right\rangle.
+  \label{eq:autocorrelation-definition}
+\end{equation}
+%
+The brackets denote an average over time, trials, or an ensemble, depending on the setting. The normalized autocorrelation is $C_X(\tau)/C_X(0)$.
+
+For a homogeneous Poisson spike train,
+%
+\begin{equation}
+  C_s(\tau)
+  =
+  r\,\delta(\tau),
+  \label{eq:poisson-spike-autocovariance}
+\end{equation}
+%
+after subtracting the mean rate. The delta peak is the mathematical expression of independent point events: the spike train is correlated with itself at exactly the same time.
+
+Filtering spreads this instantaneous covariance across the synaptic timescale. For the exponential kernel in~\eqref{eq:exponential-synaptic-kernel},
+%
+\begin{equation}
+  C_r(\tau)
+  =
+  \frac{r}{2\tau_s}e^{-|\tau|/\tau_s}.
+  \label{eq:filtered-poisson-autocovariance}
+\end{equation}
+%
+The absolute value creates a cusp at $\tau=0$. The left and right derivatives do not match. The later discriminator is narrower than a statement about arbitrary autocorrelations: finite-size input or rate noise can leave a zero-lag kink after exponential synaptic filtering or after any first-order linear filter driven by fluctuations whose covariance is concentrated at zero lag. The intuition is that filtered point-process noise still remembers the instantaneous coincidence at zero lag; as soon as the two filtered traces are separated by a small time shift, the overlap of their sharp causal kernels is lost linearly. By contrast, a stationary differentiable deterministic rate variable, including a smooth chaotic mesoscopic rate under the same regularity assumptions, has an even autocorrelation with matching left and right derivatives at zero, and therefore $C'(0)=0$.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/imagegen/ch02-autocorrelation-signatures-img.png}
+\caption{Three autocorrelation signatures that recur throughout the course. A point-process spike train has a zero-lag impulse, filtered shot noise spreads that impulse into a cusp, and a smooth deterministic rate process has a rounded zero-lag peak with vanishing first derivative. Later diagnostics use this shape information to separate finite-size noise from smooth chaotic rate fluctuations.}
+\label{fig:ch02-autocorrelation-signatures}
+\end{figure}
+
+For a population average of independent, identically distributed filtered spike trains,
+%
+\begin{equation}
+  C_{R_a^\alpha}(\tau)
+  =
+  \frac{1}{N_\alpha} C_{r^\alpha}(\tau).
+  \label{eq:population-autocorrelation-independent}
+\end{equation}
+%
+The shape is inherited from the single-neuron filtered process, but the amplitude is divided by the population size. Shared input and recurrent coupling can add correlations that change the prefactor or shape. The independent calculation is still the right baseline for finite-size scaling.
+
+% ============================================================
+\section{Finite-Size Scaling and the Noise Coordinate}
+\label{sec:finite-size-scaling}
+% ============================================================
+
+The scale $1/\sqrt{N_E}$ is the natural size of finite-size fluctuations in an excitatory population. To see why, consider $N_E$ independent excitatory neurons with the same rate $r$. In a bin of width $\Delta$, the population count is
+%
+\begin{equation}
+  M(t,\Delta)
+  =
+  \sum_{i=1}^{N_E} N_i(t,\Delta),
+  \label{eq:population-count}
+\end{equation}
+%
+and the binned population rate estimate is
+%
+\begin{equation}
+  \hat{r}_E(t)
+  =
+  \frac{M(t,\Delta)}{N_E\Delta}.
+  \label{eq:binned-population-rate}
+\end{equation}
+%
+Using the Poisson count moments,
+%
+\begin{equation}
+  \mathbb{E}[\hat{r}_E(t)] = r,
+  \qquad
+  \mathrm{Var}[\hat{r}_E(t)]
+  =
+  \frac{r}{N_E\Delta}.
+  \label{eq:population-rate-variance}
+\end{equation}
+%
+Thus the standard deviation scales as
+%
+\begin{equation}
+  \mathrm{SD}[\hat{r}_E(t)]
+  =
+  \sqrt{\frac{r}{\Delta}}\,
+  \frac{1}{\sqrt{N_E}}.
+  \label{eq:population-rate-sd}
+\end{equation}
+%
+This is the central finite-size law. The constant depends on rate, bin width, correlations, and filtering, but the natural population-size coordinate is
+%
+\begin{equation}
+  \xi = \frac{1}{\sqrt{N_E}}.
+  \label{eq:xi-definition}
+\end{equation}
+%
+The roadmap uses $\xi$ to separate finite-size fluctuations from quenched variability $\kappa$. Here $\kappa$ denotes a fixed disorder amplitude in the inter-cluster connectivity, for example variability in $\check{J}_{ab}^{\alpha\beta}$ or randomness in sparse adjacency variables $\Gamma_{ab}^{\alpha\beta}$. It is held fixed across repeated trials of the same network, unlike the finite-size spiking fluctuations indexed by $\xi$. If switches are caused by finite-size basin escapes, decreasing $\xi$ should make switches rarer and eventually remove them. If switches are caused by deterministic mesoscopic chaos, decreasing $\xi$ should not remove them; it should reveal the $\xi=0$ chaotic dynamics.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.86\textwidth]{figures/imagegen/ch02-noise-scaling-img.png}
+\caption{Finite-size fluctuations in a population average shrink like $1/\sqrt{N_E}$. This motivates the coordinate $\xi=1/\sqrt{N_E}$ used later to distinguish noise-driven switching from switching that persists when finite-size fluctuations vanish.}
+\label{fig:ch02-noise-scaling}
+\end{figure}
+
+% ============================================================
+\section{Input Autocorrelations as Sums of Population Autocorrelations}
+\label{sec:input-autocorrelation-sums}
+% ============================================================
+
+The roadmap later computes autocorrelations of synaptic input currents. The basic reason those formulas are tractable is simple: covariance is bilinear. If
+%
+\begin{equation}
+  Y(t) = \sum_m w_m X_m(t),
+  \label{eq:weighted-sum-process}
+\end{equation}
+%
+then
+%
+\begin{equation}
+  C_Y(\tau)
+  =
+  \sum_{m,n} w_m w_n C_{mn}(\tau),
+  \qquad
+  C_{mn}(\tau)
+  =
+  \left\langle
+  \delta X_m(t)\delta X_n(t+\tau)
+  \right\rangle.
+  \label{eq:covariance-weighted-sum}
+\end{equation}
+%
+If different populations become independent in a large-system limit, the off-diagonal terms $m\ne n$ vanish and the autocorrelation of the sum is a sum of autocorrelations. This is the probabilistic backbone of dynamic mean-field self-consistency: the input fluctuations are computed from population activity fluctuations, and the population activity fluctuations are computed from neurons driven by those inputs.
+
+In E/I networks the signs and magnitudes of $w_m$ matter. Excitatory and inhibitory mean inputs can cancel, producing balance. For independent or mean-field-decoupled sources, variance contributions carry squared weights, so strong inhibitory couplings can strongly shape fluctuations even when mean excitation and inhibition nearly cancel. If E and I sources are correlated, the cross terms $C_{mn}$ add signed corrections that must be kept.
+
+% ============================================================
+\section{What Carries Forward}
+\label{sec:stochastic-carry-forward}
+% ============================================================
+
+The next chapters will introduce LIF neurons, balanced recurrent networks, clustered connectivity, and dynamic mean-field theory. The stochastic objects from this chapter will be reused throughout:
+
+\begin{itemize}
+  \item Spike trains are point processes: $s_i(t)=\sum_k\delta(t-t_{i,k})$.
+  \item Synaptic filtering turns point events into continuous activities: $r_i(t)=(\epsilon*s_i)(t)$.
+  \item Raw cluster population spike trains $A_a^\alpha$ average over $N_E$ or $N_I$ neurons; filtered activities $R_a^\alpha$ are the continuous mesoscopic variables.
+  \item Autocorrelations measure memory, timescale, and zero-lag structure.
+  \item Finite-size noise scales naturally as $\xi=1/\sqrt{N_E}$.
+  \item Quenched variability $\kappa$ is fixed inter-cluster connectivity disorder, not trial-to-trial spiking noise.
+\end{itemize}
+
+With Chapter~\ref{ch:dynamical-systems-language}, we can now state the central course distinction in one sentence: multistable switching is motion among stable basins driven by stochastic finite-size fluctuations, whereas mesoscopic chaos is deterministic cluster-level sensitivity that remains when the finite-size coordinate $\xi$ is taken to zero.

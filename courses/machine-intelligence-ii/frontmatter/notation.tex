@@ -38,3 +38,20 @@
   Unsupervised learning & Learn useful structure from unlabeled observations \\
   \bottomrule
 \end{tabular}
+
+\subsection*{Independent Component Analysis}
+
+\begin{tabular}{@{}ll@{}}
+  \toprule
+  \textbf{Symbol} & \textbf{Meaning} \\
+  \midrule
+  $s$ & Latent source vector; components are assumed statistically independent \\
+  $x$ & Observed mixture vector measured by sensors or features \\
+  $A$ & Mixing matrix mapping sources to observations, $x=As$ \\
+  $W$ & Unmixing matrix producing source estimates, $\hat{s}=Wx$ \\
+  $\hat{s}$ & Recovered source estimate after linear unmixing \\
+  $\hat{u}$ & Nonlinear Infomax output after componentwise CDF-like transforms \\
+  $f_i$ & Monotone output nonlinearity for component $i$ \\
+  $\phi_i$ & Score-like ratio $f_i''/f_i'$ used in the ICA learning rule \\
+  \bottomrule
+\end{tabular}

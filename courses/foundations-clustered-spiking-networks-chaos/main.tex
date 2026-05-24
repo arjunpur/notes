@@ -1,0 +1,126 @@
+\documentclass[11pt,oneside]{book}
+
+\usepackage[margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{amsmath,amssymb,mathtools,bm}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage[most]{tcolorbox}
+\usepackage{hyperref}
+\usepackage[nameinlink,capitalise,noabbrev]{cleveref}
+\usepackage[numbers]{natbib}
+
+\hypersetup{
+  hidelinks,
+  pdftitle={The Foundations of Clustered Spiking Networks, Mesoscopic Theory, and Chaos},
+  pdfauthor={Arjun Puri},
+  pdfsubject={Lecture notes on clustered E/I spiking networks, mesoscopic theory, multistability, and chaos}
+}
+
+\graphicspath{{figures/}}
+\setcounter{tocdepth}{2}
+\setcounter{secnumdepth}{2}
+\setlist[itemize]{leftmargin=*,itemsep=0.25em}
+\setlist[enumerate]{leftmargin=*,itemsep=0.25em}
+\setlength{\emergencystretch}{2em}
+
+\definecolor{CourseBlue}{HTML}{234A6F}
+\definecolor{CourseGreen}{HTML}{2D6A4F}
+\definecolor{CourseGold}{HTML}{8A6D1D}
+\definecolor{CourseInk}{HTML}{263238}
+\definecolor{CoursePanel}{HTML}{F7F9FB}
+
+\newtcolorbox{keyequation}[1][]{
+  enhanced,
+  breakable,
+  colback=CoursePanel,
+  colframe=CourseBlue,
+  coltitle=white,
+  fonttitle=\bfseries,
+  title={#1},
+  boxrule=0.5pt,
+  arc=2pt,
+  left=8pt,
+  right=8pt,
+  top=8pt,
+  bottom=8pt
+}
+
+\newenvironment{chaptersummary}{%
+  \begin{tcolorbox}[
+    enhanced,
+    breakable,
+    colback=white,
+    colframe=CourseGreen,
+    title={Chapter Summary},
+    fonttitle=\bfseries,
+    coltitle=white,
+    boxrule=0.5pt,
+    arc=2pt
+  ]%
+}{%
+  \end{tcolorbox}%
+}
+
+\newenvironment{conceptquestions}{%
+  \begin{tcolorbox}[
+    enhanced,
+    breakable,
+    colback=white,
+    colframe=CourseGold,
+    title={Concept Questions},
+    fonttitle=\bfseries,
+    coltitle=white,
+    boxrule=0.5pt,
+    arc=2pt
+  ]%
+  \begin{enumerate}
+}{%
+  \end{enumerate}
+  \end{tcolorbox}%
+}
+
+\title{The Foundations of Clustered Spiking Networks, Mesoscopic Theory, and Chaos\\Lecture Notes}
+\author{Arjun Puri}
+\date{May 2026}
+
+\begin{document}
+
+\frontmatter
+\maketitle
+\tableofcontents
+
+\input{frontmatter/preface}
+\input{frontmatter/notation}
+
+\mainmatter
+\input{chapters/ch01-dynamical-systems-language/ch01}
+\input{chapters/ch02-stochastic-processes-neural-dynamics/ch02}
+\input{chapters/ch03-single-neuron-population-models/ch03}
+\input{chapters/ch04-balanced-excitatory-inhibitory-networks/ch04}
+\input{chapters/ch05-clustered-attractor-networks/ch05}
+\input{chapters/ch06-random-rate-networks-scs-chaos/ch06}
+\input{chapters/ch07-mean-field-dynamic-mean-field-theory/ch07}
+\input{chapters/ch08-ei-clustered-networks/ch08}
+\input{chapters/ch09-diagnosing-multistability-versus-chaos/ch09}
+\input{chapters/ch10-research-program/ch10}
+
+\appendix
+\input{appendices/appA-finite-size-mesoscopic-theory}
+\input{appendices/appC-numerical-diagnostic-protocols}
+
+\backmatter
+\chapter{References}
+\nocite{amitBrunel1997global,engelEtAl2016selective,kadmonSompolinsky2015transition,mazzucatoFontaniniLaCamera2015cosyne,mazzucatoEtAl2015dynamics,mazzucatoEtAl2019expectation,recanatesiEtAl2020metastable,rostamiEtAl2020spiking,schueckerGoedekeHelias2018optimal,sompolinskyCrisantiSommers1988chaos,sternSompolinskyAbbott2014dynamics,brunel2000dynamics,vanVreeswijkSompolinsky1996chaos,vanVreeswijkSompolinsky1998chaotic,renartEtAl2010asynchronous,litwinKumarDoiron2012slow,schwalgerDegerGerstner2017towards,ostojic2014two,gerstnerEtAl2014neuronalDynamics,strogatz2015nonlinear,dayanAbbott2001theoretical}
+\bibliographystyle{plainnat}
+\bibliography{backmatter/references}
+
+\end{document}

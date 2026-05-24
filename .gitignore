@@ -18,6 +18,10 @@
 **/.tex-cache/
 **/build/
 
+# Agent run artifacts
+.agentfarm/
+**/.agentfarm/
+
 # OS/editor noise
 .DS_Store
 

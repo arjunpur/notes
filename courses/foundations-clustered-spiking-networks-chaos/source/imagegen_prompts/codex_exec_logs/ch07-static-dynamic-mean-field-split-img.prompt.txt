@@ -1,0 +1,36 @@
+You are a non-interactive Codex image generation worker for one lecture-note diagram.
+
+Use the imagegen skill and the built-in Codex image_gen image generation tool available in this Codex session. This must use the user's Codex subscription path.
+
+Do not use OPENAI_API_KEY.
+Do not call the OpenAI API directly.
+Do not call /Users/arjun/.codex/skills/.system/imagegen/scripts/image_gen.py.
+Do not synthesize the final image with Python/Pillow/SVG/canvas.
+
+Task:
+1. Generate exactly one raster image using the prompt below.
+2. Save or copy the final generated image to this exact workspace path:
+   /Users/arjun/repos/lecture-notes/courses/foundations-clustered-spiking-networks-chaos/figures/imagegen/ch07-static-dynamic-mean-field-split-img.png
+3. Create parent directories if needed. Overwrite only this exact output path if needed.
+4. Write the path of the original generated image cache file, if known, to:
+   /Users/arjun/repos/lecture-notes/courses/foundations-clustered-spiking-networks-chaos/figures/imagegen/ch07-static-dynamic-mean-field-split-img.source.txt
+5. Verify that the output path exists and is non-empty.
+
+Asset id: ch07-static-dynamic-mean-field-split-img
+Target filename: figures/imagegen/ch07-static-dynamic-mean-field-split-img.png
+Caption intent: Clarify the nonzero-mean DMFT decomposition by separating stationary quantities, including the mean input and static quenched bias, from connected time-dependent fluctuations and their autocorrelation closure.
+Overlay suggestion for later exact labels: Overlay `mu`, `eta_0`, `zeta(t)`, `m`, and `C_r(tau)` if needed; exact raw-moment and connected-covariance equations should remain in the caption or text.
+Review notes: Check that the top lane is visibly time-independent and the bottom lane is visibly connected fluctuation dynamics. Check that `eta0` is not drawn as ordinary annealed noise.
+
+Prompt to use with image_gen:
+Use case: scientific-educational
+Asset type: lecture-note raster infographic
+Primary request: Create a conceptual split diagram for nonzero-mean DMFT that separates static mean-field components from dynamic connected components. The figure should show that the mean rate produces a mean input and a frozen bias, while deviations around the mean produce a time-varying process with a connected autocorrelation.
+Composition: 16:10 horizontal composition suitable for a PDF figure. Use two horizontal lanes or stacked bands: a top static lane with steady blocks and a bottom dynamic lane with wavy traces. Connect the lanes lightly at the representative unit so the split is clear but still part of one effective process.
+Required visual elements: Top lane: a steady rate block leading to a mean input and a fixed offset marker. Bottom lane: a fluctuation trace leading to a dynamic input trace and an autocorrelation curve. Include one representative unit in the center receiving both static and dynamic components. Mark the entire figure as schematic through visual style, not large text.
+Sparse in-image labels: `m`, `mu`, `eta0`, `zeta(t)`, `C(tau)`
+Style: Clean, modern, textbook-quality scientific diagram with generous whitespace, high contrast, restrained color coding for static versus dynamic components, no watermark, no logos, no decorative stock imagery.
+Avoid: Full equations in the image, long labels, measured-data styling, noisy decorative traces, excessive color, and any suggestion that the static component fluctuates in time.
+
+When finished, reply only with compact JSON like:
+{"status":"generated","asset_id":"ch07-static-dynamic-mean-field-split-img","path":"/Users/arjun/repos/lecture-notes/courses/foundations-clustered-spiking-networks-chaos/figures/imagegen/ch07-static-dynamic-mean-field-split-img.png"}

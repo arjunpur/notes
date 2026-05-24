@@ -1,0 +1,153 @@
+{
+  "lectures": [
+    {
+      "lecture_slug": "dynamical-systems-language",
+      "title": "Dynamical Systems Language",
+      "slide_filename": "",
+      "chapter_paths": [
+        "chapters/ch01-dynamical-systems-language/ch01.tex"
+      ],
+      "aliases": [
+        "state spaces",
+        "attractors",
+        "stability",
+        "Lyapunov exponents"
+      ],
+      "lecture_date": "2026-05-18"
+    },
+    {
+      "lecture_slug": "stochastic-processes-neural-dynamics",
+      "title": "Stochastic Processes for Neural Dynamics",
+      "slide_filename": "",
+      "chapter_paths": [
+        "chapters/ch02-stochastic-processes-neural-dynamics/ch02.tex"
+      ],
+      "aliases": [
+        "spike trains",
+        "point processes",
+        "finite-size fluctuations",
+        "autocorrelations"
+      ],
+      "lecture_date": "2026-05-18"
+    },
+    {
+      "lecture_slug": "single-neuron-population-models",
+      "title": "Single-Neuron and Population Models",
+      "slide_filename": "",
+      "chapter_paths": [
+        "chapters/ch03-single-neuron-population-models/ch03.tex"
+      ],
+      "aliases": [
+        "LIF",
+        "GIF",
+        "transfer functions",
+        "population firing rates"
+      ],
+      "lecture_date": "2026-05-18"
+    },
+    {
+      "lecture_slug": "balanced-excitatory-inhibitory-networks",
+      "title": "Balanced Excitatory/Inhibitory Networks",
+      "slide_filename": "",
+      "chapter_paths": [
+        "chapters/ch04-balanced-excitatory-inhibitory-networks/ch04.tex"
+      ],
+      "aliases": [
+        "balanced networks",
+        "asynchronous irregular activity",
+        "inhibition-stabilized dynamics"
+      ],
+      "lecture_date": "2026-05-18"
+    },
+    {
+      "lecture_slug": "clustered-attractor-networks",
+      "title": "Clustered Attractor Networks",
+      "slide_filename": "",
+      "chapter_paths": [
+        "chapters/ch05-clustered-attractor-networks/ch05.tex"
+      ],
+      "aliases": [
+        "cell assemblies",
+        "metastability",
+        "E-clustered networks",
+        "active clusters"
+      ],
+      "lecture_date": "2026-05-18"
+    },
+    {
+      "lecture_slug": "random-rate-networks-scs-chaos",
+      "title": "Random Rate Networks and SCS Chaos",
+      "slide_filename": "",
+      "chapter_paths": [
+        "chapters/ch06-random-rate-networks-scs-chaos/ch06.tex"
+      ],
+      "aliases": [
+        "Sompolinsky Crisanti Sommers chaos",
+        "SCS chaos",
+        "random rate networks",
+        "chaotic autocorrelations"
+      ],
+      "lecture_date": "2026-05-18"
+    },
+    {
+      "lecture_slug": "mean-field-dynamic-mean-field-theory",
+      "title": "Mean-Field and Dynamic Mean-Field Theory",
+      "slide_filename": "",
+      "chapter_paths": [
+        "chapters/ch07-mean-field-dynamic-mean-field-theory/ch07.tex"
+      ],
+      "aliases": [
+        "mean field",
+        "DMFT",
+        "quenched disorder",
+        "self-consistency"
+      ],
+      "lecture_date": "2026-05-18"
+    },
+    {
+      "lecture_slug": "ei-clustered-networks",
+      "title": "E/I Clustered Networks",
+      "slide_filename": "",
+      "chapter_paths": [
+        "chapters/ch08-ei-clustered-networks/ch08.tex"
+      ],
+      "aliases": [
+        "paired E/I clusters",
+        "Tilo notation",
+        "cluster strength",
+        "quenched variability"
+      ],
+      "lecture_date": "2026-05-18"
+    },
+    {
+      "lecture_slug": "diagnosing-multistability-versus-chaos",
+      "title": "Diagnosing Multistability Versus Chaos",
+      "slide_filename": "",
+      "chapter_paths": [
+        "chapters/ch09-diagnosing-multistability-versus-chaos/ch09.tex"
+      ],
+      "aliases": [
+        "xi kappa plane",
+        "perturbation diagnostics",
+        "autocorrelation kink",
+        "Lyapunov diagnostics"
+      ],
+      "lecture_date": "2026-05-18"
+    },
+    {
+      "lecture_slug": "research-program",
+      "title": "The Research Program",
+      "slide_filename": "",
+      "chapter_paths": [
+        "chapters/ch10-research-program/ch10.tex"
+      ],
+      "aliases": [
+        "phase diagrams",
+        "observables",
+        "E-only versus E/I clusters",
+        "mesoscale chaos research questions"
+      ],
+      "lecture_date": "2026-05-18"
+    }
+  ]
+}

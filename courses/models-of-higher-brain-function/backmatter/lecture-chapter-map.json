@@ -47,6 +47,29 @@
         "Bistable perception",
         "Cue integration"
       ]
+    },
+    {
+      "lecture_slug": "decision-making-i",
+      "title": "Lecture 4: Decision Making I",
+      "slide_filename": "Lecture 4 - Decision making I.pdf",
+      "chapter_paths": [
+        "chapters/ch05-decision-making-i/ch05.tex"
+      ],
+      "aliases": [
+        "Lecture 4",
+        "Lecture 04",
+        "Decision making I",
+        "Decision Making",
+        "Bayesian Decision Making",
+        "Expected Reward",
+        "Motor Lotteries",
+        "Signal Detection Theory",
+        "Perceptual Decision Making",
+        "Evidence Accumulation",
+        "Log-Likelihood Ratio",
+        "Drift Diffusion Model",
+        "Random Dot Motion"
+      ]
     }
   ]
 }

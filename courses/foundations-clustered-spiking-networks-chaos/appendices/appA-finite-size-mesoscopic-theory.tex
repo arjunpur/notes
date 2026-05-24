@@ -1,0 +1,299 @@
+\chapter{Finite-Size Mesoscopic Theory Bridge}
+\label{app:finite-size-mesoscopic-theory}
+
+This appendix collects the derivation path that turns LIF/GIF spike generators
+into implementable finite-size population equations. It is written as a
+technical bridge, not as a replacement for the chapter sequence: Chapter~3
+introduces the single-neuron and population objects, Chapter~8 instantiates
+them in a paired E/I clustered network, and Chapter~9 uses them for diagnostic
+protocols.
+
+\section{Population Labels and Microscopic Spikes}
+
+Let \(P=(a,\alpha)\) denote one population: cell type
+\(\alpha\in\{E,I\}\) in cluster \(a\). Its local size is
+\(N_P=n_\alpha\). The microscopic spike train of neuron \(i\in P\) is
+\begin{equation}
+  s_i^P(t)=\sum_k \delta(t-t_{i,k}^P),
+  \label{eq:appA-spike-train}
+\end{equation}
+and the empirical population activity is
+\begin{equation}
+  A_N^P(t)
+  =
+  \frac{1}{N_P}\sum_{i=1}^{N_P}s_i^P(t).
+  \label{eq:appA-empirical-activity}
+\end{equation}
+The infinite-population activity will be written \(A^P(t)\). The finite-size
+coordinate for this population is
+\begin{equation}
+  \xi_P=N_P^{-1/2},
+  \qquad
+  \xi_E=n_E^{-1/2},
+  \qquad
+  \xi_I=n_I^{-1/2}.
+  \label{eq:appA-xi}
+\end{equation}
+In paired-cluster discussions a bare \(\xi\) usually means \(\xi_E\).
+
+\section{Hazard Description}
+
+A stochastic LIF or GIF neuron becomes a point-process neuron when its state is
+mapped to a conditional intensity, with \(dN_i^P(t)\) denoting the infinitesimal
+spike count:
+\begin{equation}
+  \Pr\{dN_i^P(t)=1\mid\mathcal H_t\}
+  =
+  \lambda_i^P(t\mid\mathcal H_t)\,dt+o(dt).
+  \label{eq:appA-hazard-definition}
+\end{equation}
+For a soft-threshold GIF model one may write schematically
+\begin{equation}
+  \lambda_i^P(t)
+  =
+  h_\alpha\!\left(
+    U_i^P(t)-\vartheta_i^P(t)
+  \right),
+  \qquad
+  \vartheta_i^P(t)
+  =
+  \theta_0^\alpha+\sum_{t_{i,k}^P<t}
+  \eta_\theta^\alpha(t-t_{i,k}^P),
+  \label{eq:appA-gif-hazard}
+\end{equation}
+with an absolute refractory period represented either by
+\(\lambda_i^P(t)=0\) for \(t-\hat t_i^P<\tau_{\mathrm{ref}}\) or by a large
+short-lag threshold kernel. The variable \(U_i^P\) is the effective
+subthreshold drive, including filtered synaptic current and any voltage
+rescaling used by the neuron model.
+
+\section{Age Density}
+
+Let \(\ell=t-\hat t_i^P\) be time since the most recent spike. The
+population-level age density \(q^P(\ell,t)\) is normalized by
+\begin{equation}
+  \int_0^\infty q^P(\ell,t)\,d\ell=1.
+  \label{eq:appA-age-normalization}
+\end{equation}
+If all neurons of the same age share the same effective hazard
+\(\lambda^P(\ell,t)\), conservation of neurons gives
+\begin{align}
+  \partial_t q^P(\ell,t)+\partial_\ell q^P(\ell,t)
+  &=
+  -\lambda^P(\ell,t)q^P(\ell,t),
+  \qquad \ell>0,
+  \label{eq:appA-age-pde}
+  \\
+  q^P(0,t)
+  &=
+  A^P(t),
+  \label{eq:appA-age-boundary}
+  \\
+  A^P(t)
+  &=
+  \int_0^\infty
+  \lambda^P(\ell,t)q^P(\ell,t)\,d\ell.
+  \label{eq:appA-age-activity}
+\end{align}
+The mass check is immediate:
+\[
+  \frac{d}{dt}\int_0^\infty q^P(\ell,t)d\ell
+  =
+  q^P(0,t)-\int_0^\infty\lambda^P(\ell,t)q^P(\ell,t)d\ell
+  =
+  A^P(t)-A^P(t)=0.
+\]
+
+\section{Renewal and Quasi-Renewal Forms}
+
+Given a last spike at time \(t-\ell\), define
+\begin{align}
+  S^P(\ell\mid t-\ell)
+  &=
+  \exp\!\left[
+    -\int_0^\ell \lambda^P(u,t-\ell+u)\,du
+  \right],
+  \label{eq:appA-survival}
+  \\
+  f^P(\ell\mid t-\ell)
+  &=
+  \lambda^P(\ell,t)S^P(\ell\mid t-\ell).
+  \label{eq:appA-isi-density}
+\end{align}
+The renewal activity equation is
+\begin{equation}
+  A^P(t)
+  =
+  \int_0^\infty
+  f^P(\ell\mid t-\ell)A^P(t-\ell)\,d\ell
+  + A_{\mathrm{init}}^P(t).
+  \label{eq:appA-renewal}
+\end{equation}
+For stationary input the initialization term disappears and
+\begin{equation}
+  \bar A^P
+  =
+  \left[\int_0^\infty S^P(\ell)\,d\ell\right]^{-1}.
+  \label{eq:appA-stationary-rate}
+\end{equation}
+
+For GIF neurons, the exact hazard depends on the full spike history through
+threshold and adaptation kernels. A quasi-renewal closure keeps the last spike
+exact through \(\ell\) and replaces older spikes by their expected population
+history:
+\begin{equation}
+  \vartheta_{\mathrm{QR}}^P(\ell,t)
+  =
+  \theta_0^\alpha
+  + \eta_\theta^\alpha(\ell)
+  + \int_\ell^\infty
+  \eta_\theta^\alpha(s)A^P(t-s)\,ds,
+  \qquad
+  \lambda^P(\ell,t)
+  \approx
+  h_\alpha\!\left(U^P(t)-\vartheta_{\mathrm{QR}}^P(\ell,t)\right).
+  \label{eq:appA-quasi-renewal}
+\end{equation}
+This is the practical reduction: the neuron model contributes \(h_\alpha\) and
+history kernels, while the population equation advances \(q^P\) and \(A^P\).
+
+\section{Finite-Size Expansion}
+
+In a bin of width \(\Delta t\), the empirical activity estimator is
+\begin{equation}
+  A_{N,\Delta}^P(t)
+  =
+  \frac{1}{N_P\Delta t}
+  \sum_{i=1}^{N_P}
+  \int_t^{t+\Delta t}s_i^P(u)\,du.
+  \label{eq:appA-binned-activity}
+\end{equation}
+Conditioned on the population state and ignoring shared input within the bin,
+\begin{equation}
+  \mathbb E[A_{N,\Delta}^P(t)]=A^P(t),
+  \qquad
+  \operatorname{Var}[A_{N,\Delta}^P(t)]
+  \approx
+  \frac{A^P(t)}{N_P\Delta t}.
+  \label{eq:appA-binned-moments}
+\end{equation}
+The corresponding diffusion notation is
+\begin{equation}
+  A_N^P(t)
+  =
+  A^P(t)
+  +
+  \xi_P\sqrt{A^P(t)}\,\zeta^P(t),
+  \label{eq:appA-finite-size-activity}
+\end{equation}
+where \(\zeta^P\) is a shorthand for the activity noise. In renewal theory this
+noise need not be white after the refractory structure is resolved; for
+clustered-network scaling arguments, the essential point is the prefactor
+\(\xi_P=N_P^{-1/2}\).
+
+Filtered rates are
+\begin{equation}
+  R_N^P(t)=(\epsilon*A_N^P)(t).
+  \label{eq:appA-filtered-rate}
+\end{equation}
+For the exponential kernel, an implementation with bin width \(\Delta\) can use
+\begin{equation}
+  R_{m+1}^P
+  =
+  e^{-\Delta/\tau_s}R_m^P
+  +
+  \left(1-e^{-\Delta/\tau_s}\right)A_{N,\Delta,m}^P.
+  \label{eq:appA-filter-recursion}
+\end{equation}
+For independent stationary Poisson spike trains this gives the covariance
+check
+\begin{equation}
+  C_{R_N^P}(\tau)
+  =
+  \frac{\bar A^P}{2\tau_s N_P}e^{-|\tau|/\tau_s}.
+  \label{eq:appA-filtered-covariance}
+\end{equation}
+The \(1/N_P\) amplitude is the part used for finite-size scaling; deviations
+from the Poisson shape diagnose refractory structure, common input, or
+collective dynamics.
+
+\section{Coupled Cluster Populations}
+
+For a paired E/I clustered network, one population equation is written for each
+\(P=(a,\alpha)\):
+\begin{align}
+  \partial_t q_a^\alpha(\ell,t)+\partial_\ell q_a^\alpha(\ell,t)
+  &=
+  -\lambda_a^\alpha(\ell,t)q_a^\alpha(\ell,t),
+  \label{eq:appA-cluster-age-pde}
+  \\
+  q_a^\alpha(0,t)
+  &=
+  A_a^\alpha(t),
+  \qquad
+  A_a^\alpha(t)
+  =
+  \int_0^\infty
+  \lambda_a^\alpha(\ell,t)q_a^\alpha(\ell,t)d\ell.
+  \label{eq:appA-cluster-activity}
+\end{align}
+The drive entering the hazard is obtained from filtered synaptic input. At the
+population bookkeeping level,
+\begin{equation}
+  y_a^\alpha(t)
+  =
+  \sum_{\beta}
+  n_\beta\widehat J^{\alpha\beta}A_a^\beta(t)
+  +
+  \sum_{b\ne a}\sum_{\beta}
+  n_\beta\check J_{ab}^{\alpha\beta}A_b^\beta(t),
+  \qquad
+  I_a^\alpha=\epsilon*y_a^\alpha.
+  \label{eq:appA-cluster-input}
+\end{equation}
+Chapter~8 supplies the signs, fixed in-degree construction, balance scaling,
+and potentiation/depression factors. The finite-size mesoscopic version
+replaces \(A_a^\alpha\) by
+\begin{equation}
+  A_{a,N}^\alpha(t)
+  =
+  A_a^\alpha(t)
+  +
+  \xi_\alpha\sqrt{A_a^\alpha(t)}\,\zeta_a^\alpha(t),
+  \label{eq:appA-cluster-noisy-activity}
+\end{equation}
+while frozen inter-cluster disorder is represented separately, for example by
+\begin{equation}
+  \check J_{ab}^{\alpha\beta}
+  =
+  \overline J^{\alpha\beta}
+  +
+  \kappa G_{ab}^{\alpha\beta},
+  \qquad a\ne b.
+  \label{eq:appA-kappa-decomposition}
+\end{equation}
+Taking \(n_E,n_I\to\infty\) sends \(\xi_E,\xi_I\to0\). It does not remove
+\(\kappa\) unless the network ensemble is scaled to remove inter-cluster
+heterogeneity.
+
+\section{Derivation Checks for Implementations}
+
+\begin{enumerate}
+  \item Conservation: numerical advection of \(q_a^\alpha(\ell,t)\) should keep
+  \(\int q_a^\alpha d\ell=1\) up to discretization error.
+
+  \item Renewal consistency: under stationary input, the simulated population
+  rate should match the inverse mean ISI computed from the survival function.
+
+  \item Filtering consistency: filtering binned spikes with
+  \eqref{eq:appA-filter-recursion} should match direct convolution with
+  \(\epsilon\) when the same bin convention is used.
+
+  \item Finite-size scaling: at fixed input and fixed quenched network draw,
+  independent sampling variance should scale as \(1/n_\alpha\), while the
+  standard deviation scales as \(1/\sqrt{n_\alpha}\).
+
+  \item Disorder separation: changing random seeds for spike generation probes
+  \(\xi\); changing the sampled inter-cluster graph or weights probes
+  \(\kappa\). These sweeps should not be merged when interpreting switching.
+\end{enumerate}

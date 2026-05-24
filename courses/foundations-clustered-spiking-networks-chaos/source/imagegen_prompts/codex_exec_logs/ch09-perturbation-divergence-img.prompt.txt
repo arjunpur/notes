@@ -1,0 +1,36 @@
+You are a non-interactive Codex image generation worker for one lecture-note diagram.
+
+Use the imagegen skill and the built-in Codex image_gen image generation tool available in this Codex session. This must use the user's Codex subscription path.
+
+Do not use OPENAI_API_KEY.
+Do not call the OpenAI API directly.
+Do not call /Users/arjun/.codex/skills/.system/imagegen/scripts/image_gen.py.
+Do not synthesize the final image with Python/Pillow/SVG/canvas.
+
+Task:
+1. Generate exactly one raster image using the prompt below.
+2. Save or copy the final generated image to this exact workspace path:
+   /Users/arjun/repos/lecture-notes/courses/foundations-clustered-spiking-networks-chaos/figures/imagegen/ch09-perturbation-divergence-img.png
+3. Create parent directories if needed. Overwrite only this exact output path if needed.
+4. Write the path of the original generated image cache file, if known, to:
+   /Users/arjun/repos/lecture-notes/courses/foundations-clustered-spiking-networks-chaos/figures/imagegen/ch09-perturbation-divergence-img.source.txt
+5. Verify that the output path exists and is non-empty.
+
+Asset id: ch09-perturbation-divergence-img
+Target filename: figures/imagegen/ch09-perturbation-divergence-img.png
+Caption intent: Contrast a small perturbation that relaxes inside a metastable basin with a small perturbation that grows exponentially in a chaotic mesoscale flow before saturating.
+Overlay suggestion for later exact labels: Overlay `d(t)`, `lambda > 0`, `tau_relax`, and `saturation` if needed; keep `d(t) approx d(0)e^{lambda_max t}` and the full distance definition in LaTeX caption text.
+Review notes: Check that the metastable case shows decay for small perturbations, not immediate basin switching. Check that chaotic growth is shown as early exponential divergence followed by bounded saturation.
+
+Prompt to use with image_gen:
+Use case: scientific-educational
+Asset type: lecture-note raster infographic
+Primary request: Create a schematic perturbation diagnostic comparing metastable recovery with chaotic divergence in clustered spiking networks. The figure should make clear that a subthreshold perturbation decays inside a stable basin, while an infinitesimal perturbation in chaotic mesoscale flow grows before saturating.
+Composition: 16:10 horizontal composition suitable for a PDF figure. Use two coordinated panels: a left state-space panel with basins and trajectory pairs, and a right semilog-style distance-versus-time sketch. Keep the panel boundary simple and leave whitespace around arrows and curves.
+Required visual elements: Left panel: two nearby trajectories returning together inside one basin and a separate small chaotic-flow path where nearby trajectories separate. Right panel: one decaying distance curve, one exponential-growth curve that saturates, and a thresholded large-jump cue for basin crossing. The plots are conceptual, not measured data.
+Sparse in-image labels: `basin`, `decay`, `lambda>0`, `saturation`, `d(t)`, `t`
+Style: Clean, modern, textbook-quality scientific diagram with high contrast, crisp traces, generous whitespace, no watermark, no logos, no decorative stock imagery.
+Avoid: Full Lyapunov equations in the image, long annotations, real experimental traces, numerical tick marks, too many trajectories, 3D landscapes, and ambiguity between large basin jumps and infinitesimal chaotic divergence.
+
+When finished, reply only with compact JSON like:
+{"status":"generated","asset_id":"ch09-perturbation-divergence-img","path":"/Users/arjun/repos/lecture-notes/courses/foundations-clustered-spiking-networks-chaos/figures/imagegen/ch09-perturbation-divergence-img.png"}

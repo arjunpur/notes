@@ -51,6 +51,20 @@
         "Lecture 4: Slides",
         "Spikes (Part 1) - Lecture 4"
       ]
+    },
+    {
+      "lecture_slug": "lecture-5",
+      "title": "Spikes (Part 1) - Lecture 5",
+      "slide_filename": "Spikes (Part 1) - Lecture 5 - Slides.pdf",
+      "chapter_paths": [
+        "lectures/spikes-part-1-lecture-5.tex"
+      ],
+      "aliases": [
+        "Lecture 5",
+        "Lecture 5: Slides",
+        "Spikes (Part 1) - Lecture 5",
+        "Spike-Train Decoding and Information"
+      ]
     }
   ]
 }

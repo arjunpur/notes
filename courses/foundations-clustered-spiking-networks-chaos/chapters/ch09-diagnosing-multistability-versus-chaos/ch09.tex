@@ -1,0 +1,886 @@
+\chapter{Diagnosing Multistability Versus Chaos}
+\label{ch:diagnosing-multistability-chaos}
+
+The same raster plot can be explained by two very different mechanisms. In a
+multistable network, the deterministic large-network dynamics contains stable
+attractors, and finite-size fluctuations cause rare escapes between their
+basins. In a chaotic mesoscale network, the large-network dynamics itself has no
+stable attractor on the relevant timescale; nearby cluster-rate trajectories
+separate because the deterministic cluster-level vector field is unstable.
+
+This chapter develops diagnostics that distinguish these mechanisms. The goal
+is not to label every irregular trace as ``chaotic''. The goal is to ask which
+source of variability is necessary for the switching to persist.
+
+\section*{Learning Goals}
+
+After this chapter you should be able to:
+\begin{itemize}
+    \item use the \(\xi\)-\(\kappa\) plane to separate finite-size noise from
+    quenched heterogeneity;
+    \item predict how switch times should scale in finite-size multistability
+    versus mesoscopic chaos;
+    \item interpret perturbation recovery, Lyapunov exponents, and zero-lag
+    autocorrelation shape as dynamical diagnostics;
+    \item explain why fully connected regime C is the clean many-cluster limit
+    for SCS-like macroscopic chaos without finite-size effects.
+\end{itemize}
+
+\section{From Spikes to Diagnostic Time Series}
+\label{sec:ch09-spikes-to-diagnostics}
+
+The diagnostics in this chapter should be computed from a common data product,
+not separately redefined for each figure. For each simulation store the
+connectivity seed, stochastic seed convention, cluster labels, cell types,
+spike times, filtered population rates, and, when available, the four input
+current components defined in \cref{sec:ch09-transition-triggered}. The
+metadata must record local counts \(n_E,n_I\) and total counts
+\(N_E^{\mathrm{tot}}=Qn_E\), \(N_I^{\mathrm{tot}}=Qn_I\) separately. In this
+chapter \(\xi=1/\sqrt{n_E}\) when the size sweep changes the number \(n_E\) of
+excitatory neurons inside one cluster.
+
+\begin{keyequation}[Spike binning and cluster-rate filtering]
+Let \(t_m=m\Delta_b\), and let \(n_\alpha\) be the number of neurons of type
+\(\alpha\) inside one cluster. The binned population activity and a causal
+exponential rate estimate are
+\begin{equation}
+    B_{a,m}^{\alpha}
+    =
+    \frac{1}{n_\alpha\Delta_b}
+    \sum_{i=1}^{n_\alpha}
+    \int_{t_m}^{t_m+\Delta_b}
+    s_{a,i}^{\alpha}(t)\,dt ,
+    \qquad
+    r_{a,m}^{\alpha}
+    =
+    \lambda_f r_{a,m-1}^{\alpha}
+    +
+    (1-\lambda_f)B_{a,m}^{\alpha},
+    \label{eq:ch09-discrete-rate-filter}
+\end{equation}
+with \(\lambda_f=\exp(-\Delta_b/\tau_f)\). The units of \(B\) and \(r\) are
+spikes per neuron per unit time. A noncausal Gaussian smoother is acceptable
+for offline state detection, but the filter width must be reported because it
+sets the shortest resolvable transition time.
+\end{keyequation}
+
+\paragraph{State detection protocol.}
+Cluster states are binary summaries of the filtered rates, not direct spike
+counts. A reproducible detector has the following steps.
+\begin{enumerate}
+    \item Discard burn-in and compute \(r_a^E(t)\) on a fixed bin grid for all
+    clusters. Use the same filter for every cluster and every network size in a
+    scaling comparison.
+    \item Choose an activity threshold \(r_0\) from the valley between inactive
+    and active modes of the pooled cluster-rate distribution. If the
+    distribution is not clearly bimodal, use a prespecified quantile or
+    mixture-model rule and report the sensitivity to the choice.
+    \item Use hysteresis thresholds \(r_{\mathrm{on}}>r_{\mathrm{off}}\) around
+    \(r_0\). A cluster turns on only after crossing \(r_{\mathrm{on}}\) and
+    turns off only after crossing \(r_{\mathrm{off}}\). Merge events separated
+    by less than a minimum dwell time \(T_{\min}\), typically several rate
+    filter constants.
+    \item Define the active-state vector
+    \[
+        S_a(t)=\mathbf 1\{r_a^E(t)\text{ is in the active hysteresis state}\},
+        \qquad
+        M(t)=\sum_{a=1}^Q S_a(t).
+    \]
+    Lifetimes are maximal intervals on which \(S_a(t)=1\). Transitions are
+    threshold crossings that survive the dwell-time rule.
+    \item For transition-triggered averages, keep an event only when no other
+    cluster changes state in the exclusion window. The exclusion width should
+    be at least the larger of the filter width and the median transition
+    duration.
+\end{enumerate}
+
+\section{Two Mechanisms With Similar Traces}
+\label{sec:ch09-two-mechanisms}
+
+Let \(r(t)=(r_1^E,r_1^I,\ldots,r_Q^E,r_Q^I)\) denote the vector of cluster
+rates. A schematic mesoscale model is
+\begin{equation}
+    \frac{d r}{dt}
+    =
+    F(r;\kappa,G)
+    +
+    \xi\,\eta(t),
+    \qquad
+    \xi=\frac{1}{\sqrt{n_E}}.
+    \label{eq:ch09-schematic-mesoscale}
+\end{equation}
+The fixed random object \(G\) is the quenched inter-cluster disorder; its
+amplitude is \(\kappa\). The process \(\eta(t)\) represents finite-size
+population noise. At fixed local E/I fractions, let
+\(n_c=n_E+n_I\), \(n_E=\gamma n_c\), and \(n_I=(1-\gamma)n_c\), so
+\(\xi=(\gamma n_c)^{-1/2}\propto n_c^{-1/2}\). Throughout this chapter,
+\(\kappa\) is the scalar heterogeneity axis; bare \(g\) is reserved for
+inhibitory balance gains, and channel-specific quenched weight spreads are
+written as \(\sigma_{\alpha\beta}^{\mathrm{het}}\). The same model therefore
+contains two conceptually distinct limits:
+\begin{equation}
+    \text{finite-size multistability: }
+    F \text{ has stable attractors and } \xi>0,
+    \label{eq:ch09-multistable-limit}
+\end{equation}
+and
+\begin{equation}
+    \text{mesoscopic chaos: }
+    F \text{ has a chaotic attractor and } \xi=0,\ \kappa>0 .
+    \label{eq:ch09-chaotic-limit}
+\end{equation}
+In the first case, switching is a stochastic escape phenomenon. In the second,
+switching is generated by the deterministic dynamics of the cluster rates.
+
+\section[The xi-kappa Plane]{The \(\xi\)-\(\kappa\) Plane}
+\label{sec:ch09-xi-kappa-plane}
+
+The cleanest organizing picture is the plane with finite-size amplitude
+\(\xi\) on one axis and quenched heterogeneity \(\kappa\) on the other.
+Increasing the number of excitatory neurons per cluster, equivalently
+increasing \(n_c\) at fixed \(\gamma\), moves the network toward \(\xi=0\).
+Increasing the variability of inter-cluster weights or inter-cluster
+connectivity moves the network upward in \(\kappa\).
+
+\begin{table}[t]
+\centering
+\small
+\begin{tabularx}{\textwidth}{@{}p{0.18\textwidth}p{0.35\textwidth}X@{}}
+\toprule
+\textbf{Region} & \textbf{Operational move} & \textbf{Interpretation} \\
+\midrule
+Large \(\xi\), small \(\kappa\) & Use small \(n_E\) and nearly homogeneous inter-cluster couplings & Switching can be dominated by finite-size escapes between stable cluster states. \\
+Small \(\xi\), small \(\kappa\) & Increase \(n_E\) while keeping heterogeneity weak & Stable attractors should stop switching if finite-size noise was the only drive. \\
+Large \(\xi\), large \(\kappa\) & Combine small clusters with frozen disorder & Irregular traces may mix finite-size hopping and deterministic heterogeneity effects. \\
+Small \(\xi\), large \(\kappa\) & Increase \(n_E\) while retaining quenched inter-cluster disorder & Persistent switching here is the target evidence for mesoscopic chaos. \\
+\bottomrule
+\end{tabularx}
+\caption{The \(\xi\)-\(\kappa\) diagnostic plane. The horizontal move is a
+local-size sweep, \(\xi=1/\sqrt{n_E}\); the vertical move changes quenched
+inter-cluster heterogeneity without changing the mean input.}
+\label{tab:ch09-xi-kappa-plane}
+\end{table}
+
+This plane is useful because it makes qualitative claims falsifiable. A trace
+that looks metastable at one network size is not enough. If the mechanism is
+finite-size escape, the switching time should grow as \(\xi\) decreases. If the
+mechanism is mesoscopic chaos, the switching time should approach a nonzero
+large-network value controlled by \(\kappa\).
+
+\section{Size Scaling and Switch-Time Plateaus}
+\label{sec:ch09-switch-time-plateaus}
+
+Let \(T_{\mathrm{sw}}\) be a characteristic switching time, such as the mean
+cluster lifetime or the inverse transition rate between active-cluster
+configurations. In a metastable attractor picture, a switch requires a rare
+fluctuation across a basin boundary. A Kramers-like scaling gives the intuition
+\begin{equation}
+    T_{\mathrm{sw}}(\xi,\kappa\approx 0)
+    \sim
+    \exp\!\left(\frac{\Delta}{\xi^2}\right),
+    \label{eq:ch09-kramers-scaling}
+\end{equation}
+where \(\Delta\) is an effective barrier. The equation is not meant to assert
+that every clustered spiking network has a literal scalar potential. It states
+the key scaling: if the escape is driven by finite-size noise, reducing
+\(\xi\) should rapidly lengthen the switch time.
+
+In a chaotic mesoscale regime, the large-network vector field itself produces
+irregular motion. Then
+\begin{equation}
+    \lim_{\xi\to 0}T_{\mathrm{sw}}(\xi,\kappa)
+    =
+    T_{\mathrm{chaos}}(\kappa)
+    <\infty .
+    \label{eq:ch09-plateau}
+\end{equation}
+The practical test is therefore a plateau test. Increase \(n_c\), hence
+\(n_E=\gamma n_c\), while holding the cluster-level parameters and quenched
+realization statistics fixed. If the switching time first increases but then
+saturates, finite-size noise may have been masking an underlying chaotic
+process. If switching simply disappears, the evidence points to multistable
+attractors destabilized by finite-size fluctuations.
+
+\section{Perturbation Recovery Versus Divergence}
+\label{sec:ch09-perturbation-diagnostics}
+
+Perturbation experiments ask whether a small displacement is forgotten. Take
+two copies of the same network realization, start them from the same
+cluster-rate state, and perturb one copy by a small vector \(\delta r(0)\). A
+natural distance is
+\begin{equation}
+    d(t)
+    =
+    \left[
+    \frac{1}{Q}
+    \sum_{a=1}^{Q}
+    \left(
+    \left(r_{a,1}^E(t)-r_{a,2}^E(t)\right)^2
+    +
+    \left(r_{a,1}^I(t)-r_{a,2}^I(t)\right)^2
+    \right)
+    \right]^{1/2}.
+    \label{eq:ch09-trajectory-distance}
+\end{equation}
+The subscripts \(1\) and \(2\) label the two trials. In a metastable basin, a
+small perturbation should decay on a local relaxation timescale:
+\begin{equation}
+    d(t) \approx d(0)e^{-t/\tau_{\mathrm{relax}}},
+    \label{eq:ch09-perturbation-decay}
+\end{equation}
+with \(\tau_{\mathrm{relax}}\) comparable to the single-neuron or membrane
+timescale, not the much longer cluster lifetime. Only perturbations large
+enough to cross a basin boundary, typically comparable to the finite-size
+escape fluctuation, should produce a different active-cluster state. Thus the
+metastable signature is a fast return for small perturbations and a thresholded
+state change for large perturbations.
+
+In a chaotic mesoscale regime, an arbitrarily small generic perturbation
+initially grows:
+\begin{equation}
+    d(t) \approx d(0)e^{\lambda_{\max}t},
+    \qquad \lambda_{\max}>0.
+    \label{eq:ch09-perturbation-growth}
+\end{equation}
+The growth eventually saturates because rates are bounded, but the early
+exponential window is the diagnostic. The timescale discriminator is as
+important as the sign of the response: chaotic responses persist or diverge on
+the cluster autocorrelation timescale \(\tau_c\), whereas metastable recovery
+from a subthreshold perturbation is fast, on the order of \(\tau_m\) or the
+finite-size relaxation time.
+
+\begin{table}[t]
+\centering
+\small
+\begin{tabularx}{\textwidth}{@{}p{0.30\textwidth}p{0.30\textwidth}X@{}}
+\toprule
+\textbf{Perturbation size} & \textbf{Stable-basin response} & \textbf{Chaotic mesoscale response} \\
+\midrule
+Infinitesimal rate perturbation & Decays with local relaxation time & Grows during a linear exponential window. \\
+Finite but subthreshold spiking perturbation & Recovers to the same threshold-defined state under common noise & Separates reproducibly before saturation if projected instability is present. \\
+Basin-crossing perturbation & Produces a thresholded jump to another attractor & Not the diagnostic event; chaos is tested before saturation and before state labels diverge. \\
+\bottomrule
+\end{tabularx}
+\caption{Perturbation signatures. Basin crossing is not enough to claim chaos;
+the key test is reproducible growth of small perturbations under deterministic
+or common-noise conditions.}
+\label{tab:ch09-perturbation-signatures}
+\end{table}
+
+In spiking simulations one must be careful about stochasticity. The cleanest
+version compares either deterministic mesoscale trajectories or spiking trials
+with controlled randomness so that the measured separation is caused by the
+perturbation rather than by unrelated random seeds. The quenched connectivity
+realization should be identical in the two copies.
+
+\section{Lyapunov Diagnostics}
+\label{sec:ch09-lyapunov-diagnostics}
+
+The maximal Lyapunov exponent is the asymptotic rate at which an infinitesimal
+perturbation grows:
+\begin{equation}
+    \lambda_{\max}
+    =
+    \lim_{t\to\infty}
+    \frac{1}{t}
+    \log
+    \frac{\|\delta r(t)\|}{\|\delta r(0)\|}.
+    \label{eq:ch09-lyapunov}
+\end{equation}
+For a smooth mesoscale system \(dr/dt=F(r)\), the perturbation evolves by the
+tangent equation
+\begin{equation}
+    \frac{d}{dt}\delta r(t)
+    =
+    D F(r(t))\,\delta r(t),
+    \label{eq:ch09-tangent-equation}
+\end{equation}
+where \(D F\) is the Jacobian of the cluster-rate vector field along the
+trajectory. A positive \(\lambda_{\max}\) is not the same as irregular-looking
+activity; it is a mathematical statement about local exponential separation.
+
+\paragraph{Deterministic mesoscopic Benettin algorithm.}
+For an effective deterministic cluster model, write the full numerical state as
+\(x(t)\). This state may include excitatory and inhibitory rates, adaptation
+variables, synaptic filters, refractory or age-density bins, and any auxiliary
+variables needed to make the dynamics Markovian. For the largest exponent,
+integrate
+\[
+    \dot x=F(x),
+    \qquad
+    \dot v=D F(x)v
+\]
+with \(\|v(0)\|=1\). Every \(\Delta_R\) units of time, record
+\(g_m=\|v(m\Delta_R)\|\), renormalize \(v\leftarrow v/g_m\), and continue.
+After discarding an initial transient,
+\begin{equation}
+    \widehat\lambda_{\max}(T)
+    =
+    \frac{1}{M\Delta_R}
+    \sum_{m=1}^{M}\log g_m .
+    \label{eq:ch09-benettin-max}
+\end{equation}
+For a spectrum, evolve a matrix \(U\) of tangent vectors and perform a QR
+factorization \(U=QR\) at each renormalization time:
+\begin{equation}
+    \widehat\lambda_j(T)
+    =
+    \frac{1}{M\Delta_R}
+    \sum_{m=1}^{M}\log |R_{jj}^{(m)}| .
+    \label{eq:ch09-qr-lyapunov}
+\end{equation}
+The renormalization interval \(\Delta_R\) should be long enough that the
+integrator is not just measuring one time step and short enough that the
+perturbation has not saturated; in practice it is tested over a small grid and
+kept well below the broad cluster autocorrelation time.
+
+\paragraph{Finite-difference shadowing when the Jacobian is unavailable.}
+Run two deterministic mesoscopic trajectories with identical parameters and
+initial separation \(\varepsilon v\). Evolve for \(\Delta_R\), estimate the
+growth factor
+\[
+    g_m=\frac{\|x_2(m\Delta_R)-x_1(m\Delta_R)\|}{\varepsilon},
+\]
+then reset the second trajectory to
+\[
+    x_2\leftarrow x_1
+    +
+    \varepsilon
+    \frac{x_2-x_1}{\|x_2-x_1\|}.
+\]
+Accumulating \(\log g_m\) gives the same maximal-exponent estimate as
+\eqref{eq:ch09-benettin-max} when the perturbation remains in the linear
+regime. Repeat the estimate for at least two values of \(\varepsilon\); a
+linear-regime estimate should not change when \(\varepsilon\) is made smaller.
+
+\paragraph{Common-noise spiking perturbation protocol.}
+For spiking simulations, independent random seeds measure noise divergence, not
+deterministic sensitivity. A controlled protocol is:
+\begin{enumerate}
+    \item Generate one quenched connectivity realization and one complete
+    external-noise or stochastic-threshold stream that can be replayed.
+    \item Clone the network state after burn-in, including membrane potentials,
+    adaptation variables, refractory states, and synaptic filter states.
+    \item Perturb the clone by one member of a calibrated ladder: one membrane
+    potential by \(\varepsilon\), all membrane potentials in one cluster by
+    \(\varepsilon\), one added spike, or one added spike in every neuron of one
+    cluster.
+    \item Replay the same noise streams in both copies and measure the
+    filtered-rate distance \(d(t)\) from \eqref{eq:ch09-trajectory-distance}.
+    \item Estimate slopes of \(\log d(t)\) only before saturation and before
+    the two trajectories land in clearly different threshold-defined states.
+\end{enumerate}
+This gives a random-dynamical-system or projected mesoscale exponent. It is
+strong evidence only when the estimate is reproducible under the perturbation
+ladder and remains positive as the finite-size amplitude is reduced.
+
+\paragraph{Stochastic caveats and convergence checks.}
+Finite-size Langevin equations with multiplicative noise can have positive
+common-noise exponents even when the deterministic drift is stable. Therefore
+the claim ``mesoscopic chaos'' should be reserved for a positive exponent in
+the deterministic large-cluster theory or for a positive common-noise exponent
+that approaches a nonzero limit as \(\xi\to 0\). Report convergence plots of
+\(\widehat\lambda_{\max}(T)\), vary the time step, renormalization interval,
+norm, transient length, and perturbation size, and verify the implementation on
+a known stable linear system and on a reference chaotic rate model before using
+it as evidence in the clustered spiking model.
+
+\section{Autocorrelation Diagnostics and the Zero-Lag Kink}
+\label{sec:ch09-autocorrelation-kink}
+
+Let
+\begin{equation}
+    C_c(\tau)
+    =
+    \left\langle
+    \delta r_c(t)\,\delta r_c(t+\tau)
+    \right\rangle_t,
+    \qquad
+    \delta r_c(t)=r_c(t)-\langle r_c\rangle_t ,
+    \label{eq:ch09-cluster-autocorrelation}
+\end{equation}
+be the autocorrelation of a cluster-rate trace. Finite-size fluctuations often
+contribute a fast Ornstein-Uhlenbeck-like term,
+\begin{equation}
+    C_{\mathrm{fs}}(\tau)
+    =
+    A_\xi e^{-|\tau|/\tau_\xi}.
+    \label{eq:ch09-ou-autocorrelation}
+\end{equation}
+This function has a cusp at zero lag:
+\begin{equation}
+    \left.\frac{d C_{\mathrm{fs}}}{d\tau}\right|_{\tau=0^+}
+    =
+    -\frac{A_\xi}{\tau_\xi},
+    \qquad
+    \left.\frac{d C_{\mathrm{fs}}}{d\tau}\right|_{\tau=0^-}
+    =
+    \frac{A_\xi}{\tau_\xi}.
+    \label{eq:ch09-kink-derivative}
+\end{equation}
+By contrast, the autocorrelation of a differentiable deterministic chaotic rate
+process is even and smooth at zero lag, so its first derivative vanishes there.
+An observed autocorrelation can be decomposed schematically as
+\begin{equation}
+    C(\tau)
+    =
+    C_{\mathrm{chaos}}(\tau)
+    +
+    A_\xi e^{-|\tau|/\tau_\xi}.
+    \label{eq:ch09-autocorrelation-mixture}
+\end{equation}
+The kink amplitude \(A_\xi/\tau_\xi\) estimates the fast finite-size
+contribution. It should shrink with \(n_E\). A smooth zero-lag autocorrelation
+that retains a broad timescale as \(n_E\to\infty\) is consistent with
+mesoscopic chaos.
+
+The diagnostic contrast can be read directly from the local expansion:
+\[
+    \rho_{\mathrm{fs}}(\tau)=1-k_\xi|\tau|+O(\tau^2),
+    \qquad
+    \rho_{\mathrm{smooth}}(\tau)=1-\frac{1}{2}b\tau^2+O(\tau^4).
+\]
+The first form has a nonzero one-sided slope at the origin; the second has a
+vanishing first derivative. A measured trace may contain both pieces, which is
+why the fitted \(k_\xi\) must be tracked over the \(n_E\) size ladder rather
+than interpreted from one network size.
+
+This diagnostic is mathematically clean but experimentally delicate. It requires
+enough temporal resolution to see the zero-lag shape and enough trials or
+stationary data to estimate the autocorrelation reliably.
+
+\paragraph{Operational estimator.}
+For a discrete filtered rate \(r_m=r(m\Delta_b)\), remove burn-in and estimate
+the autocovariance with valid-overlap normalization:
+\begin{equation}
+    \widehat C[\ell]
+    =
+    \frac{1}{M-\ell}
+    \sum_{m=0}^{M-\ell-1}
+    (r_m-\overline r)(r_{m+\ell}-\overline r),
+    \qquad
+    0\le \ell<M .
+    \label{eq:ch09-discrete-autocovariance}
+\end{equation}
+FFT implementations are fine, but they must divide by \(M-\ell\), not by a
+constant \(M\), because large lags have fewer overlapping samples. Normalize by
+\(\widehat\rho[\ell]=\widehat C[\ell]/\widehat C[0]\). The HWHM is obtained by
+linear interpolation between the first adjacent lags satisfying
+\(\widehat\rho[\ell]>1/2\) and \(\widehat\rho[\ell+1]\le 1/2\):
+\begin{equation}
+    \widehat\tau_{\mathrm{HWHM}}
+    =
+    \Delta_b
+    \left[
+        \ell
+        +
+        \frac{\widehat\rho[\ell]-1/2}
+        {\widehat\rho[\ell]-\widehat\rho[\ell+1]}
+    \right].
+    \label{eq:ch09-hwhm-interpolation}
+\end{equation}
+If the autocorrelation does not cross one half inside the recording window,
+report a right-censored lower bound instead of extrapolating.
+
+For the zero-lag kink, discard the raw same-bin spike-count peak and use
+filtered rates. Fit the symmetric small-lag model
+\begin{equation}
+    \rho(\tau)
+    \approx
+    1-k_{\xi}|\tau|
+    +
+    \frac{1}{2}b\tau^2,
+    \qquad 0<|\tau|\le w ,
+    \label{eq:ch09-kink-fit}
+\end{equation}
+over several windows \(w\). The finite-size prediction is that \(k_\xi\)
+decreases with local population size, while a smooth deterministic rate process
+has \(k_\xi\to 0\) as the bin width and fit window are refined. Block bootstrap
+or network-realization bootstrap intervals should be shown because short traces
+can manufacture apparent zero-lag slopes.
+
+\section{Transition-Triggered Diagnostics}
+\label{sec:ch09-transition-triggered}
+
+Suppose a cluster \(c\) turns on at times \(t_m^\uparrow\) and turns off at
+times \(t_m^\downarrow\), detected by upward and downward crossings of a rate
+threshold \(r_0\). Use isolated transitions: no other cluster should cross
+threshold inside a window
+\([t_m-T_C,t_m+T_C]\), where \(T_C\) is a typical cluster lifetime. This
+selection prevents a triggered average for cluster \(c\) from being dominated
+by a nearly simultaneous transition elsewhere.
+
+For an observable \(X(t)\), define the transition-triggered average
+\begin{equation}
+    \operatorname{TTA}_X(\tau)
+    =
+    \frac{1}{M}
+    \sum_{m=1}^{M}
+    X(t_m^\uparrow+\tau).
+    \label{eq:ch09-tta}
+\end{equation}
+The same definition is used for \(t_m^\downarrow\) when diagnosing on-to-off
+events.
+
+The input current to an excitatory neuron in the focus cluster should be split
+by source location and source type,
+\begin{equation}
+    I_{c,i}^{E}(t)
+    =
+    I_{\mathrm{in},i}^{E}(t)
+    +
+    I_{\mathrm{in},i}^{I}(t)
+    +
+    I_{\mathrm{out},i}^{E}(t)
+    +
+    I_{\mathrm{out},i}^{I}(t).
+    \label{eq:ch09-input-split}
+\end{equation}
+Here ``in'' means presynaptic neurons inside cluster \(c\), and ``out'' means
+presynaptic neurons in other clusters. For \(x\in\{\mathrm{in},\mathrm{out}\}\)
+and \(\beta\in\{E,I\}\), define the spatial input-current variance across the
+excitatory neurons of the focus cluster by
+\begin{equation}
+    \left(\sigma_x^\beta(t)\right)^2
+    =
+    \frac{1}{n_E}
+    \sum_{i=1}^{n_E}
+    \left(
+        I_{x,i}^{\beta}(t)
+        -
+        \overline I_x^\beta(t)
+    \right)^2 .
+    \label{eq:ch09-sigma-components}
+\end{equation}
+The four components
+\(\sigma_{\mathrm{in}}^E,\sigma_{\mathrm{in}}^I,
+\sigma_{\mathrm{out}}^E,\sigma_{\mathrm{out}}^I\) ask whether transitions are
+preceded by fluctuations from local excitation, local inhibition,
+inter-cluster excitation, or inter-cluster inhibition. The corresponding mean
+currents \(\overline I_x^\beta(t)\) should be triggered in the same way. If
+finite-size fluctuations drive transitions, one expects one or more
+\(\sigma_x^\beta\) components to rise immediately before \(t_m\). If inhibition
+controls the escape, the pre-transition signature may appear as a decrease in
+inhibitory mean current rather than as an increase in excitation.
+
+The roadmap also calls for a directional state-transition average. Condition on
+a specific transition \(A\to B\), where \(r_A\) and \(r_B\) are the cluster-rate
+vectors for the two macroscopic states, and define
+\begin{equation}
+    e_{AB}
+    =
+    \frac{r_B-r_A}{\|r_B-r_A\|}.
+    \label{eq:ch09-transition-direction}
+\end{equation}
+The rate displacement decomposes into a transition coordinate and an orthogonal
+coordinate,
+\begin{equation}
+    z_{\parallel}(t)
+    =
+    e_{AB}^{\mathsf T}\bigl(r(t)-r_A\bigr),
+    \qquad
+    z_{\perp}^2(t)
+    =
+    \left\|r(t)-r_A\right\|^2-z_{\parallel}^2(t).
+    \label{eq:ch09-transition-projections}
+\end{equation}
+A scalar variance burst averaged over all off-to-on events is not enough. For a
+specific \(A\to B\) transition, the diagnostic asks whether the triggered mean
+rate moves along \(r_B-r_A\) before the crossing, while fluctuations orthogonal
+to that direction stay small or decrease.
+
+The complementary cross-correlation asks whether fluctuations in one quantity
+lead changes in another:
+\begin{equation}
+    C_{r,\sigma^2}(\tau)
+    =
+    \left\langle
+    \bigl(r_c(t)-\overline r_c\bigr)
+    \bigl(\sigma_c^2(t+\tau)-\overline{\sigma_c^2}\bigr)
+    \right\rangle_t .
+    \label{eq:ch09-cross-correlation}
+\end{equation}
+Here \(\sigma_c^2(t)\) can be replaced by any of
+\((\sigma_{\mathrm{in}}^E)^2,(\sigma_{\mathrm{in}}^I)^2,
+(\sigma_{\mathrm{out}}^E)^2,(\sigma_{\mathrm{out}}^I)^2\). A peak at negative
+lag means that input-current variance rises before the rate transition; a peak
+at positive lag means variance follows the rate change. These observables do
+not by themselves prove chaos, but they identify the mechanism that triggers
+state changes.
+
+\paragraph{Transition-triggered Fano factors.}
+For a focus population \(\mathcal P\), event time \(t_m\), offset \(\tau\), and
+counting window \(W\), define
+\begin{equation}
+    N_m^{\mathcal P}(\tau;W)
+    =
+    \sum_{i\in\mathcal P}
+    \int_{t_m+\tau}^{t_m+\tau+W}s_i(t)\,dt .
+    \label{eq:ch09-transition-counts}
+\end{equation}
+The transition-triggered Fano curve is
+\begin{equation}
+    F_{\mathcal P}^{\mathrm{TTA}}(\tau;W)
+    =
+    \frac{\operatorname{Var}_m[N_m^{\mathcal P}(\tau;W)]}
+    {\mathbb E_m[N_m^{\mathcal P}(\tau;W)]}.
+    \label{eq:ch09-transition-fano}
+\end{equation}
+Compute it separately for off-to-on and on-to-off events, and compare it with
+rate-matched control windows that have similar mean rate but are not near a
+state transition. Without this control, a Fano increase can be a trivial
+consequence of a rising mean rate rather than a pre-transition fluctuation
+signature.
+
+\paragraph{Transition-triggered dimensionality.}
+Let \(r(t)\in\mathbb R^Q\) be the vector of excitatory cluster rates, or
+\(\mathbb R^{2Q}\) if E and I rates are concatenated. Around transitions,
+there are two useful covariance matrices:
+\begin{equation}
+    C_{\mathrm{raw}}(\tau)
+    =
+    \operatorname{Cov}_m[r(t_m+\tau)],
+    \qquad
+    C_{\mathrm{res}}(\tau)
+    =
+    \operatorname{Cov}_m[
+    r(t_m+\tau)-\operatorname{TTA}_r(\tau)].
+    \label{eq:ch09-transition-covariances}
+\end{equation}
+The raw covariance reports the dimension of the whole transition cloud; the
+residual covariance reports variability around the mean transition path. Use
+\[
+    d_{\mathrm{PR}}(\tau)
+    =
+    \frac{\operatorname{Tr}(C(\tau))^2}{\operatorname{Tr}(C(\tau)^2)}
+\]
+for either covariance. In a stereotyped attractor-to-attractor transition,
+\(d_{\mathrm{PR}}\) should be small near the crossing after conditioning on
+the transition \(A\to B\). A chaotic transition ensemble may retain a larger
+residual dimension, especially away from the threshold crossing.
+
+\section{Fully Connected Scaling Regimes A, B, and C}
+\label{sec:ch09-abc-regimes}
+
+The roadmap separates three large-network limits for fully connected
+inter-cluster networks. Let \(Q\) be the number of clusters, \(n_c=n_E+n_I\)
+the neurons per cluster, and \(N^{\mathrm{tot}}=Qn_c\) the total neuron count.
+Inter-cluster weights have the template form
+\begin{equation}
+    J_{i_a^\alpha,j_b^\beta}
+    =
+    J_{\alpha\beta}^{\mathrm{base}}(Q,n_c)\,
+    \check j_{ab}^{\alpha\beta},
+    \qquad
+    \check j_{ab}^{\alpha\beta}\sim
+    \mathcal{N}\!\left(1,(\sigma_{\alpha\beta}^{\mathrm{het}})^2\right),
+    \quad a\ne b.
+    \label{eq:ch09-fully-connected-random-weights}
+\end{equation}
+All neurons in a given source-target cluster pair share the same pair factor
+\(\check j_{ab}^{\alpha\beta}\). The base scale
+\(J_{\alpha\beta}^{\mathrm{base}}(Q,n_c)\) is part of the model definition and
+must be written in the manifest; it may differ between dense, fixed-indegree,
+and mean-field templates.
+
+The following expression is only a channel-ranking heuristic, not a universal
+variance law. For one source cluster \(b\), the typical quenched spread of the
+\(\beta\to\alpha\) contribution to a cluster-averaged input is proportional to
+\begin{equation}
+    H_{ab}^{\alpha\beta}
+    =
+    n_\beta
+    \left(J_{\alpha\beta}^{\mathrm{base}}(Q,n_c)\right)^2
+    (\sigma_{\alpha\beta}^{\mathrm{het}})^2
+    r_b^\beta ,
+    \label{eq:ch09-pair-heterogeneity-score}
+\end{equation}
+up to synaptic filtering, correlations, and the details of the connectivity
+construction. The implementable diagnostic is empirical: store the four
+outside-cluster current components, compute their within-realization temporal
+variability and between-realization bias, and compare those quantities across
+the same \(Q,n_E,n_I,\kappa\) manifest grid. Finite-size population noise is
+tracked separately by \(\xi=1/\sqrt{n_E}\).
+
+\paragraph{Regime A: many clusters with fixed cluster size.}
+Here \(n_c\) is fixed and \(Q\to\infty\). The finite-size amplitude
+\(\xi=1/\sqrt{n_E}\) does not vanish. Quenched variability is also present.
+This regime is useful for studying switching, but it cannot by itself prove
+that switching survives the removal of finite-size effects.
+
+\paragraph{Regime B: few large clusters.}
+Here \(Q\) is fixed and \(n_c\to\infty\). The finite-size amplitude vanishes, leaving
+a deterministic low-dimensional cluster system with a finite number of random
+couplings. The dynamics can be very sensitive to the specific draw of
+\(\check j_{ab}^{\alpha\beta}\). This limit can show deterministic irregular
+activity, but it does not yet realize a many-unit dynamic mean-field limit.
+
+\paragraph{Regime C: many large clusters.}
+Here both \(Q\to\infty\) and \(n_c\to\infty\), for example
+\(Q=(N^{\mathrm{tot}})^\rho\) and
+\(n_c=(N^{\mathrm{tot}})^{1-\rho}\) with \(0<\rho<1\). The finite-size
+amplitude vanishes, but the number of random cluster couplings grows.
+This is the regime that most directly realizes Sompolinsky-Crisanti-Sommers
+style macroscopic chaos at the cluster level: many effective units, random
+couplings, no finite-size sampling noise required.
+
+\begin{table}[t]
+\centering
+\small
+\begin{tabularx}{\textwidth}{@{}p{0.16\textwidth}p{0.28\textwidth}p{0.22\textwidth}X@{}}
+\toprule
+\textbf{Regime} & \textbf{Scaling} & \textbf{Finite-size noise} & \textbf{Use in diagnosis} \\
+\midrule
+A & \(Q\to\infty\), fixed \(n_c\) & Remains because \(n_E\) is fixed & Many-cluster statistics with finite-size hopping still present. \\
+B & Fixed \(Q\), \(n_c\to\infty\) & Vanishes & Tests whether a particular finite cluster graph has deterministic irregular dynamics. \\
+C & \(Q\to\infty\), \(n_c\to\infty\) & Vanishes & Clean target for many-unit cluster-level chaos and DMFT comparison. \\
+\bottomrule
+\end{tabularx}
+\caption{A/B/C scaling regimes. The classification uses the manifest variables
+\(Q,n_E,n_I\) and the empirical current decompositions, not an assumed closed
+form for the input variance.}
+\label{tab:ch09-abc-regimes}
+\end{table}
+
+\section{Size, Disorder, and Validation Protocols}
+\label{sec:ch09-sweep-validation-protocols}
+
+The diagnostic program is a set of controlled sweeps. The same analysis code
+should run on spiking data, deterministic mesoscopic trajectories, and
+synthetic validation traces.
+
+\paragraph{Finite-size scaling protocol.}
+Choose an architecture, a cluster-strength setting, an inhibitory-clustering
+setting, and a quenched-disorder amplitude. Then run a size ladder
+\(n_E\in\{n_1,n_2,\ldots\}\) inside each cluster while holding \(Q\), the
+cluster-level weights, and the distribution of quenched couplings fixed. For
+each \(n_E\), use several connectivity realizations and long recordings. The
+primary response variable is a characteristic switch time:
+\[
+    T_{\mathrm{sw}}
+    \in
+    \{\text{mean active lifetime},\,
+    \text{median active lifetime},\,
+    \text{inverse transition rate}\}.
+\]
+Fit two deliberately simple alternatives:
+\begin{align}
+    \log T_{\mathrm{sw}}(n_E)
+    &=
+    a+b n_E
+    \quad\text{finite-size escape template,}
+    \notag\\
+    T_{\mathrm{sw}}(n_E)
+    &=
+    T_\infty + \frac{b}{n_E}
+    \quad\text{chaotic plateau template.}
+    \label{eq:ch09-size-scaling-fits}
+\end{align}
+These are diagnostic templates, not exact laws. The finite-size interpretation
+is credible only if the plateau fit fails and switches become right-censored
+as \(n_E\) grows. The chaos interpretation is credible only if \(T_\infty\) is
+positive, the same parameter point has a positive mesoscale Lyapunov estimate,
+and the autocorrelation width is stable across the size ladder.
+
+\paragraph{Quenched-disorder sweep protocol.}
+At one or more large local population sizes, sweep the heterogeneity coordinate
+\(\kappa\) while keeping mean weights, balance parameters, and depression rules
+fixed. For each \(\kappa\), separate total rate variability into a
+within-realization and a between-realization component:
+\begin{equation}
+    \operatorname{Var}_{t,G}(r_a)
+    =
+    \mathbb E_G[\operatorname{Var}_t(r_a\mid G)]
+    +
+    \operatorname{Var}_G(\mathbb E_t[r_a\mid G]),
+    \label{eq:ch09-time-realization-variance-split}
+\end{equation}
+and, when input currents are stored, split the first term into
+within-cluster E/I and outside-cluster E/I components. The first term measures
+within-realization temporal dynamics; the second measures sample-to-sample
+biases from the quenched draw. A genuine chaotic regime should not be reduced
+to a few static high-rate clusters selected by the draw; it should show
+within-realization temporal variability, positive instability, and broad state
+exploration.
+
+\paragraph{Network-generation pseudocode for diagnostic sweeps.}
+The connectivity generator should be deterministic given a seed and should
+return all random objects needed for reproducibility:
+\begin{enumerate}
+    \item assign neuron labels \((a,\alpha,i)\) with cluster \(a\), type
+    \(\alpha\in\{E,I\}\), and within-cluster index \(i\);
+    \item draw or construct fixed indegrees for every postsynaptic population
+    block, separating within-cluster and outside-cluster sources;
+    \item apply potentiation factors to within-cluster blocks and compensating
+    depression factors to outside-cluster blocks;
+    \item draw quenched pair factors or adjacency variables for outside-cluster
+    blocks, enforcing the intended sign convention for E and I weights;
+    \item write a connectivity manifest containing seed, indegrees, realized
+    in-degree histograms, mean block weights, and block-weight variances.
+\end{enumerate}
+The manifest is part of the data, not bookkeeping. It is what allows the
+diagnostic code to know whether a change in switching came from \(\xi\),
+\(\kappa\), or an unintended drift in mean input.
+
+\paragraph{Validation battery.}
+Before analyzing research runs, the numerical pipeline should pass the
+following tests.
+\begin{enumerate}
+    \item A homogeneous Poisson spike train has Fano factor near one after
+    binning and a flat shift-corrected autocorrelation away from zero lag.
+    \item A synthetic two-state telegraph process is recovered by the state
+    detector with the correct lifetimes, transition times, and active-count
+    distribution.
+    \item An Ornstein-Uhlenbeck rate process produces the expected zero-lag
+    cusp, and a smooth deterministic test signal produces \(k_\xi\approx 0\)
+    under the kink fit.
+    \item A known stable linear rate system gives \(\lambda_{\max}<0\), and a
+    reference chaotic rate model gives a positive exponent with the Benettin or
+    QR implementation.
+    \item Replaying the same stochastic streams in two unperturbed spiking
+    copies produces identical trajectories up to numerical precision; replaying
+    independent streams is treated as a noise-control experiment, not a
+    Lyapunov experiment.
+    \item Varying the activity threshold, filter width, and minimum dwell time
+    within a prespecified range does not change the qualitative phase label of
+    a robust parameter point.
+\end{enumerate}
+
+\section{Finite-Size Effects Versus Mesoscopic Chaos}
+\label{sec:ch09-decision-table}
+
+The diagnostics are strongest when they agree:
+\begin{itemize}
+    \item If \(T_{\mathrm{sw}}\) diverges as \(\xi\to 0\), perturbations recover,
+    the zero-lag autocorrelation has a shrinking finite-size kink, and
+    \(\lambda_{\max}\le 0\), the evidence favors finite-size multistability.
+    \item If \(T_{\mathrm{sw}}\) plateaus as \(\xi\to 0\), infinitesimal
+    perturbations diverge, the broad autocorrelation persists without a
+    finite-size kink, and \(\lambda_{\max}>0\), the evidence favors mesoscopic
+    chaos.
+\end{itemize}
+Intermediate regimes are expected. A network may have stable basins at small
+\(\kappa\), deterministic chaos at large \(\kappa\), and a mixed region where
+finite-size noise and chaotic instability both influence transitions. The point
+of the diagnostic program is to map that region rather than collapse it into a
+single label.
+
+\section{Chapter Summary}
+\label{sec:ch09-summary}
+
+The distinction between multistability and chaos is a distinction between
+mechanisms, not appearances. The finite-size amplitude
+\(\xi=1/\sqrt{n_E}=(\gamma n_c)^{-1/2}\) and quenched heterogeneity \(\kappa\)
+organize the tests. A reproducible analysis starts by mapping spikes to
+filtered cluster rates and threshold-defined state vectors with documented
+filters, thresholds, and dwell-time rules. Network-size scaling asks whether
+switch times plateau or diverge. Common-noise perturbation experiments and
+deterministic Benettin or QR tangent algorithms ask whether nearby cluster-rate
+trajectories recover or separate. Autocorrelation shape, especially the
+zero-lag kink, separates fast finite-size noise from smooth deterministic rate
+fluctuations. Transition-triggered Fano factors, dimensionality, current
+variance decompositions, and cross-correlations identify which currents and
+variances precede state changes. Regime C, with many large clusters, is the
+clean mathematical limit for SCS-like macroscopic chaos without finite-size
+effects, and the validation battery is what keeps this classification from
+being an artifact of binning, thresholds, or random seeds.

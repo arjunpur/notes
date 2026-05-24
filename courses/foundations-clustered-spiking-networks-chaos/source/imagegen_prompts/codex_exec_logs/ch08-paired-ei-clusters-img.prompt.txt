@@ -1,0 +1,36 @@
+You are a non-interactive Codex image generation worker for one lecture-note diagram.
+
+Use the imagegen skill and the built-in Codex image_gen image generation tool available in this Codex session. This must use the user's Codex subscription path.
+
+Do not use OPENAI_API_KEY.
+Do not call the OpenAI API directly.
+Do not call /Users/arjun/.codex/skills/.system/imagegen/scripts/image_gen.py.
+Do not synthesize the final image with Python/Pillow/SVG/canvas.
+
+Task:
+1. Generate exactly one raster image using the prompt below.
+2. Save or copy the final generated image to this exact workspace path:
+   /Users/arjun/repos/lecture-notes/courses/foundations-clustered-spiking-networks-chaos/figures/imagegen/ch08-paired-ei-clusters-img.png
+3. Create parent directories if needed. Overwrite only this exact output path if needed.
+4. Write the path of the original generated image cache file, if known, to:
+   /Users/arjun/repos/lecture-notes/courses/foundations-clustered-spiking-networks-chaos/figures/imagegen/ch08-paired-ei-clusters-img.source.txt
+5. Verify that the output path exists and is non-empty.
+
+Asset id: ch08-paired-ei-clusters-img
+Target filename: figures/imagegen/ch08-paired-ei-clusters-img.png
+Caption intent: Explain a paired E/I cluster as a two-population mesoscale unit with potentiated within-pair E and I motifs and depressed between-pair interactions that preserve balanced recurrent drive.
+Overlay suggestion for later exact labels: Overlay simple labels `E`, `I`, `J_E+`, `J_I+`, `J_E-`, and `J_I-` if needed; detailed definitions of the potentiation and depression factors should stay in the caption.
+Review notes: Check that inhibitory clustering is visibly paired with excitation, not drawn as a homogeneous global inhibitory pool. Check that depressed between-pair interactions are visually weaker than within-pair interactions.
+
+Prompt to use with image_gen:
+Use case: scientific-educational
+Asset type: lecture-note raster infographic
+Primary request: Create a schematic of paired excitatory-inhibitory clusters. Each cluster should contain one excitatory population and one inhibitory population, with strengthened within-pair interactions and weaker depressed interactions between distinct pairs. The diagram should make the pair look like a single mesoscale unit rather than two unrelated populations.
+Composition: 16:10 horizontal composition suitable for a PDF figure. Arrange three paired clusters across the canvas, each as a compact E/I module, with the central pair emphasized and neighboring pairs slightly smaller. Use arrows for within-pair and between-pair couplings without overcrowding.
+Required visual elements: Within each pair, show an E node and an I node with internal arrows. Use thicker arrows for potentiated within-pair couplings and thinner muted arrows for between-pair couplings. Include a subtle block-matrix inset showing strong diagonal pair blocks and weaker off-diagonal blocks. The figure is conceptual and schematic.
+Sparse in-image labels: `E`, `I`, `J_E+`, `J_I+`, `J_E-`, `J_I-`
+Style: Clean, modern, textbook-quality scientific diagram with high contrast, readable arrows, generous whitespace, no watermark, no logos, no decorative stock imagery.
+Avoid: Crowded all-to-all wiring, full equations, long explanatory labels, photorealistic neurons, decorative graph art, and colors that make excitation and inhibition hard to distinguish.
+
+When finished, reply only with compact JSON like:
+{"status":"generated","asset_id":"ch08-paired-ei-clusters-img","path":"/Users/arjun/repos/lecture-notes/courses/foundations-clustered-spiking-networks-chaos/figures/imagegen/ch08-paired-ei-clusters-img.png"}

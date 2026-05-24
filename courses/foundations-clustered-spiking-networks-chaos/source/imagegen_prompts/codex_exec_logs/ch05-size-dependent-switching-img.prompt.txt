@@ -1,0 +1,36 @@
+You are a non-interactive Codex image generation worker for one lecture-note diagram.
+
+Use the imagegen skill and the built-in Codex image_gen image generation tool available in this Codex session. This must use the user's Codex subscription path.
+
+Do not use OPENAI_API_KEY.
+Do not call the OpenAI API directly.
+Do not call /Users/arjun/.codex/skills/.system/imagegen/scripts/image_gen.py.
+Do not synthesize the final image with Python/Pillow/SVG/canvas.
+
+Task:
+1. Generate exactly one raster image using the prompt below.
+2. Save or copy the final generated image to this exact workspace path:
+   /Users/arjun/repos/lecture-notes/courses/foundations-clustered-spiking-networks-chaos/figures/imagegen/ch05-size-dependent-switching-img.png
+3. Create parent directories if needed. Overwrite only this exact output path if needed.
+4. Write the path of the original generated image cache file, if known, to:
+   /Users/arjun/repos/lecture-notes/courses/foundations-clustered-spiking-networks-chaos/figures/imagegen/ch05-size-dependent-switching-img.source.txt
+5. Verify that the output path exists and is non-empty.
+
+Asset id: ch05-size-dependent-switching-img
+Target filename: figures/imagegen/ch05-size-dependent-switching-img.png
+Caption intent: Make the finite-size prediction visually explicit: smaller clusters have larger fluctuation scale and frequent active-set switching, while larger clusters have smaller fluctuations and longer-lived attractor-like states.
+Overlay suggestion for later exact labels: Add exact caption or overlay equation after generation if needed: `\xi=1/\sqrt{n_E}`; keep `N_c=107` and `N_c=250` only as illustrative roadmap examples.
+Review notes: Check that switching frequency decreases with larger cluster size, that the diagram remains schematic rather than empirical, and that the basin/traces comparison does not imply a change in deterministic parameters other than finite-size scale.
+
+Prompt to use with image_gen:
+Use case: scientific-educational
+Asset type: lecture-note raster infographic
+Primary request: Create a schematic comparison of finite-size metastable switching for small versus large clusters. Show that larger per-cluster population size reduces the noise scale and makes basin crossings rarer, without presenting the curves as measured simulation data.
+Composition: 16:10 horizontal composition suitable for a PDF figure. Use two horizontally aligned panels: left panel for smaller clusters with a noisy trajectory crossing between two shallow basins and a rapidly switching two-level activity trace; right panel for larger clusters with smaller fluctuations confined inside one basin and a mostly stable activity trace.
+Required visual elements: paired basin cartoons, paired schematic time traces underneath or beside them, visibly larger fluctuation envelope on the small-cluster side, visibly smaller fluctuation envelope on the large-cluster side, and arrows indicating rarer basin crossing as cluster size grows.
+Sparse in-image labels: N_c=107, N_c=250, xi, S(t), time
+Style: clean, modern, textbook-quality lecture-note raster infographic with generous whitespace, high contrast, no watermark, no logos, no decorative stock imagery. Keep axes minimal and schematic, with no tick marks or numerical claims beyond the sparse labels.
+Avoid: exact equations inside the generated image, noisy plots that look like real data, too many traces, unreadable axis labels, photorealistic backgrounds, and suggesting that the two example cluster sizes are universal constants.
+
+When finished, reply only with compact JSON like:
+{"status":"generated","asset_id":"ch05-size-dependent-switching-img","path":"/Users/arjun/repos/lecture-notes/courses/foundations-clustered-spiking-networks-chaos/figures/imagegen/ch05-size-dependent-switching-img.png"}

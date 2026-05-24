@@ -60,6 +60,42 @@
         "Viterbi algorithm"
       ],
       "lecture_date": "2026-05-08"
+    },
+    {
+      "lecture_slug": "ica-introduction",
+      "title": "Independent Component Analysis: Introduction",
+      "slide_filename": "Lecture 21 - ICA Introduction.pdf",
+      "chapter_paths": [
+        "chapters/ch04-independent-component-analysis/ch04.tex"
+      ],
+      "aliases": [
+        "Lecture 21 - ICA Introduction",
+        "Independent Component Analysis",
+        "ICA",
+        "Blind Source Separation",
+        "BSS",
+        "cocktail party problem",
+        "decorrelation vs independence",
+        "ICA identifiability"
+      ]
+    },
+    {
+      "lecture_slug": "infomax-ica",
+      "title": "ICA: The Infomax Method",
+      "slide_filename": "Lecture 22 - Infomax ICA.pdf",
+      "chapter_paths": [
+        "chapters/ch04-independent-component-analysis/ch04.tex"
+      ],
+      "aliases": [
+        "Lecture 22 - Infomax ICA",
+        "ICA Infomax",
+        "Infomax method",
+        "Bell-Sejnowski",
+        "natural gradient ICA",
+        "ICA learning rule",
+        "source CDF",
+        "entropy maximization"
+      ]
     }
   ]
 }
