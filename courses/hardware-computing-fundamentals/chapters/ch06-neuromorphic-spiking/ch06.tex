@@ -5,13 +5,16 @@
 \begin{figure}[h]
   \centering
   \includegraphics[width=\textwidth]{spiking-neuromorphic.png}
-  \caption{A raster teaching plate for spiking systems. The left side shows leaky integrate-and-fire dynamics: weighted input spikes raise membrane potential, leak pulls it down, threshold creates an output spike, and reset restarts the cycle. The center shows spike trains, event cameras, and surrogate gradients. The right and lower panels compare dense clocked computation with sparse event-driven routing.}
-  \label{fig:spiking-neuromorphic}
+  \caption{A raster teaching plate for spiking systems. The left side shows leaky integrate-and-fire dynamics: weighted input spikes raise membrane potential, leak pulls it down, threshold creates an output spike, and reset restarts the cycle. The center shows spike trains, event cameras, and surrogate gradients. The right and lower panels compare dense clocked computation with sparse event-driven routing.}\label{fig:spiking-neuromorphic}
 \end{figure}
 
-Most deep learning models pass continuous activations from layer to layer. Spiking neural networks pass events. A spike is a discrete event in time. Instead of saying, ``neuron \(i\) has activation 0.73,'' an SNN says, ``neuron \(i\) fired at these times.''
+Most deep learning models pass continuous activations from layer to layer. Spiking neural networks pass events. A spike is a discrete event in time. Instead of assigning neuron \(i\) a continuous activation such as \(0.73\), an SNN records the times when neuron \(i\) fired.
 
-This can be useful when the world is sparse in time. An event camera does not send a full image every frame. It sends changes in brightness at pixels. If nothing changes, little or nothing is sent. A neuromorphic chip can exploit this by waking computation only for events.
+This is not just a different notation. It changes the workload. A dense neural network layer usually asks hardware to multiply and add many numbers on every inference step. A spiking layer asks hardware to update state when events arrive, and to route a compact message when a neuron fires. The useful question is therefore not whether spikes are more brain-like. The useful question is whether the task, representation, and hardware let the system skip real work.
+
+This can be useful when the world is sparse in time. An event camera does not send a full image every frame. It sends changes in brightness at pixels. If nothing changes, little or nothing is sent. A neuromorphic chip can exploit this by waking computation only for events. A low-power keyword detector, vibration monitor, or robot reflex controller has a similar shape: most of the time there is no important change, but when change appears the system should react quickly.
+
+The substrate theme is concrete here. Wet, noisy brains communicate with spikes, operate with local cellular state, and use time as part of the representation. GPUs encourage a different style: dense differentiable tensor programs, batched matrix multiplication, and global memory movement. Neuromorphic and event-driven substrates sit closer to the first pattern, but only when the algorithm keeps computation sparse, temporal, and local all the way down to execution.
 
 \begin{aside}[Core workflow]
 For spiking systems, start from the event representation, choose the neuron dynamics, simulate the temporal state, and only then ask whether a neuromorphic platform can exploit the sparsity. A spiking model simulated densely is not automatically hardware-efficient.
@@ -33,7 +36,34 @@ with a spike rule:
   \text{emit spike and set } V(t) \leftarrow V_{\text{reset}}.
 \]
 
-Here \(\tau_m\) is a membrane time constant, \(R\) is an effective resistance, and \(I(t)\) is input current. The equation integrates inputs over time but forgets old input through leak.
+Read this equation term by term:
+
+\begin{itemize}[leftmargin=*]
+  \item \(V(t)\) is the neuron's internal voltage-like state at time \(t\).
+  \item \(V_{\text{rest}}\) is the resting value that the membrane drifts toward when there is no input.
+  \item \(\tau_m\) is the membrane time constant. A large \(\tau_m\) means slow forgetting; a small \(\tau_m\) means old input fades quickly.
+  \item \(\frac{\dd V}{\dd t}\) is the rate of change of the membrane potential.
+  \item \(-(V - V_{\text{rest}})\) is the leak term. If \(V\) is above rest, the term pulls it downward. If \(V\) is below rest, it pulls it upward.
+  \item \(I(t)\) is input current from incoming spikes or external input.
+  \item \(R\) is an effective resistance that converts input current into a voltage contribution.
+  \item \(V_{\text{th}}\) is the firing threshold, and \(V_{\text{reset}}\) is the value assigned after a spike.
+\end{itemize}
+
+The model integrates inputs over time but forgets old input through leak. That is the core mechanism. A weak input may still matter if several spikes arrive close together before leak erases them. The same input spread across a long time may never cross threshold.
+
+Simulators and chips often use a discrete-time approximation:
+\[
+  V_{t+1}
+  =
+  \alpha V_t + (1-\alpha)V_{\text{rest}} + (1-\alpha) R I_t
+\]
+followed by the same threshold-and-reset rule. Here \(t\) indexes simulation steps, \(I_t\) is the input current held during one step, \(R I_t\) is the steady voltage the current would drive the membrane toward, and \(\alpha\) is a leak factor between 0 and 1. The factor \((1-\alpha)\) scales both the drift toward rest and the current contribution over the finite timestep. A common relationship is
+\[
+  \alpha \approx e^{-\Delta t / \tau_m},
+\]
+where \(\Delta t\) is the simulation timestep. If \(\Delta t\) is small compared with \(\tau_m\), then \(\alpha\) is close to 1 and the neuron remembers more from the previous step. If \(\Delta t\) is large, \(\alpha\) is smaller and the simulated membrane decays more per step.
+
+The reset rule also matters. A hard reset sets \(V\) directly to \(V_{\text{reset}}\). A subtractive reset subtracts the threshold amount and preserves any excess voltage. The two choices can produce different spike counts when inputs are strong. Hardware implementations must pick a concrete reset behavior; the word ``spiking'' alone is not enough to define the computation.
 
 \subsection{Spike Trains}
 
@@ -46,9 +76,25 @@ where \(t_k\) are spike times. In simulation, time is often discretized:
   S_t \in \{0,1\}.
 \]
 
-Rate coding uses spike count over a window. Temporal coding uses exact spike timing. Population coding uses patterns across many neurons. The right code depends on the task and hardware.
+In the continuous expression, each \(\delta(t - t_k)\) marks one spike at time \(t_k\). The sum over \(k\) collects all spikes in the train. In the discrete expression, \(S_t = 1\) means a spike occurred in time bin \(t\), and \(S_t = 0\) means it did not. Some models allow integer counts per bin, but binary spikes are the simplest starting point.
+
+Rate coding uses spike count over a window:
+\[
+  r = \frac{N_{\text{spikes}}}{T}.
+\]
+Here \(N_{\text{spikes}}\) is the number of spikes counted and \(T\) is the duration of the measurement window. The rate \(r\) is easy to average and compare with conventional activations, but it may require waiting long enough to count many spikes.
+
+Temporal coding uses exact spike timing. A neuron that fires after 3 ms may mean something different from one that fires after 30 ms, even if each fires once. This can reduce latency when early spikes carry enough information. Population coding uses patterns across many neurons: one neuron alone may be ambiguous, but a coordinated pattern across a group can represent direction of motion, sound class, or control state.
 
 This is the first interpretive choice. A rate code turns the spike train into a smoother statistic. A temporal code preserves precise timing. A population code treats the pattern across neurons as the variable. Different choices can imply different hardware behavior because they change how much state must be stored and how often events must be routed.
+
+A simple sparsity diagnostic is:
+\[
+  \text{spike sparsity}
+  =
+  1 - \frac{N_{\text{spikes}}}{N_{\text{neurons}}N_{\text{steps}}}.
+\]
+The denominator is the number of possible neuron-time slots in the simulation. The numerator is the number of slots that actually produced spikes. If sparsity is near 1, most slots were silent. This statistic is only a starting point: it predicts savings only if the hardware and software skip silent slots instead of representing them as zeros in dense tensors.
 
 \subsection{Surrogate Gradients}
 
@@ -63,6 +109,28 @@ where \(H\) is a step function. Backward pass: pretend the derivative is a smoot
 \begin{aside}[Surrogate gradient intuition]
 The model still emits discrete spikes in the forward pass. During learning, the optimizer receives a useful hint about how close the membrane potential was to threshold.
 \end{aside}
+
+The terms in the forward equation are simple. \(V_t\) is the membrane potential at timestep \(t\). \(V_{\text{th}}\) is the firing threshold. The difference \(V_t - V_{\text{th}}\) asks whether the neuron is below or above threshold. The step function \(H\) returns 0 below threshold and 1 at or above threshold.
+
+The training trick is that the backward pass uses an artificial derivative such as a triangular, sigmoid-like, or clipped linear curve around threshold. Far below threshold the derivative is near zero because changing the voltage a little would still not produce a spike. Near threshold the derivative is larger because a small voltage change could alter spike timing or spike presence. This is an approximation, not a biological claim.
+
+Surrogate-gradient SNNs are often trained on GPUs because the training loop still uses tensors, automatic differentiation, and many timesteps. Deployment is a separate question. A trained model may become attractive on event-driven hardware if inference spikes are sparse and if the chip can route spikes without dense matrix work at every time bin.
+
+\subsection{Locality and Learning Rules}
+
+Locality is one reason neuromorphic systems are interesting. A local computation uses information available near a neuron or synapse: pre-synaptic spikes, post-synaptic spikes, local membrane state, and local weights. A global computation requires distant information such as full activation tensors, large gradient arrays, or synchronized updates across many devices.
+
+A classic local learning rule is spike-timing-dependent plasticity, usually shortened to STDP\@. In a simplified form:
+\[
+  \Delta w =
+  \begin{cases}
+    A_+ e^{-\Delta t / \tau_+}, & \Delta t > 0,\\
+    -A_- e^{\Delta t / \tau_-}, & \Delta t < 0.
+  \end{cases}
+\]
+Here \(\Delta w\) is the change to a synaptic weight. \(\Delta t = t_{\text{post}} - t_{\text{pre}}\) is the time of the post-synaptic spike minus the time of the pre-synaptic spike. If \(\Delta t > 0\), the pre-synaptic neuron fired before the post-synaptic neuron, and the first line increases the weight by an amount controlled by \(A_+\) and decay time \(\tau_+\). If \(\Delta t < 0\), the post-synaptic neuron fired first, and the second line decreases the weight by an amount controlled by \(A_-\) and \(\tau_-\). Spikes close together in time cause larger changes than spikes far apart.
+
+STDP is useful as a hardware literacy example because it shows what ``local'' can mean. The synapse does not need a full backpropagation graph to apply this rule. It needs recent spike traces and a local weight. That locality can reduce data movement, but it also limits what the rule can optimize. Modern high-accuracy AI systems often rely on global credit assignment, large datasets, and backpropagation. Neuromorphic research explores where local or partially local rules are good enough, or where they can be combined with offline training.
 
 \subsection{Practical SNN Tooling}
 
@@ -85,7 +153,13 @@ loss.backward()   # surrogate gradients handle spike non-differentiability
 optimizer.step()
 \end{lstlisting}
 
+This loop hides an important cost. If \texttt{num\_steps} is large, the model stores or recomputes state for many time bins. If \texttt{event\_batch} is represented as a dense tensor full of zeros, the GPU may still touch many silent entries. That can be the right way to train, but it should not be confused with event-driven execution.
+
 Neuromorphic datasets often include event-based vision data, spoken digits encoded as spikes, or synthetic spike streams. DVS-style datasets come from dynamic vision sensors. SHD-style datasets represent audio as spike events. The important shift is that input is not a dense frame at every time; it is a sparse stream of changes.
+
+A concrete event-camera example is gesture recognition. A person moves a hand in front of a dynamic vision sensor. Pixels emit events when brightness changes, so the stream naturally emphasizes moving edges. A conventional vision pipeline might accumulate events into frames and use a CNN\@. A spiking or event-driven pipeline might update only the neurons connected to recently active pixels, producing a decision after enough early motion evidence has arrived. The second approach is attractive only if event accumulation, routing, and inference do less work than dense frame processing.
+
+Another example is always-on audio or vibration monitoring. A tiny sensor node may spend most of its lifetime listening for rare events: a wake word, abnormal motor vibration, glass breakage, or a biological signal crossing a threshold. Event-driven processing can reduce average power because silence should not require dense tensor inference at a fixed frame rate.
 
 \subsection{A First SNN Experiment}
 
@@ -98,17 +172,53 @@ A useful beginner experiment has three runs:
 
 The comparison should not ask only which accuracy is higher. It should ask how many events were processed, how many timesteps were simulated, whether silent periods were skipped, and whether the implementation actually avoided work. This makes the hardware question concrete.
 
+Useful measurements include:
+
+\begin{itemize}[leftmargin=*]
+  \item accuracy or task loss, so the comparison is not only about efficiency;
+  \item total input events, internal spikes, and output spikes;
+  \item spike sparsity by layer and by timestep;
+  \item latency to first correct decision, not just final-window accuracy;
+  \item energy per event or energy per inference when hardware counters are available;
+  \item runtime and memory traffic for the actual implementation being used.
+\end{itemize}
+
+Energy per event is often reported as:
+\[
+  E_{\text{event}} =
+  \frac{E_{\text{total}}}{N_{\text{events}}}.
+\]
+Here \(E_{\text{total}}\) is measured energy for the run and \(N_{\text{events}}\) is the number of routed or processed events. This number is helpful only when the measurement boundary is named. Energy per input event, per synaptic event, and per chip event can be different quantities.
+
+Latency can also be tied to spikes. For a classifier that accumulates evidence over time, one simple metric is:
+\[
+  L_{\text{decision}} = t_{\text{decision}} - t_{\text{first event}}.
+\]
+Here \(t_{\text{first event}}\) is when useful input activity begins, and \(t_{\text{decision}}\) is when the model first reaches a stable decision rule. This matters in robotics and safety sensing, where an early adequate response may be more valuable than a slightly more accurate late response.
+
 \subsection{Neuromorphic Hardware}
 
 Neuromorphic platforms include Loihi-like chips, SpiNNaker-like many-core event-routing machines, BrainScaleS-like mixed-signal systems, and research analog or mixed-signal substrates. You do not need to master all of them at the start. You should know what makes them different from GPUs:
 
 \begin{itemize}[leftmargin=*]
-  \item They often communicate with spikes or events.
-  \item They may use asynchronous or event-driven execution.
-  \item Memory and compute may be colocated near neurons or synapses.
-  \item They can be energy-efficient for sparse temporal workloads.
-  \item Their software ecosystem is less general than mainstream GPU frameworks.
+  \item They often communicate with spikes or events rather than dense activation tensors.
+  \item They may use asynchronous or event-driven execution, where activity is triggered by arriving events rather than a global dense clock step.
+  \item Memory and compute may be colocated near neurons or synapses, reducing long-distance weight and activation movement.
+  \item They can be energy-efficient for sparse temporal workloads because inactive neurons and synapses may do little or no work.
+  \item Their software ecosystem is less general than mainstream GPU frameworks, and mapping a model to a chip can require restrictive neuron, routing, precision, or memory choices.
 \end{itemize}
+
+The hardware family is broad, so precision matters:
+
+\begin{itemize}[leftmargin=*]
+  \item Digital neuromorphic chips represent state with digital circuits. They can be more reproducible and programmable, but they still must pay for memory, routing, and control.
+  \item Analog and mixed-signal neuromorphic chips use physical device behavior for parts of the computation. They may be very efficient, but device mismatch, noise, calibration, limited precision, and temperature sensitivity become part of the engineering problem.
+  \item Many-core event-routing machines emphasize communication among many simple cores. They are useful for large spiking simulations, but event routing can become the bottleneck if traffic is heavy or poorly balanced.
+\end{itemize}
+
+Asynchronous event routing means that an event carries an address or neuron identifier through an on-chip network to its targets. This differs from a dense GPU kernel that reads contiguous tiles of memory and performs regular matrix operations. Event routing can save work when events are sparse. It can lose efficiency when events are dense, irregular, or require many destinations, because routing metadata and network contention become real costs.
+
+Memory locality is equally important. A synaptic event usually needs a weight and a destination state update. If those weights and states live near the processing element, the event can be cheap. If each event triggers distant memory traffic, the system may spend its budget moving small pieces of data. This is the same hardware lesson as earlier chapters, but with events instead of tensor tiles.
 
 \subsection{When SNNs Help}
 
@@ -124,28 +234,57 @@ SNNs are not automatically better. They are promising when:
 
 They are less compelling if you simulate dense spike tensors inefficiently on hardware that cannot exploit event sparsity. A dense SNN simulation on a GPU may be slower and more complex than a conventional neural network.
 
+Good candidate applications usually have at least one of these concrete patterns:
+
+\begin{itemize}[leftmargin=*]
+  \item Event-camera perception, where motion produces sparse pixel events and early response matters.
+  \item Always-on sensing, where average power matters more than peak throughput.
+  \item Closed-loop robotics control, where sensor spikes, control updates, and actuator feedback form a temporal loop.
+  \item Spiking approximations to trained neural networks, where a conventional model is converted or retrained to use spikes for lower-power inference.
+  \item Temporal pattern recognition, where the order and timing of events carry information that would be blurred by frame averaging.
+\end{itemize}
+
+The limits are just as important. Mainstream deep learning accelerators are extremely good at dense matrix multiplication, convolution, attention, and batched inference. SNNs often trail dense models on large benchmark tasks unless carefully trained, converted, or matched to event data. Spike sparsity can also disappear inside a network if thresholds are too low, timesteps are too many, or the model uses dense readout layers. The fair comparison is not brain-inspired versus GPU\@. It is executed workload versus executed workload, including accuracy, latency, energy, software maturity, and engineering effort.
+
 \subsection{Next steps}
 
-For this chapter, the mathematical object is a spike train coupled to a membrane state. The empirical diagnostic is event count over time, spike sparsity, accuracy, and energy or runtime when available. The failure mode is mistaking biological inspiration for computational efficiency.
+For this chapter, the mathematical object is a spike train coupled to a membrane state. The empirical diagnostic is event count over time, spike sparsity, accuracy, latency, and energy or runtime when available. The failure mode is mistaking biological inspiration for computational efficiency.
+
+The practical mental model is:
+
+\begin{aside}[One-sentence model]
+Spiking systems are attractive when time, sparsity, and locality are real properties of the workload and the hardware can exploit them without reintroducing dense work elsewhere.
+\end{aside}
 
 \begin{chaptersummary}
 \begin{itemize}[leftmargin=*]
   \item SNNs communicate events over time rather than dense activations alone.
-  \item Leaky integrate-and-fire neurons integrate input, leak, threshold, spike, and reset.
+  \item Leaky integrate-and-fire neurons integrate input, leak toward rest, compare against a threshold, spike, and reset.
+  \item Spike trains can be interpreted through rate codes, temporal codes, or population codes, each with different latency and hardware implications.
   \item Surrogate gradients make spike-based models trainable with backpropagation-style methods.
+  \item Local learning rules such as STDP illustrate why neuromorphic systems emphasize nearby state, but local rules do not automatically replace global credit assignment.
   \item Event-based datasets and neuromorphic chips matter because they can exploit sparse temporal structure.
-  \item The practical question is whether sparsity survives all the way to the hardware execution path.
+  \item Hardware claims must distinguish digital, analog, mixed-signal, asynchronous routing, memory locality, precision, noise, and software constraints.
+  \item The practical question is whether sparsity, timing, and locality survive all the way to the hardware execution path.
 \end{itemize}
 \end{chaptersummary}
 
 \begin{conceptquestions}
 \item What does the leak term do in a leaky integrate-and-fire neuron?
+\item In the discrete membrane update, what does the leak factor \(\alpha\) control?
+\item What is the difference between a rate code and a temporal code?
 \item Why does spike discontinuity create a training problem?
+\item Why is surrogate-gradient training an engineering approximation rather than a claim about biological learning?
 \item Why might an event camera pair naturally with neuromorphic hardware?
+\item What does it mean for a learning rule or hardware update to be local?
+\item Why can a sparse SNN still fail to save energy on a GPU\@?
 \end{conceptquestions}
 
 \begin{exercises}
-\item Simulate a leaky integrate-and-fire neuron receiving three input spikes. Sketch how the membrane potential changes if the leak is weak versus strong.
+\item Simulate a leaky integrate-and-fire neuron receiving three input spikes. Sketch how the membrane potential changes if the leak is weak versus strong, and mark threshold, spike time, and reset.
+\item For \(\alpha \approx e^{-\Delta t/\tau_m}\), explain what happens to memory of the previous voltage when \(\Delta t\) becomes larger while \(\tau_m\) stays fixed.
+\item A layer has \(1000\) neurons simulated for \(50\) timesteps and produces \(2500\) spikes. Compute spike sparsity using \(1 - N_{\text{spikes}}/(N_{\text{neurons}}N_{\text{steps}})\). Then explain why this number alone does not prove an energy saving.
 \item Explain surrogate gradients in one paragraph without using calculus notation. What is different in the forward and backward passes?
-\item Design a tiny experiment comparing dense-frame processing to event processing. What measurements would prove that the event representation saved real work?
+\item Design a tiny experiment comparing dense-frame processing to event processing for gesture recognition or always-on audio. What measurements would prove that the event representation saved real work?
+\item Pick one neuromorphic hardware style: digital event-driven, many-core event routing, or analog/mixed-signal. Name one advantage, one implementation constraint, and one workload where the advantage might matter.
 \end{exercises}

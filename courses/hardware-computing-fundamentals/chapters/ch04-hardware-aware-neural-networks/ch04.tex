@@ -9,16 +9,18 @@
   \label{fig:profiling-compute-graph}
 \end{figure}
 
-PyTorch, TensorFlow, and JAX let you write model code as tensor operations. That abstraction is productive, but the hardware executes kernels. A kernel is a compiled low-level operation launched on an accelerator. One Python line can call one large optimized kernel, many small kernels, or a compiler graph that fuses several operations.
+PyTorch, TensorFlow, and JAX let you write model code as tensor operations. That abstraction is productive, but the machine does not execute ``a transformer'' or ``a layer.'' It executes kernels, memory copies, synchronization events, and communication calls. A \emph{kernel} is a compiled low-level operation launched on a CPU, GPU, TPU-like accelerator, or other device. One Python line can call one large optimized kernel, many tiny kernels, or a compiler-generated graph that fuses several operations.
 
-Hardware-aware implementation means learning to read both levels:
+Hardware-aware neural-network implementation means learning to read two views at the same time:
 
 \begin{itemize}[leftmargin=*]
-  \item the \textbf{compute graph}: what tensor operations define the model;
-  \item the \textbf{runtime trace}: what actually happened on CPU, device, memory, and interconnect.
+  \item the \textbf{compute graph}: the tensor operations that define the model;
+  \item the \textbf{runtime trace}: the events that actually happened on the CPU, accelerator, memory system, and interconnect.
 \end{itemize}
 
-The graph asks, ``What should be computed?'' The trace asks, ``Where did time and memory go?''
+The graph asks, ``What should be computed?'' The trace asks, ``Where did time, memory, and bandwidth go?'' Both views matter. A mathematically elegant graph can still run poorly if it creates many small kernels, awkward tensor layouts, unnecessary transfers, or shapes that miss the accelerator's fast paths.
+
+This is the practical version of the substrate theme of the course. Available hardware does not merely accelerate a fixed idea of intelligence. It changes which model forms are cheap enough to explore. Dense GPUs made large matrix-heavy deep learning unusually attractive. Wet, noisy nervous systems make sparse events, local adaptation, and recurrent control more natural. The point is not that one substrate is better in every way. The point is that each substrate makes some computational styles cheap and others expensive.
 
 \begin{aside}[Implementation philosophy]
 Keep prose, code, and profiling evidence synchronized. If a code change is justified by hardware, the trace should show the bottleneck and the notes should state the assumption being tested.
@@ -26,24 +28,24 @@ Keep prose, code, and profiling evidence synchronized. If a code change is justi
 
 \subsection{The Questions to Ask}
 
-When you inspect a neural network, ask these questions in order.
+When you inspect a neural network, ask these questions in order. The order is important: first identify the executed workload, then identify the scarce resource, then choose an implementation change.
 
 \subsubsection{What is the compute graph?}
 
-List the main operations. For a transformer layer:
+List the main operations. For a transformer layer, the graph usually includes:
 
 \begin{itemize}[leftmargin=*]
   \item embedding lookup,
-  \item linear projections,
-  \item attention,
+  \item linear projections for queries, keys, values, and feedforward layers,
+  \item attention score computation and softmax,
   \item feedforward matrix multiplications,
   \item normalization,
   \item elementwise activations,
   \item residual connections,
-  \item loss and optimizer updates.
+  \item loss and optimizer updates during training.
 \end{itemize}
 
-Then ask which operations are dense, which are irregular, which are memory-heavy, and which synchronize.
+Then classify the operations. Dense matrix multiplications are regular and often map well to tensor cores or systolic arrays. Embedding lookups are memory gathers. Normalization and softmax are reductions with synchronization inside the kernel. Residual additions and activations are often bandwidth-bound elementwise work. Mixture-of-experts routing adds conditional execution and communication. The same model name can therefore contain several very different hardware problems.
 
 \subsubsection{Where is memory pressure?}
 
@@ -59,20 +61,159 @@ During training, memory is not just parameters. It includes:
   \item dataloader and host-side staging buffers.
 \end{itemize}
 
-For Adam-style optimizers, optimizer state can be larger than parameters because each parameter may have first and second moment estimates. Activation memory can dominate for long sequences or deep networks. Gradient checkpointing trades extra compute for lower activation memory by recomputing parts of the forward pass during backward.
+For Adam-style optimizers, optimizer state can be larger than parameters because each parameter may have first and second moment estimates. If parameters are stored in FP16 or BF16 but optimizer states are stored in FP32, the optimizer can dominate memory. Activation memory can dominate for long sequences or very deep networks because the backward pass needs intermediate values from the forward pass.
+
+\begin{keyequation}[Training memory budget]
+\[
+  M_{\text{train}} \approx
+  M_{\text{params}} +
+  M_{\text{grads}} +
+  M_{\text{opt}} +
+  M_{\text{acts}} +
+  M_{\text{temp}} +
+  M_{\text{comm}}.
+\]
+\tcblower
+\(M_{\text{params}}\) stores model weights. \(M_{\text{grads}}\) stores derivatives of the loss with respect to those weights. \(M_{\text{opt}}\) stores optimizer state such as Adam moments. \(M_{\text{acts}}\) stores forward-pass activations needed for backpropagation. \(M_{\text{temp}}\) covers temporary workspaces used by kernels. \(M_{\text{comm}}\) covers buffers used by distributed collectives. This accelerator-resident budget is an estimate, not an exact allocator trace. Host-side dataloader queues, pinned-memory batches, and device input buffers should be measured as pipeline or staging memory when they are visible in the trace.
+\end{keyequation}
+
+\emph{Activation checkpointing} trades compute for memory. Instead of saving every activation, the program saves selected checkpoints and recomputes missing intermediate values during the backward pass. The model's math is unchanged, but the schedule changes: less memory is held at once, and extra forward computation is performed later.
 
 \subsubsection{What can be fused, skipped, or routed?}
 
-Fusion combines operations into one kernel so intermediate tensors stay near compute. Skipping avoids useless work. Routing sends only relevant tokens or examples to certain modules.
+Fusion combines operations into one kernel so intermediate tensors stay near compute. Skipping avoids useless work. Routing sends only selected tokens or examples to selected modules. These are not abstract optimizations; each one changes the executed byte path.
 
 Examples:
 
 \begin{itemize}[leftmargin=*]
-  \item Fuse bias, activation, and residual addition when possible.
-  \item Use FlashAttention-style kernels to avoid writing the full attention matrix to HBM.
-  \item Use structured sparsity or mixture-of-experts routing only if load balancing and communication are controlled.
-  \item Skip padded tokens in sequence models when dynamic shape overhead does not erase the benefit.
+  \item Fuse bias, activation, dropout, and residual addition when possible, so a large intermediate tensor is not written to and reread from HBM between each step.
+  \item Use FlashAttention-style kernels to avoid materializing the full attention matrix in HBM. The kernel computes attention in tiles and keeps partial results in on-chip memory.
+  \item Use structured sparsity or mixture-of-experts routing only if load balancing, indexing overhead, and communication are controlled.
+  \item Skip padded tokens in sequence models when dynamic-shape overhead does not erase the benefit.
 \end{itemize}
+
+\subsection{Quantization and Precision}
+
+\emph{Quantization} represents values with fewer bits. It can reduce memory footprint, memory bandwidth, cache pressure, and sometimes energy. It can also reduce accuracy if the lower-precision representation cannot preserve the distinctions the model needs.
+
+Two precision ideas must be separated:
+
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Representation precision} is how a value is stored in memory, such as FP32, BF16, FP16, FP8, or INT8.
+  \item \textbf{Arithmetic precision} is how an operation is computed and accumulated. For example, tensor cores may multiply FP16 inputs but accumulate partial sums in FP32 or another wider format.
+\end{itemize}
+
+This distinction prevents a common mistake. Saying ``the model is INT8'' does not fully specify the computation. We also need to know which tensors were quantized, whether scales are per-tensor, per-channel, or per-group, how outliers are handled, and what precision is used for accumulation.
+
+\begin{keyequation}[Affine integer quantization]
+\[
+  x \approx s(q - z).
+\]
+\tcblower
+\(x\) is the real-valued number we want to approximate. \(q\) is the stored integer code. \(s\) is the scale, measured in real units per integer step. \(z\) is the zero point, the integer code that represents real zero. Smaller \(s\) gives finer resolution over a narrower range; larger \(s\) covers a wider range with coarser steps. Calibration chooses scales and zero points from representative data.
+\end{keyequation}
+
+For inference, quantization often targets weights and activations because they are read repeatedly. In transformer decoding, weight-only quantization can reduce the bytes needed to stream large matrices, while leaving activations in a higher precision. KV-cache quantization can reduce memory capacity and bandwidth pressure for long-context inference, but it can also degrade attention quality if keys and values lose important detail.
+
+For training, low precision is harder because gradients, optimizer states, and accumulated updates can be sensitive to rounding. Mixed-precision training commonly stores some tensors in BF16 or FP16 while using loss scaling, FP32 master weights, or wider accumulators where needed. The goal is not simply ``use fewer bits.'' The goal is to use fewer bits where the model and hardware tolerate it.
+
+\begin{keyequation}[Accuracy and compression tradeoff]
+\[
+  \Delta A = A_{\text{baseline}} - A_{\text{compressed}}.
+\]
+\tcblower
+\(A_{\text{baseline}}\) is the chosen quality metric before compression, such as validation accuracy, perplexity, or task score. \(A_{\text{compressed}}\) is the same metric after quantization, pruning, or another compression step. \(\Delta A\) is the quality loss. A compression result is incomplete unless it reports the metric, dataset, calibration method, tensor shapes, hardware, and measured latency or throughput.
+\end{keyequation}
+
+\subsection{Pruning, Sparsity, and Conditional Computation}
+
+\emph{Sparsity} means some values, weights, tokens, experts, or events are absent or unused. \emph{Pruning} is a way to create sparsity by removing weights, channels, heads, blocks, or other model components.
+
+Sparsity helps hardware only when the implementation can skip real work. There are two broad cases:
+
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Unstructured sparsity} removes individual weights. It can reduce parameter count, but random zero patterns are hard for dense accelerators to exploit because indices, branches, and uneven work add overhead.
+  \item \textbf{Structured sparsity} removes regular units such as channels, blocks, attention heads, matrix blocks, or fixed patterns like 2:4 sparsity. It is easier for compilers and accelerator kernels to exploit because the remaining work is still regular.
+\end{itemize}
+
+\begin{keyequation}[Realized sparse speedup]
+\[
+  S_{\text{real}} =
+  \frac{T_{\text{dense}}}
+       {T_{\text{sparse compute}} + T_{\text{index}} + T_{\text{routing}} + T_{\text{load imbalance}}}.
+\]
+\tcblower
+\(T_{\text{dense}}\) is the time for the dense baseline. \(T_{\text{sparse compute}}\) is the time spent on the remaining arithmetic. \(T_{\text{index}}\) is time spent reading sparse metadata or gathering values. \(T_{\text{routing}}\) is time spent sending tokens or work to the right place. \(T_{\text{load imbalance}}\) is waiting caused by some devices, experts, or blocks receiving more work than others. Theoretical sparsity counts removed operations; realized speedup counts the whole executed program.
+\end{keyequation}
+
+Mixture-of-experts transformers show why the denominator matters. A token may be routed to only two experts out of many, so arithmetic per token can be much lower than in a dense feedforward layer. But in a distributed system, tokens may need all-to-all communication so that each expert receives its assigned tokens. If routing is imbalanced, one busy expert can make other devices wait. The model is sparse, but the system may be communication-bound.
+
+\subsection{Batching, Latency, and Throughput}
+
+\emph{Latency} is how long one request takes. \emph{Throughput} is how many requests, tokens, examples, or training samples complete per unit time. Batching often improves throughput because a larger batch creates bigger matrix multiplications, amortizes launch overhead, and fills more of the accelerator. Batching can also increase user-visible latency if a request waits for other requests to arrive.
+
+\begin{keyequation}[Throughput and latency]
+\[
+  \text{throughput} =
+  \frac{\text{items completed}}{\text{elapsed time}},
+  \qquad
+  \text{latency}_{\text{request}} =
+  t_{\text{finish}} - t_{\text{arrival}}.
+\]
+\tcblower
+The numerator of throughput counts completed units: training examples, generated tokens, images, or requests. The denominator is wall-clock time for the measured interval. Request latency starts when the request arrives and ends when the result is available. A batch can improve the first ratio while worsening the second quantity for some users.
+\end{keyequation}
+
+Transformer inference makes this split concrete:
+
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Prefill} processes the prompt tokens. It creates large matrix multiplications over many tokens and can often use accelerator matrix units well.
+  \item \textbf{Decoding} usually generates one new token at a time for each active sequence. It repeatedly reads model weights and the KV cache. At small batch sizes or long contexts, memory bandwidth and scheduling overhead can dominate.
+  \item \textbf{Continuous batching} mixes requests whose sequences are at different decode positions. It can improve throughput for a serving system, but it requires careful scheduling so short requests are not trapped behind long ones.
+\end{itemize}
+
+\begin{keyequation}[Transformer KV-cache size]
+\[
+  M_{\text{KV}} =
+  2 \cdot B \cdot L \cdot H \cdot D \cdot b.
+\]
+\tcblower
+The factor \(2\) counts keys and values. \(B\) is batch size. \(L\) is sequence length already stored in the cache. \(H\) is the number of attention heads, or key-value heads for grouped-query attention. \(D\) is the per-head dimension. \(b\) is bytes per stored element. This simple formula explains why long-context decoding can become a memory-capacity and bandwidth problem even when arithmetic units are fast.
+\end{keyequation}
+
+Training usually favors throughput. Interactive inference usually cares about time to first token and per-token latency. Offline inference often cares about cost per item, which combines throughput, utilization, hardware price, and energy. Edge inference adds another constraint: the batch may be one, memory may be small, and power or thermal limits may dominate.
+
+\subsection{Fusion, Layouts, and Kernel Shape}
+
+Two implementations can compute the same tensor expression and have very different runtime behavior. The difference is often fusion, layout, and shape.
+
+\subsubsection{Fusion}
+
+Kernel launch overhead is small compared with a huge matrix multiplication, but it can dominate a chain of tiny elementwise operations. Fusion combines operations so the program reads an input once, performs several simple operations while the data is in registers or on-chip memory, and writes the result once.
+
+Fusion is especially useful for operations such as bias addition, activation functions, residual addition, masking, dropout, and normalization epilogues. It is less useful when the fused operation becomes too large to schedule efficiently, uses too many registers, or prevents a vendor library from using a highly optimized matrix kernel.
+
+\subsubsection{Layouts}
+
+A \emph{memory layout} describes how multidimensional tensor indices are arranged in linear memory. Layout affects whether neighboring threads read neighboring addresses, whether vectorized loads are possible, and whether a kernel can use tensor-core-friendly tiles.
+
+Examples:
+
+\begin{itemize}[leftmargin=*]
+  \item Images may be stored as \texttt{NCHW} or \texttt{NHWC}. The best layout depends on the convolution kernel, accelerator, and library.
+  \item Transformer tensors may be arranged to make attention heads contiguous, sequence positions contiguous, or batch elements contiguous.
+  \item A transpose may look cheap in mathematical notation, but it can become a real memory movement if the next kernel cannot consume the strided view efficiently.
+\end{itemize}
+
+Convolution lowering illustrates the tradeoff. An \texttt{im2col} transform can convert a convolution into a matrix multiplication that uses excellent GEMM kernels. The cost is that the lowered matrix may duplicate input values and increase memory traffic. Direct convolution kernels avoid materializing that large matrix but require specialized implementations. The fastest choice depends on kernel size, batch size, channel count, layout, and cache behavior.
+
+\subsubsection{Shapes}
+
+Accelerators prefer certain tile sizes. A matrix dimension divisible by a preferred tile size can use specialized units efficiently. Odd shapes may still run, but with padding, edge kernels, or lower utilization. This is why model dimensions often look oddly round: 768, 1024, 2048, 4096, and 8192 align better with common library kernels and hardware tiles. The mathematical model does not require these numbers; the hardware often rewards them.
+
+\begin{aside}[Precise claim]
+``A shape is hardware friendly'' means the measured kernel can use the intended memory layout, vector width, tile size, and arithmetic path. It does not mean every accelerator prefers the same multiples or that padding is free.
+\end{aside}
 
 \subsection{A Minimal Profiling Loop}
 
@@ -139,7 +280,8 @@ A useful profiling notebook should record:
 \begin{enumerate}
   \item model name and git revision,
   \item hardware device and driver/runtime versions,
-  \item tensor shapes, precision, and batch size,
+  \item tensor shapes, precision, layout, and batch size,
+  \item execution mode: training, prefill, decoding, offline inference, or edge inference,
   \item warmup steps and measured steps,
   \item peak memory and step-time distribution,
   \item the top time-consuming operations,
@@ -147,17 +289,11 @@ A useful profiling notebook should record:
   \item the hypothesis for the next change.
 \end{enumerate}
 
-This makes performance work reproducible. Without this convention, it becomes easy to remember that a change ``felt faster'' while forgetting that the batch size, precision, data path, or sequence length changed.
+This makes performance work reproducible. Without this convention, it becomes easy to remember that a change ``felt faster'' while forgetting that the batch size, precision, data path, sequence length, or layout changed.
 
 \begin{aside}[Before changing code]
-Write the bottleneck as a sentence: ``This run is slow because \(\ldots\).'' If the sentence does not name a trace event, memory allocation, tensor shape, or communication primitive, profile more before optimizing.
+Write the bottleneck as a sentence: ``This run is slow because \(\ldots\).'' If the sentence does not name a trace event, memory allocation, tensor shape, layout, precision, or communication primitive, profile more before optimizing.
 \end{aside}
-
-\subsection{Shapes Matter}
-
-Accelerators prefer certain tile sizes. A matrix dimension divisible by a preferred tile size can use specialized units efficiently. Odd shapes may still run, but with padding, edge kernels, or lower utilization.
-
-This is why model dimensions often look oddly round: 768, 1024, 2048, 4096, 8192. They align better with hardware and library kernels. The mathematical model does not require these numbers; the hardware often rewards them.
 
 \subsection{Dataloader and Host Bottlenecks}
 
@@ -165,47 +301,60 @@ Many beginners assume the accelerator is the bottleneck. Sometimes the GPU is wa
 
 \begin{itemize}[leftmargin=*]
   \item GPU utilization oscillates between high and zero.
-  \item Profiler shows gaps before each training step.
+  \item The profiler shows gaps before each training step.
   \item Host-to-device copies are serialized instead of overlapped.
-  \item Data augmentation or tokenization runs on the critical path.
+  \item Data augmentation, decompression, or tokenization runs on the critical path.
 \end{itemize}
 
-Fixes can include more dataloader workers, pinned memory, asynchronous copies, preprocessing caches, fused transforms, larger prefetch queues, or moving preprocessing to the device. The correct fix depends on the trace.
+Fixes can include more dataloader workers, pinned memory, asynchronous copies, preprocessing caches, fused transforms, larger prefetch queues, or moving preprocessing to the device. The correct fix depends on the trace. If the trace shows the accelerator waiting for input, changing the model architecture may hide the symptom but not solve the pipeline problem.
 
 \subsection{Hardware-Aware Model Choices}
 
-Implementation thinking should influence architecture:
+Implementation thinking should influence architecture. This does not mean choosing a worse model just because it is convenient for hardware. It means recognizing that accuracy, memory, latency, throughput, cost, and deployability are all part of the design.
 
 \begin{itemize}[leftmargin=*]
-  \item Long context improves modeling power but can square attention memory unless kernels or architectures avoid it.
-  \item Mixture-of-experts increases parameter count without using all parameters per token, but routing can create communication and load-balance problems.
-  \item Quantization reduces memory bandwidth and cache pressure, but calibration and outliers matter.
-  \item Recurrence can reduce memory at inference, but sequential dependencies can limit parallelism.
+  \item Long context improves modeling power but increases KV-cache memory and can make attention bandwidth-heavy unless kernels or architectures reduce the cost.
+  \item Mixture-of-experts increases total parameter count without using all parameters per token, but routing can create all-to-all communication and load-balance problems.
+  \item Quantization reduces memory bandwidth and cache pressure, but calibration, outliers, and accumulator precision matter.
+  \item Structured pruning can shrink channels, blocks, or heads in a way dense kernels can exploit; unstructured pruning may reduce parameter count without reducing wall-clock time.
+  \item Recurrence can reduce inference memory, but sequential dependencies can limit parallelism.
   \item Convolutions exploit spatial locality; attention exploits content-based routing; graph neural networks often suffer irregular memory access.
+  \item Edge models may prefer small activation footprints, predictable control flow, and integer arithmetic over the largest possible parameter count.
 \end{itemize}
+
+These choices show the substrate theme in a grounded way. A GPU cluster makes giant dense batches and tensor-parallel training plausible. A phone neural engine rewards compact quantized operators with predictable memory use. A biological circuit can spend spikes only when events occur. Each substrate nudges learning systems toward forms that fit its cheap paths.
 
 \subsection{Next steps}
 
-For this chapter, the mathematical object is the compute graph together with saved training state. The empirical diagnostic is a profiler trace with shapes and memory enabled. The failure mode is optimizing Python source structure while ignoring the kernels and transfers that actually execute.
+For this chapter, the mathematical object is the compute graph together with saved training state, tensor layout, precision, batch shape, and execution mode. The empirical diagnostic is a profiler trace with shapes and memory enabled. The failure mode is optimizing Python source structure while ignoring the kernels and transfers that actually execute.
 
 \begin{chaptersummary}
 \begin{itemize}[leftmargin=*]
   \item The framework graph is not the runtime trace.
   \item Training memory includes parameters, gradients, optimizer state, activations, temporaries, and communication buffers.
-  \item Fusion, checkpointing, precision, batching, and tiling are hardware-aware implementation moves.
-  \item Profiling should precede optimization.
-  \item Model architecture choices have hardware consequences.
+  \item Quantization changes stored representation, arithmetic precision, or both; claims should state which tensors and accumulators changed.
+  \item Sparsity produces speed only when the executed program skips enough work to overcome indexing, routing, and imbalance overhead.
+  \item Batching can improve throughput while worsening request latency.
+  \item Fusion, checkpointing, precision, batching, layout, and tiling are hardware-aware implementation moves.
+  \item Model architecture choices have hardware consequences because substrates make some computational styles cheap and others expensive.
 \end{itemize}
 \end{chaptersummary}
 
 \begin{conceptquestions}
 \item Why can one Python line create several device kernels?
 \item What is the difference between activation checkpointing and kernel fusion?
+\item Why is representation precision different from arithmetic precision?
 \item If a trace shows a gap before every GPU kernel group, where would you investigate first?
+\item Why can unstructured sparsity reduce parameter count without reducing latency?
+\item How can increasing batch size improve throughput while hurting an interactive request?
+\item In transformer decoding, why can the KV cache become a memory bottleneck?
 \end{conceptquestions}
 
 \begin{exercises}
-\item Take a small PyTorch model and run one profiler trace. Record the batch shape, top five operations by time, and peak memory. Explain one thing the trace showed that the Python code did not make obvious.
-\item In a transformer block, identify two operations that are good candidates for fusion and two that are likely to be library matrix multiplications. Explain the difference.
-\item Suppose activation memory is the bottleneck. Compare three responses: smaller batch size, gradient checkpointing, and lower precision. What does each trade away?
+\item Take a small PyTorch model and run one profiler trace. Record the batch shape, tensor precision, top five operations by time, and peak memory. Explain one thing the trace showed that the Python code did not make obvious.
+\item In a transformer block, identify two operations that are good candidates for fusion and two that are likely to be library matrix multiplications. Explain the difference in terms of memory traffic and arithmetic intensity.
+\item Suppose activation memory is the bottleneck. Compare three responses: smaller batch size, activation checkpointing, and lower precision. What does each trade away in throughput, numerical behavior, or implementation complexity?
+\item A serving system decodes tokens for \(B=16\) requests with sequence length \(L=4096\), \(H=8\) key-value heads, head dimension \(D=128\), and BF16 cache elements. Use \(M_{\text{KV}} = 2BLHDb\) with \(b=2\) bytes to estimate KV-cache memory. Then explain which variable you would reduce first for an edge deployment and why.
+\item A model has 80\% zero weights after unstructured pruning, but measured latency improves by only 5\%. Give three plausible hardware reasons for the missing speedup.
+\item Choose one implementation change, such as INT8 weight-only quantization, FlashAttention, \texttt{NHWC} layout, continuous batching, or structured channel pruning. State the expected bottleneck, the hardware mechanism that should help, and the measurement that would confirm or reject the change.
 \end{exercises}

@@ -9,22 +9,42 @@
   \label{fig:heterogeneous-routing}
 \end{figure}
 
-A heterogeneous system uses multiple kinds of hardware. This is not rare; it is normal. A modern AI service may use:
+A \emph{heterogeneous system} uses multiple kinds of hardware in one workflow. This is not an exotic exception; it is the normal shape of modern AI systems. A single model request may touch a CPU process, an accelerator, host memory, device memory, a network interface, a storage service, and a scheduler before the user sees a token.
+
+The word \emph{host} usually refers to the CPU side of the machine: CPU cores, host DRAM, the operating system, and the runtime process that launches accelerator work. The word \emph{device} usually refers to an accelerator such as a GPU, NPU, or TPU-like chip, together with its local memory. Host and device are connected by an interconnect such as PCIe, NVLink, a coherent CPU-accelerator fabric, or a network fabric across machines. Those links are fast by ordinary standards, but they are still much slower and higher-latency than on-chip movement near the arithmetic units.
+
+A modern AI service may use:
 
 \begin{itemize}[leftmargin=*]
-  \item CPUs for orchestration, tokenization, retrieval, compression, and control logic,
-  \item GPUs for dense neural network execution,
-  \item specialized accelerators for training or inference,
+  \item CPUs for orchestration, tokenization, retrieval calls, compression, sampling logic, and control flow,
+  \item GPUs for dense neural network execution, especially matrix multiplications and attention kernels,
+  \item NPUs, TPUs, or other specialized accelerators for training or inference when the model shapes and compiler stack fit,
   \item storage systems for embeddings, checkpoints, logs, and datasets,
   \item network fabrics for all-reduce, all-to-all, parameter exchange, or serving traffic,
   \item sometimes FPGAs, dataflow accelerators, or neuromorphic chips for special workloads.
 \end{itemize}
 
-The design question is not, ``Which chip is best?'' It is, ``Which piece of the task belongs where, and what does it cost to move data between those pieces?''
+The design question is not simply, ``Which chip is best?'' It is, ``Which piece of the task belongs where, and what does it cost to move data, control, and synchronization between those pieces?'' A GPU can be an excellent matrix engine and still sit idle if the CPU is late with tokenization, if the request waits in a queue, if tensors are copied back and forth across PCIe, or if another device is slow in a collective operation.
+
+For example, an LLM serving path might do text normalization and tokenization on the CPU, copy token IDs to GPU memory, run prefill and decode on one or more GPUs, sample the next token on the host or device, stream text back to the user, and write logs to storage. The neural network computation is central, but the user-visible latency is the sum of many stages.
 
 \begin{aside}[Core workflow]
 Decompose the system into stages, assign each stage to hardware, draw the data edges between stages, then optimize the slowest edge or queue. Heterogeneous compute is placement plus communication, not a collection of devices.
 \end{aside}
+
+\begin{keyequation}[Stage latency budget]
+\[
+  T_{\text{request}} \approx
+  T_{\text{queue}} +
+  T_{\text{host}} +
+  T_{\text{copy}} +
+  T_{\text{device}} +
+  T_{\text{sync}} +
+  T_{\text{network}}.
+\]
+\tcblower
+\(T_{\text{request}}\) is the user-visible request time. \(T_{\text{queue}}\) is waiting before execution begins. \(T_{\text{host}}\) is CPU-side work such as tokenization, retrieval, scheduling, and sampling. \(T_{\text{copy}}\) is host-device or device-device data movement. \(T_{\text{device}}\) is accelerator computation. \(T_{\text{sync}}\) is time spent waiting at barriers, launches, or collectives. \(T_{\text{network}}\) is traffic between machines or services. The largest term is not always the accelerator compute term.
+\end{keyequation}
 
 \subsection{Distributed Training}
 
@@ -38,11 +58,37 @@ Distributed training splits work across devices. The standard forms are:
   \item \textbf{Optimizer/state sharding}: parameters, gradients, and optimizer states are partitioned to reduce memory per device.
 \end{itemize}
 
-Every strategy trades memory, compute, and communication. Data parallelism is simple, but gradient all-reduce can dominate at scale. Tensor parallelism can fit large layers, but it requires frequent communication inside the forward pass. Pipeline parallelism can fit deep models, but bubbles appear if microbatches do not fill the pipeline. Expert parallelism can save compute per token, but all-to-all token routing can become the bottleneck.
+Every strategy trades memory, compute, and communication. Data parallelism is simple: each device runs the same model on different examples, then the devices average gradients. This works well until the gradient synchronization becomes a large part of the step time. Tensor parallelism can fit a single large layer across devices, but it introduces communication inside the forward and backward pass. Pipeline parallelism can fit deep models by placing different layer blocks on different devices, but empty pipeline slots, called \emph{bubbles}, waste time if there are too few microbatches. Expert parallelism can reduce arithmetic per token, but the all-to-all token exchange can become the bottleneck.
+
+A useful first estimate compares communication time with computation time:
+\begin{keyequation}[Communication-to-computation ratio]
+\[
+  R =
+  \frac{T_{\text{comm}}}{T_{\text{compute}}}
+  \approx
+  \frac{\alpha + \frac{B}{W}}{T_{\text{compute}}}.
+\]
+\tcblower
+\(R\) is the communication-to-computation ratio. \(T_{\text{comm}}\) is the time to exchange data. \(T_{\text{compute}}\) is the useful local computation time. \(\alpha\) is the startup latency of the communication operation. \(B\) is the number of bytes sent across the relevant link. \(W\) is the effective bandwidth of that link, after protocol overheads and contention. When \(R\) is small, communication may hide under computation. When \(R\) approaches or exceeds 1, devices spend as much time exchanging data as computing.
+\end{keyequation}
+
+The link named in \(W\) matters. Within one server, peer-to-peer GPU traffic over NVLink can have much higher bandwidth and lower latency than traffic over PCIe. Across servers, the limiting link may be Ethernet, InfiniBand, or a proprietary fabric, and congestion from other jobs can change the effective bandwidth. A statement such as ``the model scales well to eight GPUs'' is incomplete unless it names the topology and parallelism strategy.
+
+Scaling is also limited by serial work and synchronization:
+\begin{keyequation}[Scaling efficiency]
+\[
+  E_N =
+  \frac{T_1}{N T_N}.
+\]
+\tcblower
+\(E_N\) is the efficiency when using \(N\) devices. \(T_1\) is the time on one device for the same amount of work, or a carefully defined baseline if the model cannot fit on one device. \(T_N\) is the time on \(N\) devices. Perfect scaling gives \(E_N = 1\). Lower efficiency means some time is lost to communication, imbalance, launch overhead, redundant work, memory pressure, or synchronization.
+\end{keyequation}
+
+For a concrete training example, suppose a data-parallel transformer computes gradients on eight GPUs. Each GPU has a full model copy, reads its local minibatch, performs forward and backward passes, then participates in an all-reduce so every GPU receives the averaged gradient. If the gradients are large and the network fabric is slow, the all-reduce can set the step time even when every individual GPU has high matrix-unit utilization.
 
 \subsection{Distributed Inference}
 
-Inference has different pressure. In autoregressive language models, each output token depends on previous tokens. Prefill processes the prompt and can use dense parallelism. Decode generates one token step at a time and often becomes memory-bandwidth and latency sensitive.
+Inference has different pressure. Training can often prioritize average throughput over many minutes or hours. Interactive inference must respect user-facing latency on every request. In autoregressive language models, each output token depends on previous tokens. \emph{Prefill} processes the prompt and builds the KV cache; it can often use dense parallelism because many prompt tokens are processed together. \emph{Decode} generates one token step at a time; it often becomes memory-bandwidth and latency sensitive because every step reads model weights and the relevant KV cache.
 
 Important inference terms:
 
@@ -54,13 +100,29 @@ Important inference terms:
   \item \textbf{Continuous batching}: dynamically combines active requests to improve throughput while respecting latency.
 \end{itemize}
 
-A serving system is a scheduler. It decides which requests batch together, where KV cache lives, when to preempt, how to place model shards, and whether to route a request to a cheaper or faster backend.
+A serving system is a scheduler. It decides which requests batch together, where KV cache lives, when to preempt a long request, how to place model shards, and whether to route a request to a cheaper or faster backend. Continuous batching can raise throughput by keeping the GPU busy, but it can also hurt an unlucky request if the batching policy makes it wait too long.
 
 For LLM serving, separate \textbf{prefill} from \textbf{decode}. Prefill processes the prompt and often looks like large dense matrix work. Decode reuses the KV cache and generates one step at a time, so memory bandwidth, cache placement, and batching policy can dominate. A system that is excellent at prefill can still feel slow if decode latency is poor.
 
+\begin{keyequation}[Per-token service time]
+\[
+  T_{\text{token}} \approx
+  T_{\text{launch}} +
+  \max\!\left(
+    T_{\text{math}},
+    \frac{B_{\text{weights}} + B_{\text{KV}} + B_{\text{activations}}}{W_{\text{memory}}}
+  \right)
+  + T_{\text{sample}}.
+\]
+\tcblower
+\(T_{\text{token}}\) is the time to produce one token for a request or batch. \(T_{\text{launch}}\) is runtime overhead for dispatching kernels or graph execution. \(T_{\text{math}}\) is arithmetic time on the accelerator. \(B_{\text{weights}}\), \(B_{\text{KV}}\), and \(B_{\text{activations}}\) are bytes read or written for weights, KV cache, and intermediate tensors. \(W_{\text{memory}}\) is effective memory bandwidth at the relevant level, often accelerator HBM. \(T_{\text{sample}}\) is the cost of logits processing and token selection. The \(\max\) expresses a bottleneck estimate: the slower of math and memory movement usually sets the main device time.
+\end{keyequation}
+
+In a model-serving cluster, heterogeneity can help when stages have different shapes. CPU workers can run tokenization and retrieval. GPUs can run transformer blocks. A smaller accelerator might serve short prompts cheaply while a larger multi-GPU backend handles long-context requests. Heterogeneity hurts when routing overhead, model duplication, cache movement, or queue fragmentation outweighs the savings.
+
 \subsection{Placement and Data Locality}
 
-Placement means deciding where model components, data, and tasks live. Good placement minimizes expensive communication. For example:
+\emph{Placement} means deciding where model components, data, and tasks live. \emph{Data locality} means keeping frequently reused data close to the hardware that consumes it. Good placement minimizes expensive communication and avoids unnecessary format conversion. For example:
 
 \begin{itemize}[leftmargin=*]
   \item Place layers that communicate heavily on the same device or tightly connected devices.
@@ -70,7 +132,9 @@ Placement means deciding where model components, data, and tasks live. Good plac
   \item Keep data preprocessing close to storage if it shrinks data before transfer.
 \end{itemize}
 
-The phrase ``move compute to data'' often matters more than ``move data to compute.'' If the data is huge and the compute is small, moving the compute is cheaper.
+The phrase ``move compute to data'' often matters more than ``move data to compute.'' If the data is huge and the compute is small, moving the compute is cheaper. A retrieval system illustrates this point. It may be better to run filtering and embedding lookup near the vector database, return only the top passages, and send those passages to the GPU prompt builder, rather than shipping a large candidate set to the model server.
+
+Host-device memory boundaries deserve special care. A tensor in CPU DRAM is not automatically usable by a GPU kernel. It may need to be copied, pinned, mapped, or staged. Unified memory systems can make this easier to program, but they do not remove the physical cost of moving pages. When a profile shows an accelerator waiting, the cause may be a hidden memory migration rather than slow arithmetic.
 
 \subsection{A Placement Worksheet}
 
@@ -87,15 +151,34 @@ For any heterogeneous design, make a table with one row per component:
 
 Then draw the graph of communication edges. The highest-volume edge and the highest-latency edge are not always the same. A huge asynchronous checkpoint write may not affect user latency, while a smaller synchronous all-to-all exchange may set the step time.
 
+For each edge, estimate transfer time:
+\begin{keyequation}[Transfer time]
+\[
+  T_{\text{transfer}} \approx
+  \alpha_{\text{link}} +
+  \frac{B_{\text{message}}}{W_{\text{link}}}.
+\]
+\tcblower
+\(T_{\text{transfer}}\) is the time for one data movement event. \(\alpha_{\text{link}}\) is fixed startup latency, including software overhead and link protocol overhead. \(B_{\text{message}}\) is the number of bytes moved. \(W_{\text{link}}\) is effective bandwidth for the chosen path, such as host DRAM to GPU over PCIe, GPU to GPU over NVLink, or node to node over a network. Small messages are dominated by \(\alpha_{\text{link}}\). Large messages are dominated by \(B_{\text{message}} / W_{\text{link}}\).
+\end{keyequation}
+
+This estimate is deliberately simple. It does not capture contention, packetization, topology, or overlap with compute. Its value is that it forces the designer to name the bytes and the path. ``Communication is expensive'' becomes a concrete question: how many bytes, over which link, how often, and on the critical path or off it?
+
 \subsection{Load Balancing}
 
-Load imbalance means some devices wait while others are overloaded. Mixture-of-experts models make this visible. If a router sends too many tokens to one expert, that expert becomes the step-time bottleneck. Even if the average compute is low, the slowest overloaded expert sets latency.
+\emph{Load imbalance} means some devices wait while others are overloaded. In a synchronous system, the slowest participant often sets the pace. Mixture-of-experts models make this visible. If a router sends too many tokens to one expert, that expert becomes the step-time bottleneck. Even if the average compute is low, the slowest overloaded expert sets latency.
 
 A typical load-balancing loss looks like:
 \[
   L = L_{\text{task}} + \lambda L_{\text{balance}},
 \]
-where \(L_{\text{task}}\) is the modeling objective and \(L_{\text{balance}}\) penalizes routing collapse. The goal is not perfectly uniform routing at all costs. The goal is enough balance that hardware stays utilized without destroying specialization.
+where \(L_{\text{task}}\) is the modeling objective, such as next-token prediction loss. \(L_{\text{balance}}\) penalizes routing collapse, for example when too many tokens choose the same expert. \(\lambda\) controls the tradeoff between task quality and balance. A larger \(\lambda\) pushes routing toward uniform use; a smaller \(\lambda\) allows more specialization but risks overloaded experts. The goal is not perfectly uniform routing at all costs. The goal is enough balance that hardware stays utilized without destroying specialization.
+
+A simple bottleneck rule is:
+\[
+  T_{\text{step}} \geq \max_i T_i,
+\]
+where \(T_{\text{step}}\) is the time for a synchronized step and \(T_i\) is the time taken by worker, expert, stage, or device \(i\). The maximum matters because faster participants wait at the next synchronization point. This is why load balance, queue lengths, and straggler detection are system performance issues, not just scheduling details.
 
 \subsection{Communication Patterns}
 
@@ -110,6 +193,8 @@ Distributed systems are often limited by collectives:
 
 These operations are not just library calls. They create real traffic on links. Their cost depends on message size, topology, contention, and overlap with computation.
 
+In data-parallel training, an all-reduce may combine one gradient tensor per parameter tensor. In tensor-parallel inference, an all-gather may be needed so each device can see activations computed by other devices. In expert-parallel models, all-to-all sends tokens to the devices that host their chosen experts and then sends the results back. Each collective has a different traffic pattern, so the best device topology for one parallelism strategy may be poor for another.
+
 \begin{aside}[System design warning]
 A mathematically sparse model can become a communication-heavy system. If sparsity routes data across the network, the saved FLOPs may be replaced by all-to-all traffic.
 \end{aside}
@@ -118,31 +203,41 @@ A mathematically sparse model can become a communication-heavy system. If sparsi
 
 If a system direction is ``heterogeneous chips plus heterogeneous intelligence,'' then hardware and model diversity should be considered together. Some tasks may need dense language reasoning. Others may need graph search, event-driven perception, retrieval, symbolic constraints, or control loops. A mature system routes tasks to the substrate that matches their computational structure.
 
-This is not only engineering. It is a modeling idea. Instead of forcing every cognitive operation through one dense transformer path, one can ask whether different modules should have different memory, latency, precision, sparsity, and communication profiles.
+This is not only engineering. It is a modeling idea grounded in mechanisms. A GPU-rich substrate rewards dense differentiable computation, regular tensor shapes, batching, and high arithmetic intensity. A wet, noisy nervous system has different cheap operations: local signaling, event-driven spikes, adaptation, recurrence, and massive parallelism under strict energy limits. Those substrates encourage different computational styles. The point is not that one is magical and the other is mechanical. The point is that available memory, communication, precision, energy, and latency shape which algorithms are practical.
+
+For AI systems, this means we should not force every cognitive operation through one dense transformer path by default. A retrieval module, a graph planner, a simulator, a symbolic checker, a small edge model, and a large GPU model may each have different memory, latency, precision, sparsity, and communication profiles. Heterogeneous systems thinking asks whether the task structure and the hardware structure actually match.
 
 \subsection{Next steps}
 
-For this chapter, the mathematical object is a system graph with compute nodes and communication edges. The empirical diagnostic is queue time, device utilization, and communication time per edge. The failure mode is saving local compute while increasing global waiting.
+For this chapter, the mathematical object is a system graph with compute nodes and communication edges. The empirical diagnostic is queue time, device utilization, memory traffic, and communication time per edge. The failure mode is saving local compute while increasing global waiting.
 
 \begin{chaptersummary}
 \begin{itemize}[leftmargin=*]
-  \item Heterogeneous systems route work across different hardware types.
-  \item Distributed training uses data, tensor, pipeline, expert, and state parallelism.
-  \item Inference cares about latency, KV cache, batching, and request scheduling.
+  \item Heterogeneous systems route work across CPUs, GPUs, NPUs/TPUs, storage, memory domains, and networks.
+  \item Host memory, device memory, PCIe, NVLink, and network fabrics have different bandwidth and latency costs.
+  \item Distributed training uses data, tensor, pipeline, expert, and state parallelism, each with different communication patterns.
+  \item Inference cares about time to first token, inter-token latency, KV cache placement, batching, and request scheduling.
   \item Placement and data locality often decide performance.
-  \item Communication collectives can dominate large systems.
-  \item Heterogeneous intelligence means matching task structure to hardware structure.
+  \item Communication collectives can dominate large systems even when local accelerator utilization is high.
+  \item Load balance matters because the slowest synchronized worker, expert, or pipeline stage can set step time.
+  \item Heterogeneous intelligence means matching task structure to hardware structure, not merely adding more device types.
 \end{itemize}
 \end{chaptersummary}
 
 \begin{conceptquestions}
-\item Why can mixture-of-experts save compute but increase communication?
-\item What is the difference between data parallelism and tensor parallelism?
+\item In a heterogeneous AI server, what work is naturally host-side, and what work is naturally accelerator-side? Give one reason for each choice.
+\item Why can mixture-of-experts save arithmetic but increase communication?
+\item What is the difference between data parallelism and tensor parallelism, and which communication collective is common in each?
 \item Why is the KV cache central to LLM inference performance?
+\item In the transfer-time estimate \(T_{\text{transfer}} \approx \alpha_{\text{link}} + B_{\text{message}}/W_{\text{link}}\), what does each term mean?
+\item Why can adding a faster accelerator fail to improve user-visible latency?
 \end{conceptquestions}
 
 \begin{exercises}
-\item Draw a system graph for retrieval-augmented generation: request parsing, embedding, vector search, reranking, prompt assembly, prefill, decode, and logging. Which edges carry large data, and which edges are latency-sensitive?
-\item Compare data parallelism and tensor parallelism for a model that fits on one GPU versus a model whose single largest layer does not fit. What changes?
-\item Imagine an MoE layer with four experts where one expert receives half the tokens. Describe the effect on latency and one possible load-balancing intervention.
+\item Draw a system graph for retrieval-augmented generation: request parsing, tokenization, embedding, vector search, reranking, prompt assembly, prefill, decode, streaming, and logging. For each edge, label whether it is host memory, device memory, PCIe/NVLink, network, or storage traffic. Which edges carry large data, and which edges are latency-sensitive?
+\item A CPU preprocessing stage takes 8 ms, host-to-GPU transfer takes 2 ms, GPU prefill takes 35 ms, the first decode step takes 12 ms, and sampling plus streaming takes 3 ms. Estimate time to first token. Which term would you optimize first, and why?
+\item A device sends a 400 MB gradient shard across a link with effective bandwidth 50 GB/s and startup latency 20 microseconds. Use \(T_{\text{transfer}} \approx \alpha_{\text{link}} + B_{\text{message}}/W_{\text{link}}\) to estimate transfer time. State your unit conversions.
+\item Compare data parallelism and tensor parallelism for a model that fits on one GPU versus a model whose single largest layer does not fit. What changes in memory use, communication frequency, and failure modes?
+\item Imagine an MoE layer with four experts where one expert receives half the tokens. Describe the effect on latency using \(T_{\text{step}} \geq \max_i T_i\), then propose one model-side and one system-side load-balancing intervention.
+\item For edge/cloud split inference, choose a workload such as speech recognition, camera perception, or keyboard prediction. Decide what runs on the edge device and what runs in the cloud. Explain your placement in terms of privacy, latency, bandwidth, energy, and model size.
 \end{exercises}

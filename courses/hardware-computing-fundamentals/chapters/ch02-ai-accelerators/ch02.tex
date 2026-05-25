@@ -9,75 +9,154 @@
   \label{fig:accelerator-landscape}
 \end{figure}
 
-The accelerator landscape is easier to understand if you classify chips by what they make cheap:
+An AI accelerator is not magic attached to a neural network. It is a machine that makes some data movements and some arithmetic patterns cheap, while leaving other patterns expensive. Accelerator literacy means being able to look at a model workload and ask which path through the machine the values will actually take.
+
+The landscape is easier to understand if you classify chips by what they make cheap:
 
 \begin{itemize}[leftmargin=*]
-  \item \textbf{GPUs} make wide parallel arithmetic and dense tensor programs cheap. They are flexible, widely supported, and strong for training and inference.
-  \item \textbf{TPU-like systolic accelerators} make regular matrix multiplication and tensor contractions cheap by flowing data through a grid of multiply-accumulate units.
-  \item \textbf{Trainium-like training accelerators} are cloud training chips built around dense learning workloads, large HBM, and scale-out interconnect.
-  \item \textbf{Wafer-scale systems} reduce off-chip communication by placing a huge amount of compute and local memory on one wafer-scale substrate.
-  \item \textbf{Reconfigurable dataflow systems} map model operators onto a spatial pipeline, aiming to reduce repeated memory traffic and overhead.
-  \item \textbf{Neuromorphic systems} make sparse event-driven communication cheap, especially when the workload naturally consists of spikes or changes.
+  \item \textbf{GPUs} make wide parallel arithmetic and dense tensor programs cheap. They are flexible, widely supported, and strong for both training and inference when kernels have enough work to fill the device.
+  \item \textbf{TPU-like systolic accelerators} make regular matrix multiplication and tensor contractions cheap by flowing operands through a grid of multiply-accumulate units.
+  \item \textbf{Trainium-like training accelerators} are cloud training chips built around dense learning workloads, large HBM (high-bandwidth memory), collective communication, and scale-out interconnect.
+  \item \textbf{Wafer-scale systems} reduce some off-chip communication by placing a huge amount of compute and local memory on one wafer-scale substrate.
+  \item \textbf{Reconfigurable dataflow systems} map model operators onto a spatial pipeline, aiming to reduce repeated memory traffic and launch overhead.
+  \item \textbf{Neuromorphic systems} make sparse event-driven communication cheap, especially when the workload naturally consists of spikes, changes, or local asynchronous updates.
 \end{itemize}
 
-These are not mutually exclusive categories. A GPU contains tensor cores and memory hierarchy. TPU-like systems still need compilers and interconnect. Dataflow systems can run dense neural networks. Neuromorphic platforms still require software tooling. The categories are useful because they make workload fit visible.
+These are not mutually exclusive categories. A GPU contains tensor cores and a deep memory hierarchy. TPU-like systems still need compilers, host orchestration, and interconnect. Dataflow systems can run dense neural networks. Neuromorphic platforms still require software tooling and careful workload mapping. The categories are useful because they make workload fit visible.
 
 \begin{aside}[How to read the figure]
 Do not read Figure~\ref{fig:accelerator-landscape} as a product ranking. Read it as a map of design pressures: dense lanes, systolic flow, HBM capacity, chip-to-chip links, wafer-scale locality, dataflow pipelines, and event routing. The best device is the one whose cheap path matches the workload.
 \end{aside}
 
-\subsection{GPUs}
+\subsection{The Workload View}
 
-GPUs began as graphics processors, but modern AI GPUs are general parallel accelerators. Their strength is not merely ``many cores.'' Their strength is a stack:
+\subsubsection{From accelerator names to executed work}
+
+A model layer becomes hardware work only after shapes, precision, batch size, and execution mode are known. A transformer attention block at training batch size behaves differently from the same block during one-token interactive decoding. A convolution in an image model behaves differently from an embedding lookup in a recommender system. The chip name matters less than the path created by the actual workload.
+
+The basic hardware questions are:
 
 \begin{itemize}[leftmargin=*]
-  \item thousands of parallel execution lanes,
-  \item tensor or matrix units for dense multiply-accumulate,
-  \item high-bandwidth memory close to the package,
-  \item optimized libraries such as cuBLAS, cuDNN, NCCL, and vendor equivalents,
-  \item mature compiler and framework support from PyTorch, TensorFlow, JAX, Triton, and CUDA.
+  \item \textbf{Throughput:} how many tokens, images, training examples, or FLOPs finish per second?
+  \item \textbf{Latency:} how long does one request, token, batch, or synchronization step wait?
+  \item \textbf{Bandwidth:} how many bytes per second can move across a memory or network boundary?
+  \item \textbf{Locality:} how often can a value be reused near the arithmetic units instead of fetched again?
+  \item \textbf{Utilization:} which expensive resource is doing useful work, and which one is idle?
+  \item \textbf{Programmability:} can the compiler, runtime, and libraries express the workload without falling back to slow paths?
 \end{itemize}
 
-GPUs are excellent when the program can present large, regular, dense blocks of work. Matrix multiplication, convolution, attention, embedding lookups with batching, normalization, and elementwise operations all run well when implemented with good kernels and enough work per launch.
+This is where the substrate theme becomes concrete. Biological brains make sparse spikes, local recurrence, analog chemistry, and continual adaptation natural. GPUs and systolic arrays make dense batched matrix operations natural. Those substrates do not merely speed up an already fixed idea of intelligence; they reward different computational styles. Modern deep learning looks the way it does partly because dense tensors, backpropagation, and large batched updates map well onto the available hardware.
+
+\subsubsection{Three quantitative lenses}
+
+Three simple estimates prevent many bad accelerator comparisons.
+
+\begin{keyequation}[Dense matrix multiplication cost]
+\[
+  \text{FLOPs} \approx 2M N K
+\]
+\tcblower
+This estimates the arithmetic for \(C = AB\), where \(A\) has shape \(M \times K\), \(B\) has shape \(K \times N\), and \(C\) has shape \(M \times N\). FLOPs are floating-point operations. The \(M N\) term counts output elements. The \(K\) term counts how many products contribute to each output. The factor \(2\) counts one multiply and one add per product. Increasing \(M\), \(N\), or \(K\) increases arithmetic, but it may also increase reuse if the implementation tiles the matrices well.
+\end{keyequation}
+
+Matrix multiplication is friendly to many accelerators because values are reused. A block of \(A\) can contribute to many columns of \(C\), and a block of \(B\) can contribute to many rows of \(C\). Good kernels keep those blocks close to the arithmetic units in registers, shared memory, SRAM, or another on-chip level.
+
+\begin{keyequation}[Transfer time]
+\[
+  \text{time} \approx \text{latency} +
+  \frac{\text{bytes transferred}}{\text{bandwidth}}
+\]
+\tcblower
+The latency term is the fixed waiting cost before useful data or a result is available. The bytes term is the amount of data that must cross a named boundary, such as HBM to compute units or one accelerator to another. Bandwidth is the sustained transfer rate at that boundary. More bytes increase transfer time. More bandwidth decreases the streaming part of transfer time. Lower latency matters most for many small transfers.
+\end{keyequation}
+
+This rule explains why a peak-FLOP number can mislead. If single-token decoding repeatedly reads model weights and KV-cache pages from HBM, the arithmetic units may wait for bytes. More tensor cores do not help unless the workload can feed them.
+
+\begin{keyequation}[Useful utilization]
+\[
+  \text{utilization} =
+  \frac{\text{achieved useful rate}}{\text{available peak rate}}
+\]
+\tcblower
+The rate must name the resource. Tensor-core utilization, HBM-bandwidth utilization, network-link utilization, and CPU utilization answer different questions. A low value means the resource is underused. A high value means the resource is busy, but it does not prove that the whole application is efficient.
+\end{keyequation}
+
+For example, an LLM training job can show high matrix-unit utilization during feed-forward layers and still lose time in all-reduce operations, input pipelines, or checkpointing. An inference service can show high HBM bandwidth and low tensor-core utilization because it is memory-bound.
+
+\subsection{GPUs}
+
+GPUs began as graphics processors, but modern AI GPUs are general parallel accelerators. Their strength is not merely many cores. Their strength is a stack:
+
+\begin{itemize}[leftmargin=*]
+  \item thousands of parallel execution lanes organized for SIMT-style execution, where groups of lanes run the same instruction on different data;
+  \item tensor or matrix units for dense multiply-accumulate operations in formats such as FP32, TF32, BF16, FP16, FP8, or integer formats;
+  \item high-bandwidth memory close to the package;
+  \item caches, shared memory, registers, and memory coalescing rules that reward regular access;
+  \item optimized libraries such as cuBLAS, cuDNN, NCCL, and vendor equivalents;
+  \item mature compiler and framework support from PyTorch, TensorFlow, JAX, Triton, CUDA, and related stacks.
+\end{itemize}
+
+SIMT means \emph{single instruction, multiple threads}. Many lightweight threads execute the same program over different tensor elements. This is powerful when neighboring threads follow the same control flow and access nearby memory. It is less powerful when every thread branches differently or reads unrelated addresses.
+
+GPUs are excellent when the program can present large, regular, dense blocks of work. Matrix multiplication, convolution, attention prefill, normalization, and elementwise operations all run well when implemented with good kernels and enough work per launch. Embedding lookups can also work well at large batch sizes, but they are often more memory- and cache-sensitive than matrix multiplication because the access pattern can be irregular.
+
+\begin{aside}[Training versus inference on a GPU]
+Training usually tries to maximize throughput: keep large matrix units busy, store activations for backpropagation, communicate gradients, and update optimizer state. Interactive inference often cares about latency: time to first token, per-token delay, KV-cache capacity, and batching policy. The same GPU can be a strong choice for both, but the bottleneck may move from compute to memory bandwidth or scheduling.
+\end{aside}
 
 The GPU weakness is also important. A GPU can be inefficient on:
 
 \begin{itemize}[leftmargin=*]
-  \item small batches that fail to fill the device,
-  \item irregular control flow,
-  \item many tiny kernels,
-  \item workloads dominated by random memory access,
+  \item small batches that fail to fill the device;
+  \item irregular control flow that causes SIMT lanes to diverge;
+  \item many tiny kernels with launch overhead between them;
+  \item workloads dominated by random memory access;
+  \item tensor shapes that do not match preferred tile sizes;
   \item distributed jobs bottlenecked on cross-device communication.
 \end{itemize}
 
 \subsection{TPUs and Systolic Thinking}
 
-A TPU-like accelerator is built around arrays specialized for tensor contractions. A systolic array is a grid where data pulses from cell to cell. Each cell performs a small local operation, often multiply-accumulate, and passes partial results onward.
+A TPU-like accelerator is built around arrays specialized for tensor contractions. A \emph{systolic array} is a grid where data pulses from cell to cell. Each cell performs a small local operation, often multiply-accumulate, and passes values or partial sums onward.
 
 The beginner intuition is a factory line. Rather than sending every worker back to a warehouse for every item, parts move through the workers in a rhythm. This is powerful when the computation is regular. Matrix multiplication is regular; the same data block is reused by many neighboring operations. Transformers and CNNs contain many such operations.
 
-The tradeoff is flexibility. If your workload is not naturally regular, the compiler must transform it into regular blocks or the array sits underused. Systolic systems reward static shapes, predictable tensor programs, and compiler-friendly graph structure.
+For \(C = AB\), a systolic array can stream pieces of \(A\) across one direction and pieces of \(B\) across another. A processing element multiplies the values that meet at that location and accumulates into a partial result. The useful property is locality: a value that has already arrived at the array can be reused by nearby cells before it has to be fetched from farther memory again.
+
+The tradeoff is flexibility. If the workload is not naturally regular, the compiler must transform it into regular blocks or the array sits underused. Systolic systems reward static shapes, predictable tensor programs, and compiler-friendly graph structure. Dynamic sequence lengths, ragged batches, sparse routing, or custom operators may still run, but the fast path depends on how well the software stack lowers them to the array.
 
 \subsection{Trainium-Like Training Chips}
 
 Trainium-like accelerators are cloud chips designed for large-scale model training. The key idea is not just one chip, but the full training appliance: accelerator memory, host CPUs, compiler stack, collectives, networking, and cluster scheduling. These systems often expose a framework integration layer so PyTorch or JAX models can be compiled and distributed across many devices.
 
-When evaluating such systems, avoid asking only, ``What is the peak FLOP/s?'' Ask:
+When evaluating such systems, avoid asking only for peak FLOP/s. FLOP/s is an arithmetic rate, not a promise that memory, communication, and software will keep the arithmetic units fed. Ask:
 
 \begin{itemize}[leftmargin=*]
-  \item Does the compiler support the model's operators and dynamic shapes?
-  \item How much HBM is available per accelerator?
-  \item How fast is chip-to-chip communication?
+  \item Does the compiler support the model's operators, precision formats, and dynamic shapes?
+  \item How much HBM is available per accelerator for parameters, gradients, optimizer state, activations, and temporary buffers?
+  \item How fast is chip-to-chip communication for all-reduce, all-gather, reduce-scatter, and all-to-all patterns?
   \item How mature are debugging and profiling tools?
-  \item What model-parallel strategies are supported?
-  \item What is the total cost per trained token or trained example?
+  \item What model-parallel strategies are supported: data parallelism, tensor parallelism, pipeline parallelism, expert parallelism, or sequence parallelism?
+  \item What is the total cost per trained token, trained example, or target validation quality?
 \end{itemize}
+
+Training is especially sensitive to memory capacity. If a model has \(P\) parameters and each parameter uses \(s\) bytes in a chosen format, the parameters alone require approximately \(P s\) bytes. Increasing \(P\) or \(s\) increases this floor directly. Training also needs gradients, optimizer state, activations, and communication buffers. Adam-style optimizers can require several times the parameter memory before activation memory is counted. A chip can have excellent arithmetic throughput and still force smaller microbatches, activation recomputation, or more parallel sharding because memory is tight.
 
 \subsection{Wafer-Scale and Dataflow Alternatives}
 
-Wafer-scale systems, such as Cerebras-style machines, attack a communication problem. Instead of cutting the wafer into many separate chips and then rebuilding communication through packages and network links, they keep a vast compute fabric on one wafer. This can reduce some off-chip movement and simplify certain model placements. The cost is that software must map work to a very unusual physical substrate.
+Wafer-scale systems, such as Cerebras-style machines, attack a communication problem. Instead of cutting the wafer into many separate chips and then rebuilding communication through packages and network links, they keep a vast compute fabric on one wafer. This can reduce some off-chip movement and simplify certain model placements. The cost is that software must map work to a very unusual physical substrate, and not every model benefits equally from the placement.
 
 SambaNova-style reconfigurable dataflow systems attack a different problem. Neural networks are graphs of operations. If the hardware can spatially arrange those operations into a pipeline, then intermediate tensors can flow from one stage to the next instead of being repeatedly written to and reread from external memory. This can be excellent when the model graph is stable and the compiler can place it well.
+
+Dataflow is easiest to understand by comparing two schedules. In a conventional schedule, an operator may read input from memory, compute an output tensor, write that tensor back, and wait for the next operator to read it again. In a spatial dataflow schedule, the output of one operator can be routed directly to the next stage when shapes and dependencies allow it. The advantage is not that arithmetic changes; the advantage is that intermediate movement can shrink.
+
+\subsection{Neuromorphic and Event-Driven Systems}
+
+Neuromorphic systems make a different bet from dense tensor accelerators. They try to make sparse communication, local state, and event-driven updates cheap. Instead of updating every unit at every dense timestep, an event-driven system can do work when a spike or change occurs.
+
+This is a real substrate contrast, not just a metaphor. A GPU is happiest when thousands of lanes execute regular dense kernels. A biological nervous system is noisy, massively parallel, local, adaptive, and event-rich. Neuromorphic hardware explores machines whose cheap path is closer to sparse local signaling than to dense global matrix multiplication.
+
+The practical warning is that sparsity must survive the whole stack. An event camera may produce sparse changes, but preprocessing, batching, dense neural layers, or host-device transfers can erase the advantage. Neuromorphic hardware is most plausible when sensing, representation, routing, and learning rule all preserve event sparsity.
 
 \subsection{Which Workload Prefers Which Chip?}
 
@@ -85,10 +164,12 @@ SambaNova-style reconfigurable dataflow systems attack a different problem. Neur
 \toprule
 Workload & Usually likes & Why \\
 \midrule
-Large dense training & GPUs, TPU-like pods, Trainium-like clusters & Dense matrix multiplication, high throughput, mature distributed stack. \\
-Interactive LLM inference & GPUs or inference accelerators with strong memory bandwidth and batching support & Autoregressive decoding becomes memory- and latency-sensitive. \\
+Large dense training & GPUs, TPU-like pods, Trainium-like clusters & Dense matrix multiplication, high throughput, large HBM, mature distributed stack. \\
+Attention prefill for many tokens & GPUs or systolic accelerators & Large tensor contractions can fill matrix units and reuse data through tiling. \\
+Single-request LLM decoding & GPUs or inference accelerators with strong memory bandwidth and scheduling & Autoregressive decoding can become memory- and latency-sensitive, especially with long KV caches. \\
 Huge model with awkward sharding & Wafer-scale or tightly connected pods can help & Reduced cross-chip movement can matter more than raw FLOPs. \\
-Stable graph with pipeline structure & Dataflow accelerators can help & Operator placement can avoid repeated memory traffic. \\
+Stable graph with pipeline structure & Dataflow accelerators can help & Operator placement can avoid repeated intermediate memory traffic. \\
+Quantized batch inference & GPUs, TPUs, or inference accelerators with strong low-precision kernels & INT8, FP8, or similar formats can increase effective throughput and reduce memory traffic when accuracy is preserved. \\
 Sparse sensor events & Neuromorphic/event-driven chips can help & Work is naturally sparse in time and space. \\
 Irregular graph routing & Depends: CPU, GPU, dataflow, or custom kernels & Random memory access and communication often dominate. \\
 \bottomrule
@@ -98,46 +179,70 @@ Irregular graph routing & Depends: CPU, GPU, dataflow, or custom kernels & Rando
 Compare chips on the workload you actually have: tensor shapes, sequence lengths, batch sizes, sparsity, precision, communication pattern, and latency target. A benchmark for one workload can mislead you about another.
 \end{aside}
 
+\subsection{Precision, Quantization, and Real Speed}
+
+Precision is the numerical format used to store and compute values. FP32 uses 32-bit floating-point values and is common for stable accumulation and reference calculations. BF16 and FP16 use 16 bits and are common in training because they reduce memory traffic and can use fast tensor units. FP8 and INT8 can be attractive for inference and some training paths, but they require scaling, calibration, or training recipes that preserve model quality.
+
+Lower precision can help in two ways:
+
+\begin{itemize}[leftmargin=*]
+  \item \textbf{More arithmetic per second:} specialized units may perform more low-precision multiply-accumulates per cycle.
+  \item \textbf{Fewer bytes moved:} smaller values reduce memory capacity pressure and bandwidth demand.
+\end{itemize}
+
+Lower precision is not automatically faster. If a layer is bottlenecked by a non-quantized operation, a dequantization step, a layout conversion, or communication, the speedup may be smaller than the arithmetic peak suggests. A fair claim should say which tensors are quantized, which operations run in low precision, where accumulation happens, and whether accuracy changed.
+
 \subsection{A Comparison Worksheet}
 
 Before comparing accelerators, write one page with the following fields:
 \begin{enumerate}
   \item task: training, batch inference, interactive inference, retrieval, event sensing, graph routing, or preprocessing;
-  \item tensor shapes: batch size, sequence length, hidden size, channels, expert count, and precision;
-  \item state: parameters, optimizer state, activations, KV cache, routing tables, and temporary buffers;
+  \item tensor shapes: batch size, sequence length, hidden size, channels, expert count, vocabulary size, and precision;
+  \item state: parameters, optimizer state, gradients, activations, KV cache, routing tables, and temporary buffers;
   \item bottleneck guess: dense compute, HBM capacity, HBM bandwidth, host preprocessing, interconnect, launch overhead, or irregular access;
-  \item software constraint: framework support, compiler maturity, profiler visibility, and kernel availability;
-  \item measurement target: latency, throughput, cost, energy, quality, or time to train.
+  \item locality and reuse: which values are reused, where they are reused, and which memory level supplies them;
+  \item software constraint: framework support, compiler maturity, profiler visibility, kernel availability, and debugging tools;
+  \item measurement target: latency, throughput, cost, energy, quality, time to train, or tail latency.
 \end{enumerate}
 
 This worksheet is intentionally plain. It forces the chip comparison to stay attached to the computation. A device with beautiful peak numbers but weak compiler support for your model is a research project, not a drop-in speedup.
 
 \subsection{Failure Modes}
 
-Accelerator choice fails in predictable ways. One failure is \textbf{benchmark drift}: using a benchmark whose tensor shapes, precision, or batch size do not match the real workload. Another is \textbf{memory surprise}: the model fits in theory but optimizer state, activation memory, or KV cache exceeds device memory in practice. A third is \textbf{software mismatch}: the chip has a fast path for dense matrix multiplication, but the model spends time in operators the compiler cannot lower efficiently.
+Accelerator choice fails in predictable ways. One failure is \textbf{benchmark drift}: using a benchmark whose tensor shapes, precision, batch size, or latency target do not match the real workload. Another is \textbf{memory surprise}: the model fits in theory but optimizer state, activation memory, temporary buffers, or KV cache exceeds device memory in practice. A third is \textbf{software mismatch}: the chip has a fast path for dense matrix multiplication, but the model spends time in operators the compiler cannot lower efficiently.
+
+There are also distributed failure modes. In data-parallel training, devices may wait at gradient all-reduce. In tensor-parallel inference, devices may exchange partial activations every layer. In mixture-of-experts models, token routing may require all-to-all communication and can create load imbalance. In all of these cases, the bottleneck is not the multiply-accumulate unit. It is the schedule that moves bytes and synchronizes devices.
 
 \subsection{Next steps}
 
-For this chapter, the mathematical object is the workload class. The empirical diagnostic is a benchmark run with tensor shapes, precision, memory use, and latency distribution recorded. The failure mode is treating an accelerator family as universally better rather than workload-specific.
+For this chapter, the mathematical object is the workload class: the operations, tensor shapes, precision, state, and communication pattern that a model creates. The empirical diagnostic is a benchmark run with tensor shapes, precision, memory use, utilization, communication, latency distribution, and accuracy recorded. The failure mode is treating an accelerator family as universally better rather than workload-specific.
 
 \begin{chaptersummary}
 \begin{itemize}[leftmargin=*]
-  \item GPUs are flexible dense parallel machines with excellent software support.
-  \item TPU-like systems use regular arrays to make tensor contractions efficient.
-  \item Trainium-like systems should be judged as training clusters, not isolated chips.
+  \item Accelerators are best understood by the paths they make cheap: dense lanes, systolic flow, HBM bandwidth, interconnect, spatial dataflow, or sparse events.
+  \item GPUs are flexible dense parallel machines with excellent software support, but they still depend on batching, regularity, locality, and good kernels.
+  \item TPU-like systems use regular arrays to make tensor contractions efficient by reusing operands as they flow through the array.
+  \item Trainium-like systems should be judged as training clusters, not isolated chips: memory, compiler support, collectives, and interconnect matter.
   \item Wafer-scale systems and dataflow machines are attempts to make communication and intermediate movement cheaper.
-  \item Neuromorphic chips are interesting when the computation is sparse and event-driven.
+  \item Neuromorphic chips are interesting when the computation is sparse and event-driven throughout the sensing and execution stack.
+  \item Precision choices affect both arithmetic rate and byte movement, but quantization helps only when the whole workload can use it without unacceptable quality loss.
 \end{itemize}
 \end{chaptersummary}
 
 \begin{conceptquestions}
 \item Why can a chip with lower peak FLOP/s beat a higher-FLOP chip on a memory-heavy workload?
-\item What makes a transformer training workload more suitable for GPUs or systolic arrays than an irregular graph search workload?
+\item What makes transformer prefill more suitable for GPUs or systolic arrays than an irregular graph search workload?
+\item Why can single-token transformer decoding become memory- or latency-bound even if the model contains many matrix multiplications?
 \item Why should you evaluate compiler maturity when considering a specialized accelerator?
+\item In the utilization equation, why must you name the resource whose utilization is being measured?
+\item Give one mechanism-grounded example of how a hardware substrate can encourage a particular style of intelligent computation.
 \end{conceptquestions}
 
 \begin{exercises}
-\item Fill out the comparison worksheet for interactive LLM inference with a long context window. Which fields are dominated by memory rather than compute?
+\item Fill out the comparison worksheet for interactive LLM inference with a long context window. Which fields are dominated by memory capacity, memory bandwidth, or latency rather than compute?
 \item Fill out the comparison worksheet for event-camera gesture recognition. Why might a dense GPU baseline be convenient but not conceptually matched to the data?
+\item A dense layer computes \(Y = XW\), where \(X\) has shape \(B \times H\) and \(W\) has shape \(H \times O\). Estimate the FLOPs using the \(2M N K\) rule by matching \(M\), \(N\), and \(K\) to \(B\), \(O\), and \(H\). Explain what happens to accelerator utilization when \(B\) is very small.
+\item A model has \(P=7\) billion parameters stored in 2-byte precision for inference. Estimate the parameter memory in bytes and in approximate decimal GB before any KV cache or temporary buffers are counted. Explain why this estimate is necessary but not sufficient for choosing a device.
 \item Choose two accelerator families from the chapter and write a fair comparison for one workload. Include one reason each family could lose.
+\item Pick one precision change, such as FP32 to BF16 or FP16 to INT8. State which tensors become smaller, which operations might become faster, and what accuracy or conversion risk must be checked.
 \end{exercises}

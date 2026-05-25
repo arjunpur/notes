@@ -9,29 +9,78 @@
   \label{fig:network-science}
 \end{figure}
 
-A neural network is already a graph. Neurons, channels, tokens, experts, layers, chips, and servers can all be represented as nodes. Edges represent information flow, communication links, dependencies, or physical wires.
+A graph is a way to say which things can directly interact. Formally, a graph is often written as
+\[
+  G = (V, E).
+\]
+\(V\) is the set of vertices, or nodes. \(E\) is the set of edges. An edge \((i,j) \in E\) means that node \(i\) and node \(j\) are directly connected according to the model we have chosen.
+
+For AI systems, the same word ``node'' can mean different concrete objects at different scales:
+
+\begin{itemize}[leftmargin=*]
+  \item a neuron or activation unit inside a model;
+  \item a token in an attention layer;
+  \item an expert in a mixture-of-experts model;
+  \item a layer, pipeline stage, memory bank, accelerator chip, server, or switch;
+  \item a cortical area or measured brain region in a connectome analysis.
+\end{itemize}
+
+The edge meaning must be stated just as carefully. An edge might mean a learned weight, an attention score above a threshold, a routed token-to-expert assignment, a tensor dependency, a physical wire, or a network link. A logical edge in a model is not automatically a physical wire. A transformer attention pattern is a communication graph among tokens, but it is implemented by matrix operations, cache reads, memory traffic, and sometimes inter-device communication.
 
 Network science gives vocabulary for structure:
 
 \begin{itemize}[leftmargin=*]
-  \item \textbf{sparsity}: few edges relative to possible edges;
+  \item \textbf{sparsity}: few edges relative to the number of possible edges;
   \item \textbf{degree}: number of edges incident to a node;
-  \item \textbf{hub}: a high-degree or high-traffic node;
-  \item \textbf{module}: a cluster with dense internal connections;
-  \item \textbf{path length}: number or cost of steps between nodes;
-  \item \textbf{small-world structure}: high local clustering plus a few long shortcuts;
-  \item \textbf{communicability}: how easily signals can move through the graph.
+  \item \textbf{hub}: a high-degree node, or more generally a node or link that carries unusually high traffic;
+  \item \textbf{module}: a cluster with dense internal connections and fewer external connections;
+  \item \textbf{path length}: number of graph hops, or total edge cost, along a route between nodes;
+  \item \textbf{clustering}: tendency for a node's neighbors to also be connected to each other;
+  \item \textbf{small-world structure}: high local clustering plus short average paths, often created by a small number of shortcuts;
+  \item \textbf{communicability}: how easily signals can move through the graph under the available routing, bandwidth, latency, and synchronization rules.
 \end{itemize}
 
 \begin{aside}[Core workflow]
-Represent the model or system as a graph, embed the graph in a space or hardware topology, assign costs to edges, and then ask which edges are worth paying for. The graph is not only a picture; it is a constraint model.
+Represent the model or system as a graph, define what nodes and edges mean, embed the graph in a hardware or physical space, assign costs to edges, and then ask which communication is worth paying for. The graph is not only a picture; it is a constraint model.
 \end{aside}
+
+\subsection{Basic Graph Metrics}
+
+The simplest graph representation is an adjacency matrix \(A\). For an unweighted directed graph, \(A_{ij}=1\) if there is an edge from node \(i\) to node \(j\), and \(A_{ij}=0\) otherwise. For an undirected graph, \(A_{ij}=A_{ji}\). For a weighted graph, \(A_{ij}\) can store a weight such as connection strength, expected traffic, bandwidth, delay, or energy.
+
+\begin{keyequation}[Degree and density]
+\[
+  k_i = \sum_j A_{ij},
+  \qquad
+  \rho = \frac{|E|}{n(n-1)}
+  \quad \text{for a directed graph without self-edges.}
+\]
+\tcblower
+\(k_i\) is the out-degree of node \(i\) when \(A\) is directed and unweighted: it counts how many outgoing neighbors \(i\) has. The sum runs over all possible destination nodes \(j\). \(\rho\) is edge density. \(|E|\) counts actual directed edges. \(n(n-1)\) counts possible directed edges among \(n\) nodes when self-edges are excluded. For an undirected graph, the denominator is usually \(n(n-1)/2\).
+\end{keyequation}
+
+Degree is a structural count. It does not by itself measure performance. A node with degree four can still be a bottleneck if all four links carry large tensors every step, while a node with degree one may be harmless if it rarely communicates. In hardware analysis, degree should be paired with traffic volume, link bandwidth, and latency.
+
+\begin{keyequation}[Clustering and average path length]
+\[
+  C_i =
+  \frac{2e_i}{k_i(k_i-1)},
+  \qquad
+  \ell =
+  \frac{1}{n(n-1)}
+  \sum_{i \ne j} d_G(i,j).
+\]
+\tcblower
+\(C_i\) is the local clustering coefficient for an undirected graph. \(k_i\) is the degree of node \(i\). The term \(k_i(k_i-1)/2\) is the maximum possible number of edges among \(i\)'s neighbors. \(e_i\) is the number of edges that actually exist among those neighbors. The factor \(2\) rewrites the ratio with denominator \(k_i(k_i-1)\). \(\ell\) is the average shortest-path length. \(d_G(i,j)\) is the shortest graph distance from \(i\) to \(j\), measured in hops unless edge costs are supplied.
+\end{keyequation}
+
+These metrics answer different questions. Clustering asks whether nearby logical work can stay local. Average path length asks how many communication steps separate arbitrary nodes. Neither metric alone tells you the throughput of a training cluster. A topology can have small diameter but poor bisection bandwidth, or good local bandwidth but high latency for global synchronization.
 
 \subsection{Why Physical Embedding Matters}
 
-In a purely mathematical graph, connecting any two nodes costs the same. In hardware and biology, distance matters. A long wire consumes area, delay, energy, and routing resources. A cross-chip message consumes network bandwidth and synchronization time. A remote memory access can be far more expensive than a local arithmetic operation.
+In a purely mathematical graph, connecting any two nodes can look equally easy. In hardware and biology, distance matters. A long on-chip wire consumes area, delay, energy, and routing resources. A cross-package message may traverse serializer/deserializer circuits, switches, and cables. A remote memory access can be far more expensive than a local arithmetic operation.
 
-This turns architecture into constrained optimization. We do not merely ask, ``Can every part talk to every other part?'' We ask, ``Which communication is worth its cost?''
+This turns architecture into constrained optimization. We do not merely ask, ``Can every part talk to every other part?'' We ask, ``Which communication is worth its cost, and where should the communicating parts be placed?''
 
 \begin{keyequation}[Wiring-aware objective]
 \[
@@ -44,37 +93,96 @@ This turns architecture into constrained optimization. We do not merely ask, ``C
     |w_{ij}| \, d(i,j).
 \]
 \tcblower
-The first term trains the task. The second penalizes strong long-distance connections. \(d(i,j)\) can be physical distance, communication latency, energy estimate, or network cost.
+\(L(\theta)\) is the objective being minimized. \(L_{\text{task}}(\theta)\) is the ordinary task loss, such as cross-entropy. \(\lambda\) controls how strongly the model is penalized for expensive connections. The sum runs over graph edges \((i,j)\). \(|w_{ij}|\) measures connection strength. \(d(i,j)\) is the cost of connecting \(i\) and \(j\), such as physical distance, communication latency, energy, or a learned placement cost. The penalty encourages important communication to be short, sparse, or both.
 \end{keyequation}
+
+The substrate thesis is concrete here. If long-range communication is cheap, an algorithm can lean on global mixing. If long-range communication is expensive, algorithms that reuse local state, form modules, route selectively, or tolerate delayed information will scale better. Wet, noisy brains, on-chip accelerators, and GPU clusters therefore favor different computational styles because they make different edges cheap.
+
+\subsection{Communication Costs}
+
+A graph edge becomes a hardware cost only after we specify the transfer. Two quantities are especially easy to confuse:
+
+\begin{itemize}[leftmargin=*]
+  \item \textbf{bandwidth}: how many bytes per second can move once a transfer is active;
+  \item \textbf{latency}: how long a message waits before the useful result is available.
+\end{itemize}
+
+A rough single-link model is:
+\[
+  T \approx \alpha + \frac{m}{B}.
+\]
+\(\alpha\) is the latency term. \(m\) is message size in bytes. \(B\) is bandwidth in bytes per second. The fraction \(m/B\) is the streaming time once data is moving. Small messages are often latency dominated. Large messages are often bandwidth dominated.
+
+For a whole communication graph, it is useful to include traffic frequency:
+
+\begin{keyequation}[Traffic-weighted communication cost]
+\[
+  C_{\text{comm}}
+  =
+  \sum_{(i,j)\in E}
+  f_{ij}
+  \left(
+    \alpha_{ij}
+    +
+    \frac{m_{ij}}{B_{ij}}
+  \right).
+\]
+\tcblower
+\(C_{\text{comm}}\) is an estimated communication cost over a chosen time window. The sum runs over communicating pairs \((i,j)\). \(f_{ij}\) is how often that communication happens. \(\alpha_{ij}\) is the latency of the path or link. \(m_{ij}\) is the number of bytes per message. \(B_{ij}\) is the effective bandwidth available to that traffic. The equation is approximate because real systems also have contention, routing overhead, protocol overhead, kernel launch overhead, and synchronization.
+\end{keyequation}
+
+This model explains why the same logical graph can behave differently on different substrates. Attention over a short sequence may be a dense local tensor operation on one accelerator. Long-context attention distributed across devices may become a memory and interconnect problem. Model-parallel layers may look like clean matrix partitions on paper, but their boundary activations can impose repeated all-gather or reduce-scatter costs.
 
 \subsection{Modularity}
 
-Modularity means a network contains subgraphs that communicate more internally than externally. This is useful when subtasks have structure. A vision module can process local spatial features. A routing module can select experts. A memory module can store retrieval states.
+Modularity means a network contains subgraphs that communicate more internally than externally. This is useful when subtasks have structure. A vision stem can process local spatial features. A routing module can select experts. A memory module can store retrieval states. A pipeline-parallel transformer can place consecutive layers on the same device group to reduce activation traffic across slow links.
 
-Modularity helps hardware because local communication is cheaper than global communication. But too much modularity can isolate information. The useful design is often local specialization plus a small number of carefully chosen long-range paths.
+Modularity helps hardware because local communication is usually cheaper than global communication. But too much modularity can isolate information. The useful design is often local specialization plus a small number of carefully chosen long-range paths.
 
-This is the same tradeoff that appears in neural data analysis when choosing a representation. If the representation is too local, it misses global structure. If it is too global, it hides the mechanisms that made the signal. Graph design has the same tension: local modules make computation cheap and interpretable, but some tasks require long-range integration.
+The distinction between logical and physical modularity matters. A model can have modules in its code while still sending large tensors across devices every step. Conversely, a physically local implementation can execute a dense logical operation efficiently if the operation is tiled so that data reuse happens near the arithmetic units.
+
+This is the same tradeoff that appears in neural data analysis when choosing a representation. If the representation is too local, it misses global structure. If it is too global, it hides the mechanisms that made the signal. Graph design has the same tension: local modules make computation cheaper and easier to reason about, but some tasks require long-range integration.
 
 \subsection{Small-World Structure}
 
-Small-world graphs combine clustered local neighborhoods with shortcuts. This is powerful because local clusters support specialized processing, while shortcuts keep global path length small.
+Small-world graphs combine clustered local neighborhoods with short paths between distant regions. A regular two-dimensional mesh has strong locality but can have long paths. A fully connected graph has path length one but requires an edge between every pair of nodes. A small-world design tries to keep most edges local while adding a few shortcuts that reduce average path length.
 
-In hardware terms, a shortcut is not free. It might be a long wire, a cross-chip link, or a network route. The design problem is to buy a few shortcuts that dramatically improve communication while avoiding dense global connectivity.
+\begin{keyequation}[Two useful scaling comparisons]
+\[
+  |E_{\text{complete}}| = \frac{n(n-1)}{2},
+  \qquad
+  D_{\text{mesh}} \approx 2(\sqrt{n}-1).
+\]
+\tcblower
+The first expression counts edges in an undirected complete graph with \(n\) nodes. Every node connects to every other node, so the edge count grows quadratically. The second expression is the approximate diameter of a square two-dimensional mesh with \(n\) nodes. Diameter is the longest shortest path between any two nodes. A mesh uses far fewer local links, but the worst-case hop count grows with the side length \(\sqrt{n}\).
+\end{keyequation}
 
-\subsection{Hubs and Bottlenecks}
+In hardware terms, a shortcut is not free. It might be a long wire, a cross-chip link, a switch hop, or a scheduled collective operation. The design problem is to buy a few shortcuts that dramatically improve communication while avoiding dense global connectivity.
 
-Hubs can make routing efficient, but they can also become bottlenecks. In a neural architecture, a hub might be:
+This distinction shows up in accelerator interconnects. A ring is simple and regular, but some communication patterns require many hops. A mesh or torus gives more local routes and predictable layout. A fat-tree or high-radix switch fabric can provide stronger global bandwidth, but it costs more in switches, cables, power, and scheduling complexity. Network diameter counts hops. Bisection bandwidth asks how much traffic can cross a cut that splits the system in half. A topology can look good on one metric and weak on the other.
+
+\subsection{Scale-Free Claims and Hubs}
+
+Some networks have been described as scale-free, meaning their degree distribution is approximated by a power law:
+\[
+  P(k) \propto k^{-\gamma}.
+\]
+\(P(k)\) is the probability that a randomly chosen node has degree \(k\). The exponent \(\gamma\) controls how quickly high-degree nodes become rare. The symbol \(\propto\) means ``proportional to,'' so the expression gives a shape rather than a normalized probability by itself.
+
+Power-law language should be used carefully. Finite networks, thresholded measurements, sampling bias, and mixed node types can make a degree distribution look heavy-tailed without proving a universal scale-free mechanism. For engineering, the more actionable question is often simpler: are there hubs, and do they carry traffic that can saturate?
+
+Hubs can make routing efficient, but they can also become bottlenecks. In an AI system, a hub might be:
 
 \begin{itemize}[leftmargin=*]
-  \item a shared attention token,
-  \item an expert that receives too many routed tokens,
-  \item a parameter server,
-  \item a memory bank,
-  \item an interconnect switch,
-  \item a CPU coordinator.
+  \item a shared attention token or global memory token;
+  \item an expert that receives too many routed tokens;
+  \item a parameter server or central scheduler;
+  \item a memory bank with many simultaneous requests;
+  \item an interconnect switch or network interface;
+  \item a CPU coordinator launching work for accelerators.
 \end{itemize}
 
-When profiling, a hub often appears as a saturated link, a busy queue, a hot device, or a synchronization point. Graph vocabulary helps you see that the bottleneck is structural, not accidental.
+When profiling, a hub often appears as a saturated link, a busy queue, a hot device, load imbalance across experts, or a synchronization point. Graph vocabulary helps you see that the bottleneck is structural, not accidental.
 
 \subsection{Implementing Structural Regularizers}
 
@@ -83,6 +191,7 @@ Suppose each unit \(i\) has a spatial position \(p_i \in \mathbb{R}^2\). A simpl
   L_{\text{wire}} =
   \sum_{i,j} |W_{ij}| \, \|p_i - p_j\|_2.
 \]
+\(W_{ij}\) is the learned connection from unit \(i\) to unit \(j\). \(|W_{ij}|\) makes strong positive and strong negative weights both count as important connections. \(p_i\) and \(p_j\) are positions in a two-dimensional layout. \(\|p_i-p_j\|_2\) is Euclidean distance. The sum penalizes strong long-distance connections more than weak local ones.
 
 In PyTorch-like pseudocode:
 
@@ -97,49 +206,79 @@ def wiring_cost(weight, positions):
 loss = task_loss + lambda_wire * wiring_cost(W, positions)
 \end{lstlisting}
 
-This is only a starting point. More realistic penalties can include routing congestion, module boundaries, communication frequency, directionality, or energy models. The point is that graph structure becomes part of the objective.
+This is only a starting point. More realistic penalties can include routing congestion, module boundaries, communication frequency, directionality, multicast, collectives, or energy models. If two units communicate once per training run, a long edge may not matter. If two devices exchange activations every layer and every microbatch, the same edge can dominate step time. The point is that graph structure becomes part of the objective only when the cost model matches the execution.
+
+\subsection{Distributed Training as a Graph Example}
+
+Distributed training gives a concrete place to use these ideas. In data parallel training, each accelerator computes gradients for a different batch shard, then gradients are combined. A common collective is all-reduce. In a simple bandwidth-latency model for a ring all-reduce over \(p\) devices and \(m\) bytes of gradients, the cost is roughly:
+\[
+  T_{\text{ring}}
+  \approx
+  2(p-1)\alpha
+  +
+  2\frac{p-1}{p}\frac{m}{B}.
+\]
+The factor \(2(p-1)\) counts the reduce-scatter and all-gather phases around the ring. \(\alpha\) is per-step latency. \(m\) is the total gradient size. \(B\) is link bandwidth. The fraction \((p-1)/p\) appears because each device sends most, but not all, of the total message volume in each phase.
+
+This formula is not a universal performance prediction. Real all-reduce implementations use topology-aware algorithms, multiple links, chunking, overlap with computation, and hierarchical communication across nodes. It is still useful because it separates three forces: more devices increase synchronization steps, larger models increase bytes, and stronger links reduce the streaming term.
+
+Model parallelism creates a different graph. If adjacent layers are split across devices, activations cross device boundaries. If attention heads or MLP channels are tensor-parallel, partial results may need all-gather or reduce-scatter. If experts are distributed, routed tokens can trigger all-to-all communication. The best partition is not simply the one with equal FLOPs; it is the one that balances compute, memory, and communication across the physical interconnect.
 
 \subsection{A Diagnostic for Graph Constraints}
 
-After training a constrained model, inspect:
+After training or serving a constrained model, inspect:
 \begin{enumerate}
-  \item the distribution of edge lengths,
-  \item which modules communicate most frequently,
-  \item whether high-degree hubs dominate traffic,
-  \item whether pruning long edges damages task performance,
+  \item the distribution of edge lengths and edge weights;
+  \item which modules communicate most frequently;
+  \item which links carry the most bytes per step or per request;
+  \item whether high-degree hubs dominate traffic;
+  \item whether network diameter, bisection bandwidth, or latency is the limiting topology metric;
+  \item whether pruning long edges damages task performance;
   \item whether the learned graph maps naturally onto the intended hardware.
 \end{enumerate}
 
-These diagnostics are more informative than the final loss alone. A model can achieve good loss by routing everything through a hub that would be physically expensive or fragile.
+These diagnostics are more informative than final loss alone. A model can achieve good loss by routing everything through a hub that would be physically expensive, fragile, or slow. A sparse model can also be slower than a dense one if the sparse routing creates irregular memory access, small messages, or load imbalance.
 
 \subsection{Connection to Spatially Embedded Models}
 
 Spatially embedded recurrent networks and pathway-routing models make this idea explicit. The model is not a fully abstract graph. Units have positions. Connections have cost. Communication patterns are part of the inductive bias. If the task can be solved with local processing and a few long-range routes, the learned architecture may become sparse, modular, and physically plausible.
 
-This connects directly to heterogeneous hardware. If a model learns modules that communicate frequently inside themselves and rarely across modules, those modules can be placed on different hardware islands with lower communication cost.
+Brain comparisons should stay modest. Brains are not GPUs, and connectome diagrams are not execution traces. Still, the analogy is useful at the level of constraints: biological tissue pays for long axons with volume, energy, delay, and noise; chips pay for long wires and off-chip messages with area, energy, latency, and bandwidth pressure. In both cases, the substrate encourages computation that uses locality when possible and reserves expensive global communication for information that is worth integrating.
+
+This connects directly to heterogeneous hardware. If a model learns modules that communicate frequently inside themselves and rarely across modules, those modules can be placed on different hardware islands with lower communication cost. If the learned graph requires dense global exchange at every step, then the system needs an interconnect designed for that pattern, or the algorithm will stop scaling.
 
 \subsection{Next steps}
 
-For this chapter, the mathematical object is a graph with edge costs. The empirical diagnostic is traffic through edges, hubs, and modules after training or during serving. The failure mode is learning a graph that is sparse in parameters but expensive in communication.
+For this chapter, the mathematical object is a graph with edge meanings and edge costs. The empirical diagnostic is traffic through edges, hubs, modules, and physical links after training or during serving. The failure mode is learning a graph that is sparse in parameters but expensive in communication.
 
 \begin{chaptersummary}
 \begin{itemize}[leftmargin=*]
-  \item Graph vocabulary makes communication structure explicit.
-  \item Physical distance turns edges into costs.
+  \item Graph vocabulary makes communication structure explicit, but node and edge meanings must be defined.
+  \item Degree, clustering, path length, diameter, and density describe different structural properties.
+  \item Physical distance turns logical edges into costs through wires, routing, bandwidth, latency, energy, and synchronization.
   \item Sparse modular networks can reduce communication, but hubs and shortcuts must be managed.
-  \item Regularizers can impose wiring, spatial, energy, or communication constraints.
+  \item Bandwidth is transfer rate; latency is waiting time; bisection bandwidth is not the same as graph diameter.
+  \item Regularizers can impose wiring, spatial, energy, or communication constraints when their cost model matches execution.
   \item Model graph structure and hardware placement should be designed together.
 \end{itemize}
 \end{chaptersummary}
 
 \begin{conceptquestions}
-\item Why is a fully connected graph unrealistic for physical hardware?
-\item How can a hub be both useful and dangerous?
+\item Why must you define what nodes and edges mean before interpreting a graph metric?
+\item Why is a fully connected logical graph unrealistic as a direct physical hardware design?
+\item How can a hub be both useful for routing and dangerous for performance?
+\item In the communication model \(T \approx \alpha + m/B\), what does each term mean, and when does each term dominate?
+\item Why are network diameter and bisection bandwidth different kinds of topology information?
 \item What does a wiring-cost regularizer encourage a model to learn?
+\item Why should scale-free or connectome analogies be treated carefully in hardware design?
 \end{conceptquestions}
 
 \begin{exercises}
-\item Write a wiring-cost penalty for a network embedded on a one-dimensional line instead of a two-dimensional plane. What changes?
-\item Draw two graphs with the same number of edges: one modular and one hub-dominated. Which is more robust to removing one node? Which may have shorter paths?
-\item Consider an MoE model as a graph from tokens to experts. What would edge cost mean in this graph?
+\item A graph has \(n=8\) nodes and \(12\) directed edges, with no self-edges. Compute its directed edge density using \(\rho=|E|/[n(n-1)]\). Explain what the denominator counts.
+\item A node has degree \(k_i=4\). Among its four neighbors, \(e_i=3\) edges exist. Compute the local clustering coefficient \(C_i=2e_i/[k_i(k_i-1)]\) and explain what the answer says about local structure.
+\item Write a wiring-cost penalty for a network embedded on a one-dimensional line instead of a two-dimensional plane. What changes in the distance term, and what behavior would the penalty encourage?
+\item Compare two accelerator topologies with the same number of nodes: a ring and a two-dimensional mesh. Which has longer worst-case paths? Which might be easier to lay out physically? What traffic pattern could make either one perform poorly?
+\item Consider a mixture-of-experts model as a graph from tokens to experts. What does an edge mean? What would edge cost mean if experts are spread across accelerators? Name one way a hub expert could appear during training.
+\item A distributed training job all-reduces \(m=4\) GB of gradients over \(p=8\) devices. Using the ring all-reduce expression in this chapter, identify which part grows with latency and which part grows with bytes. You do not need numeric \(\alpha\) or \(B\); explain the scaling.
+\item Choose an attention layer, pipeline-parallel model, or retrieval-augmented model. Draw its logical communication graph, then list which edges would be local memory access, on-chip communication, cross-device communication, or network communication in a plausible implementation.
 \end{exercises}

@@ -9,28 +9,43 @@
   \label{fig:codesign-loop}
 \end{figure}
 
-Algorithm-hardware co-design means the model and the machine are designed with each other in mind. The model asks for certain operations, memory layouts, sparsity patterns, and communication routes. The hardware offers certain fast paths, memory capacities, interconnects, and precision formats. The runtime connects them.
+Algorithm-hardware co-design means that the model, the software stack, and the machine are chosen with each other in mind. The model asks for certain operations, tensor shapes, memory layouts, precision formats, sparsity patterns, and communication routes. The hardware offers certain fast paths, memory capacities, interconnects, supported precisions, and energy costs. The compiler, runtime, libraries, scheduler, and serving system connect the two.
+
+This is a practical discipline, not a vague preference for ``hardware awareness.'' A co-designed system asks: what does the algorithm need, what does the machine make cheap, and what measured bottleneck proves that these two are aligned or misaligned?
 
 A co-design loop looks like:
 
 \begin{enumerate}[leftmargin=*]
-  \item Choose a model idea.
-  \item Estimate operations, memory, and communication.
-  \item Implement a baseline.
-  \item Profile it.
-  \item Modify architecture, placement, kernels, precision, batching, or routing.
-  \item Re-measure on the target workload.
+  \item Choose a model idea and name the target workload.
+  \item Estimate operations, memory traffic, communication, latency, energy, and cost.
+  \item Implement a simple baseline that is correct enough to measure.
+  \item Profile the baseline on a representative input distribution.
+  \item Diagnose the limiting resource: compute, memory bandwidth, memory capacity, launch overhead, CPU work, interconnect, storage, or software scheduling.
+  \item Modify architecture, placement, kernels, precision, batching, routing, or serving policy.
+  \item Re-measure on the same target workload and compare quality as well as resources.
 \end{enumerate}
 
-The loop matters because intuition is often wrong. A clever sparse model can be slow. A simple dense model can win because libraries are excellent. A quantized model can be faster, or slower if dequantization dominates. A distributed placement can fit memory while losing to communication.
+The loop matters because intuition is often wrong. A clever sparse model can be slow if index handling and load imbalance dominate. A simple dense model can win because vendor libraries use tensor cores, tiling, and fusion very well. A quantized model can be faster, or slower if unsupported operators require dequantization around every layer. A distributed placement can fit memory while losing time to all-reduce, all-to-all, or pipeline bubbles.
 
 \begin{aside}[Core workflow]
-Co-design is a loop, not a slogan: propose, estimate, implement, profile, revise. Stop only when the measured bottleneck matches the intended design tradeoff.
+Co-design is a loop, not a slogan: propose, estimate, implement, profile, diagnose, revise. Stop only when the measured bottleneck matches the intended design tradeoff and the quality target is still satisfied.
 \end{aside}
+
+\subsubsection{Measurement, modeling, and optimization}
+
+Three activities often get mixed together.
+
+\emph{Measurement} records what actually happened on a specific workload, machine, software stack, and run configuration. Examples include p95 latency, tokens per second, HBM bandwidth, GPU utilization, power draw, and cost per million tokens.
+
+\emph{Modeling} predicts or explains behavior using simplified quantities such as FLOPs, bytes moved, bandwidth, latency, and utilization. A model is useful when it makes the next measurement less mysterious. It is not a substitute for measurement.
+
+\emph{Optimization} changes the system. An algorithmic change changes the computation itself, such as replacing quadratic attention with a different attention mechanism. An implementation optimization keeps the mathematical computation mostly the same while changing how it runs, such as fusing kernels or changing tensor layout. A serving optimization changes how requests are scheduled, batched, cached, or placed. These categories have different risks and different engineering costs.
 
 \subsection{Mixture-of-Pathways Thinking}
 
-Mixture-of-experts routes tokens to experts. Mixture-of-pathways generalizes the idea: different information can take different computational paths. Some paths may be dense, others sparse, recurrent, symbolic, retrieval-based, spiking, or graph-structured.
+Mixture-of-experts routes tokens to experts. Mixture-of-pathways generalizes the idea: different information can take different computational paths. Some paths may be dense, others sparse, recurrent, symbolic, retrieval-based, event-driven, or graph-structured.
+
+A \emph{pathway} is a route through computation and storage. A retrieval pathway may query a vector index, fetch text chunks, and summarize them. A dense language pathway may run transformer layers on a GPU. A graph pathway may traverse edges in CPU memory or use sparse kernels. An event pathway may process only changed sensor values. The co-design question is whether each pathway runs on a substrate that matches its structure.
 
 The hardware-aware question is:
 
@@ -38,19 +53,29 @@ The hardware-aware question is:
 Can the pathway structure be placed so frequently communicating modules are close, rare paths are cheap to activate, and specialized hardware is used only when its advantage survives routing overhead?
 \end{aside}
 
-This is where maximum heterogeneity becomes practical rather than aesthetic. Heterogeneity is useful only when specialization beats the cost of coordination.
+This is where heterogeneity becomes practical rather than aesthetic. Heterogeneity is useful only when specialization beats the cost of coordination. A GPU, CPU, vector database, FPGA, and event sensor may each be excellent at one piece, but the whole system is slow if the pieces exchange large intermediate states at every step.
 
 \subsection{A Concrete Co-Design Example}
 
-Suppose a model has a dense language core, a retrieval module, a graph-reasoning module, and a sparse event stream from a sensor. A hardware-oblivious design might push everything through the same dense model path. A co-designed system would ask:
+Suppose an assistant for factory maintenance has a dense language core, a retrieval module over manuals and logs, a graph-reasoning module over machine dependencies, and a sparse event stream from sensors. A hardware-oblivious design might push every signal through the same dense model path. A co-designed system would ask:
 \begin{itemize}[leftmargin=*]
   \item Can retrieval run near the vector index to avoid moving many documents?
-  \item Can graph reasoning use a CPU or specialized sparse kernel without blocking token generation?
-  \item Can event streams remain sparse until a dense summary is actually needed?
+  \item Can graph reasoning use a CPU, graph database, or specialized sparse kernel without blocking token generation?
+  \item Can event streams remain sparse until an alarm, trend, or dense summary is actually needed?
   \item Can the dense language core receive compact summaries instead of raw intermediate state?
+  \item Can the serving system batch dense language calls while keeping urgent sensor alerts below a latency budget?
+  \item Can the model use INT8 or FP8 for the dense path while keeping numerically sensitive scoring in FP16 or FP32?
 \end{itemize}
 
 The goal is not to maximize heterogeneity. The goal is to keep each representation on the cheapest substrate until communication or quality requires conversion.
+
+For a realistic deployment, the answer may be mixed. Retrieval might run on CPU servers attached to a vector index. The language core might run on GPUs with paged KV-cache management. Graph expansion might happen asynchronously so it does not stall the first answer. Sensor events might be aggregated on an edge device and sent upstream only when a threshold or learned detector fires. Each choice is a claim about bytes, waiting time, quality, reliability, and cost.
+
+\subsubsection{Two common design choices}
+
+\textbf{Batch size.} Increasing batch size can improve throughput by filling accelerator lanes and amortizing kernel launches. It can also increase time to first token because a request may wait for other requests to join the batch. For an interactive chatbot, a batch size that maximizes tokens per second may violate the user latency budget. For offline document labeling, the same batch size may be ideal.
+
+\textbf{Quantization format.} Moving from FP16 to INT8 or FP8 can reduce memory traffic and increase effective arithmetic throughput when the hardware has fast support for that format. It can also reduce quality or add conversion overhead. A good co-design report says which layers were quantized, which calibration data was used, which operators stayed in higher precision, which hardware instructions were used, and whether the measured gain is sustained on the real workload.
 
 \subsection{Benchmarking Cost, Latency, and Energy}
 
@@ -65,12 +90,72 @@ A credible benchmark records:
   \item software versions and compiler flags,
   \item latency distribution, not only mean latency,
   \item throughput,
+  \item utilization for named resources,
   \item peak and average memory usage,
   \item energy or power when available,
-  \item total cost for the task.
+  \item one-time engineering cost and recurring run cost where relevant,
+  \item total cost for the task or service interval.
 \end{itemize}
 
-For inference, record time to first token, inter-token latency, total tokens per second, and cost per million tokens. For training, record tokens or examples per second, step time, convergence behavior, and cost to target quality. Hardware speed without quality or cost can mislead.
+For inference, record time to first token, inter-token latency, total tokens per second, tail latency, cache hit rate when relevant, and cost per million tokens. For training, record tokens or examples per second, step time, scaling efficiency, convergence behavior, and cost to target quality. Hardware speed without quality, reliability, or cost can mislead.
+
+\subsubsection{Latency and throughput}
+
+\emph{Latency} is the time for one request or step to complete. \emph{Throughput} is the amount of useful work completed per unit time. A simple serving model is:
+
+\begin{keyequation}[Latency budget]
+\[
+  L_{\text{total}}
+  =
+  L_{\text{queue}}
+  +
+  L_{\text{prefill}}
+  +
+  N_{\text{out}} L_{\text{decode}}
+  +
+  L_{\text{post}}
+\]
+\tcblower
+\(L_{\text{total}}\) is the end-to-end latency seen by the user. \(L_{\text{queue}}\) is waiting before compute begins. \(L_{\text{prefill}}\) is prompt-processing time. \(N_{\text{out}}\) is the number of generated output tokens. \(L_{\text{decode}}\) is the average time per generated token. \(L_{\text{post}}\) is postprocessing, formatting, network, or tool overhead. Reducing only one term helps only if that term is a significant part of the measured total.
+\end{keyequation}
+
+Throughput can be recorded as examples per second, tokens per second, images per second, or jobs per hour:
+
+\begin{keyequation}[Throughput]
+\[
+  T =
+  \frac{W}{t}
+\]
+\tcblower
+\(T\) is throughput. \(W\) is completed useful work, such as generated tokens, training examples, or classified images. \(t\) is elapsed wall-clock time. The definition of \(W\) must match the workload. Counting prompt tokens, generated tokens, and padded tokens as if they were the same can make two systems look comparable when they are not.
+\end{keyequation}
+
+\subsubsection{Energy, memory, cost, and utilization}
+
+Energy and cost need the same discipline as latency. Power is a rate. Energy accumulates over time:
+
+\begin{keyequation}[Energy and cost]
+\[
+  E \approx P_{\text{avg}} t,
+  \qquad
+  C_{\text{run}} =
+  r_{\text{device}} t + C_{\text{energy}} + C_{\text{network}} + C_{\text{storage}}
+\]
+\tcblower
+\(E\) is energy. \(P_{\text{avg}}\) is average power during the measured interval. \(t\) is elapsed time. \(C_{\text{run}}\) is recurring run cost. \(r_{\text{device}}\) is the device or instance price per unit time. \(C_{\text{energy}}\), \(C_{\text{network}}\), and \(C_{\text{storage}}\) are operating costs outside raw accelerator rental. This equation does not include one-time engineering cost, which should be reported separately when comparing a simple baseline with a difficult custom implementation.
+\end{keyequation}
+
+\emph{Memory footprint} is the amount of memory required to run a workload. For inference it can include weights, activations, KV cache, allocator overhead, and runtime buffers. For training it also includes gradients and optimizer state. Peak memory matters because exceeding capacity can force smaller batches, recomputation, CPU offload, or failure.
+
+\begin{keyequation}[Utilization]
+\[
+  U_R =
+  \frac{\text{measured useful rate for resource } R}
+       {\text{theoretical or advertised peak rate for resource } R}
+\]
+\tcblower
+\(U_R\) is utilization for a named resource \(R\), such as tensor cores, HBM bandwidth, PCIe bandwidth, or network links. The numerator is sustained measured useful work. The denominator is a peak or reference rate. Low utilization means the resource is not the current busy path; it does not by itself explain why. High utilization can still be bad if the algorithm is doing unnecessary work.
+\end{keyequation}
 
 \begin{keyequation}[Benchmark record]
 \[
@@ -86,7 +171,35 @@ For inference, record time to first token, inter-token latency, total tokens per
   \right)
 \]
 \tcblower
-A benchmark is incomplete if it reports only one coordinate. A faster model that loses quality, exceeds memory, or costs more per useful result may not be an improvement.
+A benchmark is incomplete if it reports only one coordinate. \(\text{quality}\) says whether the answer remains useful. \(\text{latency}\) says how long a user or dependent process waits. \(\text{throughput}\) says how much work finishes per unit time. \(\text{memory}\) says whether the workload fits and how much batching is possible. \(\text{energy}\) says how much physical work is consumed. \(\text{cost}\) says what the system costs to build or operate. A faster model that loses quality, exceeds memory, or costs more per useful result may not be an improvement.
+\end{keyequation}
+
+\subsubsection{Speedup and tradeoff metrics}
+
+Speedup is easy to misuse because it hides the baseline.
+
+\begin{keyequation}[Speedup]
+\[
+  S =
+  \frac{t_{\text{baseline}}}{t_{\text{new}}}
+\]
+\tcblower
+\(S\) is speedup. \(t_{\text{baseline}}\) is the measured time for the original system on the same workload. \(t_{\text{new}}\) is the measured time after the change. If \(S=2\), the new system is twice as fast for that measurement. This does not say whether quality, memory, engineering effort, or recurring cost changed.
+\end{keyequation}
+
+A design-space exploration often needs an explicit tradeoff score, but the score should be treated as a decision aid rather than a law:
+
+\begin{keyequation}[Weighted tradeoff score]
+\[
+  J =
+  w_q Q
+  - w_l L
+  - w_c C
+  - w_e E
+  - w_m M
+\]
+\tcblower
+\(J\) is a scalar score used to rank candidate designs. \(Q\) is a quality measure where larger is better. \(L\), \(C\), \(E\), and \(M\) are latency, cost, energy, and memory terms where smaller is better. The weights \(w_q\), \(w_l\), \(w_c\), \(w_e\), and \(w_m\) encode the deployment priorities. This equation is useful only after the units and normalization are stated. A hospital monitor, a mobile keyboard, an offline labeling job, and a training cluster should not use the same weights.
 \end{keyequation}
 
 \subsection{The Optional High-Signal Stack}
@@ -104,6 +217,8 @@ You do not need to master CUDA, Triton, FPGAs, and HPC before thinking well abou
 
 CUDA teaches the full GPU model: threads, warps, blocks, memory hierarchy, synchronization, occupancy, and coalescing. Triton gives a higher-level path to custom GPU kernels while keeping tiling and memory movement explicit.
 
+The beginner bridge is this: a GPU is not simply a faster CPU. It is a throughput machine that wants many similar pieces of work, regular memory access, and enough reuse to justify moving data through the memory hierarchy. A custom kernel is valuable when it improves that resource flow. It is not valuable merely because it sounds closer to the hardware.
+
 Kernel work is useful when:
 
 \begin{itemize}[leftmargin=*]
@@ -114,7 +229,9 @@ Kernel work is useful when:
   \item profiler evidence shows existing kernels dominate time.
 \end{itemize}
 
-It is not useful when the bottleneck is data loading, networking, or an already excellent library kernel.
+It is not useful when the bottleneck is data loading, networking, request scheduling, Python overhead outside the measured region, or an already excellent library kernel. A matrix multiplication implemented by cuBLAS or a vendor transformer engine is often difficult to beat. A small sequence of reshapes, elementwise operations, masks, and normalization may be a better fusion target if the profiler shows repeated reads and writes.
+
+A precise kernel claim should say what changed. Did the new kernel reduce HBM bytes? Did it reduce launch overhead by fusing operators? Did it improve occupancy? Did it use a supported low-precision path? Did it preserve numerical behavior? Without that explanation, a speedup number is hard to interpret.
 
 \subsubsection{FPGA and Verilog Basics}
 
@@ -130,9 +247,15 @@ Basic terms:
   \item pipelines increase throughput by processing different items at different stages.
 \end{itemize}
 
+An FPGA design is attractive when the workload can be expressed as a steady stream with predictable control. For example, an edge sensor might apply filtering, event detection, compression, and a small classifier before sending data to a larger model. The benefit is low and predictable latency with less data movement. The cost is engineering time, limited flexibility, harder debugging, and usually lower raw dense-matrix throughput than a high-end GPU.
+
+The co-design question is therefore not ``Could this run on an FPGA?'' It is ``Does a custom streaming circuit remove enough recurring latency, energy, or data movement to justify the one-time design effort?''
+
 \subsubsection{Clusters and HPC}
 
 Cluster experience teaches that hardware is operated, not merely owned. Slurm-like schedulers allocate jobs. Containers package environments. Multi-GPU nodes need drivers and libraries aligned. Network topology affects collectives. Logs and metrics explain failures.
+
+Training clusters add a second layer of co-design. The model must fit not only one device, but also a parallelization plan. Data parallelism replicates the model and splits examples. Tensor parallelism splits tensors across devices. Pipeline parallelism splits layers into stages. Expert parallelism routes tokens to different experts. Optimizer or state sharding splits parameters, gradients, and optimizer state. Each method trades memory, communication, scheduling complexity, and convergence behavior.
 
 Useful cluster habits:
 
@@ -143,6 +266,29 @@ Useful cluster habits:
   \item design jobs to resume after preemption,
   \item collect profiler traces on small representative runs before scaling.
 \end{itemize}
+
+When scaling a training run, distinguish peak hardware capability from sustained job performance. A cluster can advertise enormous peak FLOP/s while the job loses time to input pipelines, checkpoint I/O, stragglers, network congestion, or small pipeline microbatches. A credible scaling report states the per-device baseline, number of devices, global batch size, step time, communication time, memory use, and validation or convergence behavior.
+
+\subsection{Design Space Exploration}
+
+A \emph{design space} is the set of candidate choices the team is willing to consider. It can include model size, context length, attention pattern, batch size, precision, quantization method, accelerator type, number of devices, parallelism strategy, caching policy, and serving deadline.
+
+\emph{Constraints} are requirements a design must satisfy. A phone model may have a memory limit, battery budget, and offline latency target. A training run may have a fixed cluster allocation and a target validation loss. A hosted model may have a p95 latency service-level objective and a monthly cost cap. Constraints turn an open-ended optimization problem into an engineering decision.
+
+A useful design-space exploration is usually small at first:
+
+\begin{enumerate}[leftmargin=*]
+  \item Choose two or three candidate designs that differ for a clear reason.
+  \item Hold the workload, quality evaluation, and measurement method constant.
+  \item Estimate compute, memory, communication, energy, and cost before running.
+  \item Measure the candidates on representative inputs.
+  \item Explain where the estimates were wrong.
+  \item Keep the simplest design that satisfies the constraints, unless a more complex design has a measured recurring benefit large enough to justify its engineering cost.
+\end{enumerate}
+
+\begin{aside}[Constraint-first thinking]
+Start by naming the non-negotiable constraint. A model for an implanted device, a warehouse robot, an offline batch pipeline, and a frontier training run are not solving the same optimization problem. Their hardware constraints make different algorithms viable.
+\end{aside}
 
 \subsection{A Beginner Roadmap}
 
@@ -157,20 +303,25 @@ Useful cluster habits:
   \item Benchmark the same model on two hardware paths and explain the result using bytes, FLOPs, latency, and communication.
 \end{enumerate}
 
+The roadmap is intentionally measurement-centered. You can read about every accelerator family and still make poor system choices if you cannot connect a profiler trace to a model change. Conversely, a small, well-explained experiment can teach the main habit: name the workload, name the resource flow, measure the bottleneck, and only then optimize.
+
 \subsection{Final Mental Checklist}
 
 Before accepting a hardware claim, ask:
 
 \begin{itemize}[leftmargin=*]
-  \item What workload was measured?
+  \item What workload was measured, and is it the workload we care about?
   \item What tensor shapes and batch sizes?
   \item Which precision?
-  \item What memory capacity and bandwidth?
-  \item What interconnect?
-  \item What utilization?
-  \item Was communication included?
+  \item Is the number modeled, simulated, benchmarked, or measured in production?
+  \item Is it peak performance or sustained performance?
+  \item What memory capacity, bandwidth, and memory hierarchy were involved?
+  \item What interconnect was used, and was communication included?
+  \item What utilization was reported, and for which named resource?
   \item Was data loading included?
   \item Was quality held constant?
+  \item Was the change algorithmic, implementation-level, or serving-level?
+  \item Does the result include one-time engineering cost or only recurring run cost?
   \item Does the software stack support the model cleanly?
 \end{itemize}
 
@@ -179,7 +330,7 @@ This checklist is the practical result of the course. Hardware-aware AI is not c
 \subsection{Capstone: Explain One Run End to End}
 
 The capstone exercise for these notes is to take one model run and write a short technical report with the following structure:
-\begin{enumerate}
+\begin{enumerate}[leftmargin=*]
   \item workload and model shape,
   \item hardware and software stack,
   \item operation and memory estimates,
@@ -187,33 +338,48 @@ The capstone exercise for these notes is to take one model run and write a short
   \item bottleneck diagnosis,
   \item one attempted change,
   \item before/after measurement,
-  \item interpretation and remaining uncertainty.
+  \item quality check,
+  \item interpretation and remaining uncertainty,
+  \item next experiment.
 \end{enumerate}
 
 This mirrors the style of a good data-analysis report. The report is not a list of tricks. It is a chain from measurement to interpretation.
+
+For example, a report might study LLM decoding on one GPU. The workload is batch size 4, prompt length 2048, output length 256, FP16 weights, and paged KV cache. The estimate says KV-cache reads may dominate decode. The profiler shows high HBM bandwidth and lower tensor-core utilization during decode, but high tensor-core utilization during prefill. The attempted change increases batch size and enables INT8 weight-only quantization. The result improves total tokens per second but slightly worsens time to first token. The interpretation is not simply ``quantization helped.'' It is that the change helped the throughput-oriented part of the workload while revealing a latency tradeoff.
 
 \subsection{Next steps}
 
 For this chapter, the mathematical object is the joint design space of model, runtime, hardware, and workload. The empirical diagnostic is a benchmark record with quality and resource coordinates. The failure mode is optimizing a local metric that makes the whole system worse.
 
+This is the grounded version of the substrate theme. Co-design makes explicit that available hardware shapes viable algorithms. GPU clusters make dense batched tensor programs and large-scale gradient descent unusually practical. Edge devices reward compact models, quantization, streaming, and predictable memory use. Wet, noisy nervous systems make local, adaptive, event-driven computation natural under strict energy and wiring constraints. Algorithm demand then feeds back into hardware choices: attention kernels, low-precision formats, HBM capacity, interconnects, and serving accelerators evolve because workloads ask for them. Intelligence is not designed in a vacuum; it is negotiated with the substrate that can run it.
+
 \begin{chaptersummary}
 \begin{itemize}[leftmargin=*]
-  \item Co-design links model architecture, runtime, hardware, measurement, and workload.
-  \item Heterogeneity helps only when specialization beats coordination cost.
-  \item Benchmarking must include latency, throughput, memory, cost, energy, and quality.
+  \item Co-design links model architecture, runtime, hardware, measurement, workload, and deployment constraints.
+  \item Measurement records what happened; modeling explains or predicts it; optimization changes the system.
+  \item Heterogeneity helps only when specialization beats coordination and conversion cost.
+  \item Benchmarking must include latency, throughput, memory, cost, energy, quality, and the exact workload.
+  \item Peak performance, sustained performance, benchmark performance, and production performance are different claims.
   \item CUDA/Triton, FPGA basics, and cluster practice each expose a different layer of the system.
-  \item The final skill is explaining performance using concrete resource flows.
+  \item The final skill is explaining performance using concrete resource flows and then choosing the next experiment.
 \end{itemize}
 \end{chaptersummary}
 
 \begin{conceptquestions}
 \item Why can a specialized pathway become a net loss after routing overhead?
 \item What information should be recorded to make a benchmark reproducible?
+\item Why is peak FLOP/s different from sustained workload performance?
+\item Give one example of a measurement, one example of a model, and one example of an optimization in a hardware-aware AI project.
 \item When would you write a custom kernel, and when would you avoid it?
+\item Why should one-time engineering cost be separated from recurring inference or training cost?
+\item How can a hardware substrate make one algorithmic style cheaper than another?
 \end{conceptquestions}
 
 \begin{exercises}
-\item Choose a model architecture idea such as long-context attention, mixture-of-experts, retrieval augmentation, or SNN perception. Write a co-design loop for it: estimate, implement, profile, revise.
-\item Build a benchmark record for an inference workload. Which coordinate matters most for an interactive user? Which matters most for an offline batch job?
+\item Choose a model architecture idea such as long-context attention, mixture-of-experts, retrieval augmentation, graph reasoning, or SNN perception. Write a co-design loop for it: target workload, estimates, baseline, profiler evidence, bottleneck diagnosis, change, and re-measurement plan.
+\item Build a benchmark record for an inference workload. Include model version, precision, sequence lengths or input shapes, batch size, hardware SKU, software stack, p50 and p95 latency, throughput, memory, energy if available, quality metric, and cost. Which coordinate matters most for an interactive user? Which matters most for an offline batch job?
+\item A serving system has \(L_{\text{queue}}=40\) ms, \(L_{\text{prefill}}=120\) ms, \(N_{\text{out}}=80\), \(L_{\text{decode}}=15\) ms, and \(L_{\text{post}}=20\) ms. Compute \(L_{\text{total}}\). Then name two changes that could reduce total latency and explain which term each change targets.
+\item A baseline run takes 200 seconds and a new implementation takes 125 seconds on the same workload. Compute the speedup. List three reasons this speedup might still not justify adopting the new implementation.
+\item Compare two deployment targets for the same small vision model: a phone neural engine and a cloud GPU. For each target, name the likely constraints, useful metrics, possible quantization choices, and one failure mode.
 \item Write the capstone report outline for a real or imagined profiling run. The goal is not to be right immediately; it is to make the assumptions inspectable.
 \end{exercises}
