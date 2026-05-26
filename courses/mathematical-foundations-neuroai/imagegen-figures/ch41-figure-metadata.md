@@ -1,0 +1,11 @@
+# Chapter 41 Figure Metadata: Generative Deep Learning
+
+## Proposed ImageGen Prompts
+
+1. Use case: scientific-educational. Asset type: lecture-note raster infographic. 16:10 horizontal composition for PDF. Show a VAE with a generative arrow from latent variable to observation and an inference arrow from observation back to approximate posterior, including reconstruction and KL pressure as visual forces. Sparse in-image labels only: "prior", "encoder", "latent", "decoder", "reconstruction", "KL". Put exact equations in the caption, not in the image. Avoid logos, watermarks, decorative stock imagery, and pseudo-data presented as real data.
+
+2. Use case: scientific-educational. Asset type: lecture-note raster infographic. 16:10 horizontal composition for PDF. Show a normalizing flow transforming a simple circular Gaussian density into a warped complex density, with local grid cells stretching and compressing. Sparse in-image labels only: "base density", "invertible map", "data density", "volume change". Put exact equations in the caption, not in the image. Avoid logos, watermarks, decorative stock imagery, and pseudo-data presented as real data.
+
+3. Use case: scientific-educational. Asset type: lecture-note raster infographic. 16:10 horizontal composition for PDF. Show a GAN training game with noise entering a generator, generated samples and real samples entering a discriminator, and feedback arrows to both networks. Include a small side panel for energy-based modeling with low-energy basins and hard normalization. Sparse in-image labels only: "generator", "discriminator", "real", "generated", "energy", "partition function". Put exact equations in the caption, not in the image. Avoid logos, watermarks, decorative stock imagery, and pseudo-data presented as real data.
+
+4. Use case: scientific-educational. Asset type: lecture-note raster infographic. 16:10 horizontal composition for PDF. Show diffusion generation as two horizontal chains: forward noising from clean data to Gaussian noise and learned reverse denoising from noise to data. Add a vector-field hint for score directions. Sparse in-image labels only: "forward noising", "noise", "reverse denoising", "score field". Put exact equations in the caption, not in the image. Avoid logos, watermarks, decorative stock imagery, and pseudo-data presented as real data.

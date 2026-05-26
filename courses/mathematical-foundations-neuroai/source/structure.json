@@ -517,22 +517,22 @@
             {
               "number": "19.1",
               "title": "Correlation, causation, and structural models",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "19.2",
               "title": "Do-calculus intuition",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "19.3",
               "title": "Randomized experiments and neural interventions",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "19.4",
               "title": "Causal representation learning preview",
-              "status": "spine-only"
+              "status": "authored"
             }
           ]
         }
@@ -550,22 +550,22 @@
             {
               "number": "20.1",
               "title": "Optimization problems",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "20.2",
               "title": "Convex sets and convex functions",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "20.3",
               "title": "Subgradients and nonsmooth optimization",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "20.4",
               "title": "Geometry of regularization",
-              "status": "spine-only"
+              "status": "authored"
             }
           ]
         },
@@ -577,22 +577,22 @@
             {
               "number": "21.1",
               "title": "Gradient descent",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "21.2",
               "title": "Momentum and adaptive methods",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "21.3",
               "title": "Newton and quasi-Newton methods",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "21.4",
               "title": "Stochastic gradient descent",
-              "status": "spine-only"
+              "status": "authored"
             }
           ]
         },
@@ -604,22 +604,22 @@
             {
               "number": "22.1",
               "title": "Lagrange multipliers",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "22.2",
               "title": "KKT conditions",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "22.3",
               "title": "Duality",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "22.4",
               "title": "Variational calculus",
-              "status": "spine-only"
+              "status": "authored"
             }
           ]
         },
@@ -631,22 +631,22 @@
             {
               "number": "23.1",
               "title": "Computational graphs",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "23.2",
               "title": "Forward-mode and reverse-mode autodiff",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "23.3",
               "title": "Numerical precision and stability",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "23.4",
               "title": "Vectorization and efficient computation",
-              "status": "spine-only"
+              "status": "authored"
             }
           ]
         },
@@ -658,22 +658,22 @@
             {
               "number": "24.1",
               "title": "Conditioning and ill-posedness",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "24.2",
               "title": "Matrix factorizations in computation",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "24.3",
               "title": "Solving large systems",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "24.4",
               "title": "Simulation, discretization, and error",
-              "status": "spine-only"
+              "status": "authored"
             }
           ]
         }
@@ -691,22 +691,22 @@
             {
               "number": "25.1",
               "title": "ODEs as laws of motion",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "25.2",
               "title": "Linear dynamical systems",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "25.3",
               "title": "Nonlinear dynamics",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "25.4",
               "title": "Gradient flows and energy landscapes",
-              "status": "spine-only"
+              "status": "authored"
             }
           ]
         },
@@ -718,22 +718,22 @@
             {
               "number": "26.1",
               "title": "PDEs and fields",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "26.2",
               "title": "Diffusion, heat, and wave equations",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "26.3",
               "title": "Reaction-diffusion and neural fields",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "26.4",
               "title": "Continuous-depth models",
-              "status": "spine-only"
+              "status": "authored"
             }
           ]
         },
@@ -745,22 +745,22 @@
             {
               "number": "27.1",
               "title": "Discrete-time stochastic processes",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "27.2",
               "title": "Markov chains",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "27.3",
               "title": "Continuous-time processes and SDEs",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "27.4",
               "title": "Filtering and state estimation",
-              "status": "spine-only"
+              "status": "authored"
             }
           ]
         },
@@ -772,22 +772,22 @@
             {
               "number": "28.1",
               "title": "Time-series representation",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "28.2",
               "title": "Spectral analysis",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "28.3",
               "title": "Linear filters",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "28.4",
               "title": "Neural signals",
-              "status": "spine-only"
+              "status": "authored"
             }
           ]
         },
@@ -799,22 +799,22 @@
             {
               "number": "29.1",
               "title": "Graph basics",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "29.2",
               "title": "Graph Laplacians",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "29.3",
               "title": "Spectral graph methods",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "29.4",
               "title": "Network science for neuroscience and ML",
-              "status": "spine-only"
+              "status": "authored"
             }
           ]
         },
@@ -826,22 +826,22 @@
             {
               "number": "30.1",
               "title": "Controlled dynamical systems",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "30.2",
               "title": "Optimal control",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "30.3",
               "title": "Dynamic programming",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "30.4",
               "title": "Control in biological systems",
-              "status": "spine-only"
+              "status": "authored"
             }
           ]
         }
@@ -859,22 +859,22 @@
             {
               "number": "31.1",
               "title": "Formal learning problem",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "31.2",
               "title": "Empirical risk minimization",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "31.3",
               "title": "Generalization",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "31.4",
               "title": "No-free-lunch and inductive bias",
-              "status": "spine-only"
+              "status": "authored"
             }
           ]
         },
@@ -886,22 +886,22 @@
             {
               "number": "32.1",
               "title": "Linear regression revisited",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "32.2",
               "title": "Logistic regression and classification",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "32.3",
               "title": "Generalized linear models",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "32.4",
               "title": "Margins and support vector machines",
-              "status": "spine-only"
+              "status": "authored"
             }
           ]
         },
@@ -913,22 +913,22 @@
             {
               "number": "33.1",
               "title": "Regularization as prior knowledge",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "33.2",
               "title": "Kernel methods",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "33.3",
               "title": "Reproducing kernel Hilbert spaces",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "33.4",
               "title": "Gaussian processes",
-              "status": "spine-only"
+              "status": "authored"
             }
           ]
         },
@@ -940,22 +940,22 @@
             {
               "number": "34.1",
               "title": "Graphical models",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "34.2",
               "title": "Latent variable models",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "34.3",
               "title": "Expectation-maximization",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "34.4",
               "title": "Approximate inference",
-              "status": "spine-only"
+              "status": "authored"
             }
           ]
         },
@@ -967,22 +967,22 @@
             {
               "number": "35.1",
               "title": "Clustering",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "35.2",
               "title": "Dimensionality reduction",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "35.3",
               "title": "Manifold learning",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "35.4",
               "title": "Self-supervised learning preview",
-              "status": "spine-only"
+              "status": "authored"
             }
           ]
         },
@@ -994,22 +994,22 @@
             {
               "number": "36.1",
               "title": "Markov decision processes",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "36.2",
               "title": "Value functions and Bellman equations",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "36.3",
               "title": "Policy optimization",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "36.4",
               "title": "RL and neuroscience",
-              "status": "spine-only"
+              "status": "authored"
             }
           ]
         }
@@ -1027,22 +1027,22 @@
             {
               "number": "37.1",
               "title": "Artificial neurons and layers",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "37.2",
               "title": "Expressivity",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "37.3",
               "title": "Parameter symmetries and identifiability",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "37.4",
               "title": "Neural networks as learned representations",
-              "status": "spine-only"
+              "status": "authored"
             }
           ]
         },
@@ -1054,22 +1054,22 @@
             {
               "number": "38.1",
               "title": "Chain rule for networks",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "38.2",
               "title": "Backpropagation algorithm",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "38.3",
               "title": "Differentiable programming",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "38.4",
               "title": "Gradient pathologies",
-              "status": "spine-only"
+              "status": "authored"
             }
           ]
         },
@@ -1081,22 +1081,22 @@
             {
               "number": "39.1",
               "title": "Loss landscapes",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "39.2",
               "title": "Initialization",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "39.3",
               "title": "Normalization and residual architectures",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "39.4",
               "title": "Implicit bias of optimization",
-              "status": "spine-only"
+              "status": "authored"
             }
           ]
         },
@@ -1108,22 +1108,22 @@
             {
               "number": "40.1",
               "title": "Convolutional neural networks",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "40.2",
               "title": "Recurrent neural networks and state-space models",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "40.3",
               "title": "Attention and transformers",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "40.4",
               "title": "Graph neural networks",
-              "status": "spine-only"
+              "status": "authored"
             }
           ]
         },
@@ -1135,22 +1135,22 @@
             {
               "number": "41.1",
               "title": "Variational autoencoders",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "41.2",
               "title": "Normalizing flows",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "41.3",
               "title": "GANs",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "41.4",
               "title": "Diffusion and score-based models",
-              "status": "spine-only"
+              "status": "authored"
             }
           ]
         },
@@ -1162,22 +1162,22 @@
             {
               "number": "42.1",
               "title": "Geometry of learned representations",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "42.2",
               "title": "Robustness and adversarial examples",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "42.3",
               "title": "Interpretability",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "42.4",
               "title": "Scaling and emergence",
-              "status": "spine-only"
+              "status": "authored"
             }
           ]
         }
@@ -1195,22 +1195,22 @@
             {
               "number": "43.1",
               "title": "Electrical models of membranes",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "43.2",
               "title": "Ion channels and conductance models",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "43.3",
               "title": "Hodgkin-Huxley equations",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "43.4",
               "title": "Cable theory",
-              "status": "spine-only"
+              "status": "authored"
             }
           ]
         },
@@ -1222,22 +1222,22 @@
             {
               "number": "44.1",
               "title": "Integrate-and-fire models",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "44.2",
               "title": "Phase-plane analysis of neurons",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "44.3",
               "title": "Spike-frequency adaptation and bursting",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "44.4",
               "title": "Population rate models",
-              "status": "spine-only"
+              "status": "authored"
             }
           ]
         },
@@ -1249,22 +1249,22 @@
             {
               "number": "45.1",
               "title": "Synaptic transmission",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "45.2",
               "title": "Short-term plasticity",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "45.3",
               "title": "Hebbian learning and STDP",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "45.4",
               "title": "Plasticity and optimization",
-              "status": "spine-only"
+              "status": "authored"
             }
           ]
         },
@@ -1276,22 +1276,22 @@
             {
               "number": "46.1",
               "title": "Spike trains as point processes",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "46.2",
               "title": "Inhomogeneous Poisson models",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "46.3",
               "title": "Neural generalized linear models",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "46.4",
               "title": "Model checking for spike models",
-              "status": "spine-only"
+              "status": "authored"
             }
           ]
         },
@@ -1303,22 +1303,22 @@
             {
               "number": "47.1",
               "title": "Tuning curves",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "47.2",
               "title": "Population coding",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "47.3",
               "title": "Decoding and reconstruction",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "47.4",
               "title": "Information in neural responses",
-              "status": "spine-only"
+              "status": "authored"
             }
           ]
         },
@@ -1330,22 +1330,22 @@
             {
               "number": "48.1",
               "title": "Neural state spaces",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "48.2",
               "title": "Dimensionality reduction for neural data",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "48.3",
               "title": "Latent dynamical systems",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "48.4",
               "title": "Neural manifolds and behavior",
-              "status": "spine-only"
+              "status": "authored"
             }
           ]
         },
@@ -1357,22 +1357,22 @@
             {
               "number": "49.1",
               "title": "Recurrent neural circuits",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "49.2",
               "title": "Attractor networks",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "49.3",
               "title": "Oscillations and synchrony",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "49.4",
               "title": "Neural field models",
-              "status": "spine-only"
+              "status": "authored"
             }
           ]
         },
@@ -1384,22 +1384,22 @@
             {
               "number": "50.1",
               "title": "Drift-diffusion and evidence accumulation",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "50.2",
               "title": "Bayesian models of perception",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "50.3",
               "title": "Predictive coding",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "50.4",
               "title": "Active inference and control",
-              "status": "spine-only"
+              "status": "authored"
             }
           ]
         },
@@ -1411,22 +1411,22 @@
             {
               "number": "51.1",
               "title": "Experimental data types",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "51.2",
               "title": "Encoding and decoding models",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "51.3",
               "title": "Model comparison and identifiability",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "51.4",
               "title": "Ethics and epistemology of neural modeling",
-              "status": "spine-only"
+              "status": "authored"
             }
           ]
         },
@@ -1438,22 +1438,22 @@
             {
               "number": "52.1",
               "title": "Artificial networks as brain models",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "52.2",
               "title": "Biological inspiration for ML",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "52.3",
               "title": "Deep learning tools for neuroscience",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "52.4",
               "title": "Open mathematical problems",
-              "status": "spine-only"
+              "status": "authored"
             }
           ]
         }
@@ -1471,22 +1471,22 @@
             {
               "number": "53.1",
               "title": "From linear regression to deep networks",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "53.2",
               "title": "From PCA to neural manifolds",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "53.3",
               "title": "From Bayes to predictive coding",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "53.4",
               "title": "From stochastic processes to diffusion models and neural noise",
-              "status": "spine-only"
+              "status": "authored"
             }
           ]
         },
@@ -1498,22 +1498,22 @@
             {
               "number": "54.1",
               "title": "Notation dictionary",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "54.2",
               "title": "Core theorem reference",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "54.3",
               "title": "Common derivations",
-              "status": "spine-only"
+              "status": "authored"
             },
             {
               "number": "54.4",
               "title": "Computational recipes",
-              "status": "spine-only"
+              "status": "authored"
             }
           ]
         }
